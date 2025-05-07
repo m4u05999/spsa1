@@ -1,0 +1,274 @@
+import React from 'react';
+import { Link, Routes, Route } from 'react-router-dom';
+import RegionalStudies from './units/RegionalStudies';
+import InternationalRelations from './units/InternationalRelations';
+import ComparativePolitics from './units/ComparativePolitics';
+import PoliticalThought from './units/PoliticalThought';
+
+const ResearchPage = () => {
+  const researchUnits = [
+    {
+      id: 'regional',
+      title: 'وحدة الدراسات الإقليمية',
+      description: 'تختص بدراسة الأحداث والتطورات السياسية في المناطق الجغرافية المختلفة والقوى المؤثرة فيها',
+      icon: '🌍',
+      link: '/research/regional',
+      groups: [
+        'مجموعة دراسات المملكة',
+        'مجموعة الدراسات الأوروبية',
+        'مجموعة دراسات أمريكا اللاتينية',
+        'مجموعة الدراسات الاسيوية',
+        'مجموعة الدراسات الافريقية',
+        'مجموعة دراسات الشرق الأوسط',
+        'مجموعة الدراسات الامريكية والكندية',
+        'مجموعة الدراسات الصينية',
+        'مجموعة الدراسات الروسية'
+      ]
+    },
+    {
+      id: 'international',
+      title: 'وحدة العلاقات الدولية',
+      description: 'تتناول العلاقات بين الدول والمنظمات الدولية وقضايا الأمن والتعاون الدولي',
+      icon: '🤝',
+      link: '/research/international',
+      groups: [
+        'مجموعة دراسات الحرب والسلام',
+        'مجموعة السياسات الخارجية',
+        'مجموعة دراسة المنظمات الدولية',
+        'مجموعة الدراسات الدبلوماسية',
+        'مجموعة دراسات إدارة الأزمات والمخاطر الدولية',
+        'مجموعة دراسات الأمن الدولي',
+        'مجموعة دراسات المشكلات الدولية المعاصرة'
+      ]
+    },
+    {
+      id: 'comparative',
+      title: 'وحدة السياسات المقارنة',
+      description: 'تهتم بالدراسات المقارنة للنظم السياسية والتجارب الحكومية المختلفة حول العالم',
+      icon: '⚖️',
+      link: '/research/comparative',
+      groups: [
+        'مجموعة السياسات المستقرة',
+        'مجموعة السياسات الغير مستقرة'
+      ]
+    },
+    {
+      id: 'thought',
+      title: 'وحدة الفكر السياسي والنظرية السياسية',
+      description: 'تختص بدراسة الأفكار والنظريات السياسية وتطورها التاريخي وتأثيرها على الواقع المعاصر',
+      icon: '💭',
+      link: '/research/thought',
+      groups: [
+        'الفكر السياسي الغربي',
+        'الفكر السياسي الإسلامي',
+        'العقائد الشمولية والمتطرفة',
+        'الحركات الإسلامية والاخوان المسلمين',
+        'الدين والدولة',
+        'الأمن الفكري'
+      ]
+    }
+  ];
+
+  const achievements = [
+    'نشر أكثر من 50 بحثًا علميًا في مجلات محكمة دولية',
+    'تنظيم 12 مؤتمرًا وندوة علمية متخصصة',
+    'إصدار 15 كتابًا في مختلف مجالات العلوم السياسية',
+    'عقد شراكات بحثية مع 8 مراكز أبحاث عالمية',
+    'تقديم أكثر من 30 استشارة علمية للجهات الحكومية والخاصة'
+  ];
+
+  const publications = [
+    {
+      title: 'التحولات الجيوسياسية في الشرق الأوسط: آفاق ومستقبل',
+      type: 'كتاب',
+      year: '2023'
+    },
+    {
+      title: 'أثر الأزمات العالمية على النظام الدولي متعدد الأقطاب',
+      type: 'دراسة',
+      year: '2022'
+    },
+    {
+      title: 'الاتجاهات الحديثة في النظرية السياسية المعاصرة',
+      type: 'كتاب',
+      year: '2023'
+    },
+    {
+      title: 'التحول الديمقراطي في دول شمال إفريقيا: دراسة مقارنة',
+      type: 'دراسة',
+      year: '2022'
+    }
+  ];
+
+  return (
+    <>
+      <Routes>
+        <Route index element={
+          <div className="min-h-screen bg-gray-50 rtl" dir="rtl">
+            {/* قسم الرأس */}
+            <section className="relative py-12 sm:py-16 bg-gradient-to-r from-blue-700 to-blue-900 text-white overflow-hidden">
+              <div className="container mx-auto px-4">
+                <div className="max-w-3xl">
+                  <h1 className="text-2xl sm:text-4xl font-bold mb-4">إدارة البحوث والدراسات العلمية</h1>
+                  <p className="text-lg sm:text-xl text-blue-100 mb-6">
+                    تعنى إدارة البحوث بإنتاج المعرفة العلمية في مجال العلوم السياسية، وتقديم تحليلات معمقة للقضايا والظواهر السياسية المحلية والإقليمية والدولية
+                  </p>
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                  <path fill="#f8fafc" fillOpacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
+              </div>
+            </section>
+
+            <div className="container mx-auto px-4">
+              {/* وحدات البحث */}
+              <section className="py-12">
+                <h2 className="text-2xl font-bold mb-8">وحدات البحث الرئيسية</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {researchUnits.map((unit) => (
+                    <Link key={unit.id} to={unit.link} className="block group">
+                      <div className="bg-white rounded-lg shadow-sm hover:shadow-md p-6 border-2 border-gray-100 group-hover:border-blue-500 transition-all duration-300 h-full">
+                        <div className="flex items-center mb-4">
+                          <span className="text-2xl sm:text-3xl bg-blue-100 text-blue-700 p-3 rounded-full ml-4">{unit.icon}</span>
+                          <h3 className="text-base sm:text-lg font-bold text-blue-800">{unit.title}</h3>
+                        </div>
+                        <p className="text-gray-600 text-sm sm:text-base mb-4">{unit.description}</p>
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">المجموعات البحثية:</h4>
+                          <ul className="text-gray-600 text-xs sm:text-sm space-y-1 mr-4 list-disc">
+                            {unit.groups.slice(0, 3).map((group, index) => (
+                              <li key={index}>{group}</li>
+                            ))}
+                            {unit.groups.length > 3 && (
+                              <li className="text-blue-600">وأخرى ({unit.groups.length - 3})...</li>
+                            )}
+                          </ul>
+                        </div>
+                        <div className="mt-auto flex justify-end">
+                          <span className="text-blue-600 group-hover:text-blue-800 flex items-center text-sm sm:text-base">
+                            <span>عرض التفاصيل</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+
+              {/* الرؤية والرسالة والإنجازات */}
+              <section className="py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-6">الرؤية والرسالة</h2>
+                    <div className="mb-6">
+                      <h3 className="text-lg sm:text-xl font-semibold text-blue-700 mb-3">الرؤية</h3>
+                      <p className="text-gray-700 text-sm sm:text-base">
+                        الريادة في مجال البحث العلمي والدراسات السياسية على المستوى المحلي والإقليمي والعالمي.
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-blue-700 mb-3">الرسالة</h3>
+                      <p className="text-gray-700 text-sm sm:text-base">
+                        إنتاج بحوث ودراسات علمية رصينة تسهم في تطوير المعرفة السياسية، وتقدم رؤى وتحليلات موضوعية تساعد صانعي القرار والمهتمين بالشأن السياسي.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-6">إنجازاتنا</h2>
+                    <ul className="list-disc list-inside space-y-2 text-gray-700 text-sm sm:text-base">
+                      {achievements.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              {/* الإصدارات العلمية */}
+              <section className="py-12">
+                <h2 className="text-xl sm:text-2xl font-bold mb-6">أحدث الإصدارات العلمية</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {publications.map((pub, index) => (
+                    <div key={index} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                      <div className="p-4">
+                        <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full mb-2">{pub.type}</span>
+                        <h3 className="font-semibold text-sm sm:text-base mb-1 line-clamp-2">{pub.title}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500">{pub.year}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center mt-8">
+                  <Link to="/publications" className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                    عرض جميع الإصدارات
+                  </Link>
+                </div>
+              </section>
+
+              {/* نموذج التواصل */}
+              <section className="py-12 bg-gray-50 rounded-lg p-4 sm:p-6 mb-12">
+                <h2 className="text-xl sm:text-2xl font-bold mb-6">تواصل معنا</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-gray-700 text-sm sm:text-base mb-4">
+                      للاستفسارات العلمية أو المشاركة في الأبحاث والدراسات، يرجى التواصل معنا عبر البريد الإلكتروني أو تعبئة النموذج المرفق.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="flex items-center text-gray-600 text-sm sm:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                        research@psa-sa.org
+                      </p>
+                      <p className="flex items-center text-gray-600 text-sm sm:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5 9a1 1 0 011-1h1.6a1 1 0 01.95.68l.33 1c.11.32.39.58.72.68L10 10.6c.33.1.67-.03.89-.29l2-2.41a1 1 0 111.53 1.28l-2 2.41c-.81.97-2.17 1.24-3.27.81l-.33-.1a1 1 0 00-.94.36l-1 1.2A1 1 0 015 14V9z" clipRule="evenodd" />
+                        </svg>
+                        +966 11 XXX XXXX
+                      </p>
+                    </div>
+                  </div>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 text-sm mb-2">الاسم</label>
+                        <input type="text" className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-700 text-sm mb-2">البريد الإلكتروني</label>
+                        <input type="email" className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm mb-2">الموضوع</label>
+                      <input type="text" className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm mb-2">الرسالة</label>
+                      <textarea rows="4" className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                      إرسال
+                    </button>
+                  </form>
+                </div>
+              </section>
+            </div>
+          </div>
+        } />
+        <Route path="regional" element={<RegionalStudies />} />
+        <Route path="international" element={<InternationalRelations />} />
+        <Route path="comparative" element={<ComparativePolitics />} />
+        <Route path="thought" element={<PoliticalThought />} />
+      </Routes>
+    </>
+  );
+};
+
+export default ResearchPage;

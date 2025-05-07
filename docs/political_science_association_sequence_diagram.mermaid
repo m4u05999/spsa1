@@ -1,0 +1,120 @@
+sequenceDiagram
+    participant User
+    participant AuthService
+    participant UserService
+    participant MembershipService
+    participant PaymentService
+    participant ContentService
+    participant ForumService
+    participant EventService
+    participant NotificationService
+    participant SearchService
+    participant DashboardService
+
+    %% User Registration and Authentication Flow
+    User->>AuthService: register(userData)
+    AuthService->>UserService: createUser(userData)
+    UserService-->>AuthService: user
+    AuthService->>NotificationService: sendWelcomeNotification(userId)
+    AuthService-->>User: registrationSuccess
+
+    User->>AuthService: login(email, password)
+    AuthService->>UserService: validateCredentials(email, password)
+    UserService-->>AuthService: validation result
+    AuthService-->>User: authToken
+
+    %% Membership Subscription Flow
+    User->>MembershipService: getMembershipTypes()
+    MembershipService-->>User: membershipTypes
+    User->>MembershipService: subscribeMembership(type, userId)
+    MembershipService->>PaymentService: createPaymentIntent(amount, userId)
+    PaymentService-->>MembershipService: paymentIntent
+    MembershipService-->>User: redirectToPayment
+    User->>PaymentService: submitPaymentDetails(paymentData)
+    PaymentService->>PaymentService: processPayment()
+    PaymentService-->>MembershipService: paymentConfirmation
+    MembershipService->>MembershipService: createMembership(userId, type)
+    MembershipService->>NotificationService: sendPaymentConfirmation(userId)
+    MembershipService-->>User: membershipConfirmation
+
+    %% Content Creation and Publication Flow
+    User->>ContentService: createContent(contentData)
+    ContentService->>ContentService: validateContent(contentData)
+    ContentService->>ContentService: saveContent(contentData)
+    ContentService-->>User: contentId
+    User->>ContentService: publishContent(contentId)
+    ContentService->>ContentService: validatePublication(contentId)
+    ContentService->>SearchService: indexContent(content)
+    ContentService->>NotificationService: notifyFollowers(authorId, contentId)
+    ContentService-->>User: publicationConfirmation
+
+    %% Research Paper Upload Flow
+    User->>ContentService: uploadResearchPaper(paperData)
+    ContentService->>ContentService: validatePaperMetadata(paperData)
+    ContentService->>ContentService: saveResearchPaper(paperData)
+    ContentService->>SearchService: indexResearchPaper(paper)
+    ContentService-->>User: paperUploadConfirmation
+
+    %% Forum Interaction Flow
+    User->>ForumService: createTopic(topicData)
+    ForumService->>ForumService: validateTopic(topicData)
+    ForumService->>ForumService: saveTopic(topicData)
+    ForumService->>NotificationService: notifyForumSubscribers(forumId)
+    ForumService-->>User: topicCreationConfirmation
+
+    User->>ForumService: createReply(replyData)
+    ForumService->>ForumService: validateReply(replyData)
+    ForumService->>ForumService: saveReply(replyData)
+    ForumService->>NotificationService: notifyTopicSubscribers(topicId)
+    ForumService-->>User: replyConfirmation
+
+    %% Event Management Flow
+    User->>EventService: createEvent(eventData)
+    EventService->>EventService: validateEvent(eventData)
+    EventService->>EventService: saveEvent(eventData)
+    EventService-->>User: eventCreationConfirmation
+
+    User->>EventService: registerForEvent(eventId, userId)
+    EventService->>EventService: checkEventCapacity(eventId)
+    EventService->>EventService: createEventRegistration(eventId, userId)
+    EventService->>NotificationService: sendEventRegistrationConfirmation(userId, eventId)
+    EventService-->>User: registrationConfirmation
+
+    %% Dashboard View Flow
+    User->>DashboardService: getDashboard(userId, role)
+    alt Admin Role
+        DashboardService->>UserService: getUserStats()
+        UserService-->>DashboardService: userStats
+        DashboardService->>MembershipService: getMembershipStats()
+        MembershipService-->>DashboardService: membershipStats
+        DashboardService->>ContentService: getContentStats()
+        ContentService-->>DashboardService: contentStats
+        DashboardService->>PaymentService: getFinancialSummary()
+        PaymentService-->>DashboardService: financialSummary
+    else Member Role
+        DashboardService->>MembershipService: getMembershipDetails(userId)
+        MembershipService-->>DashboardService: membershipDetails
+        DashboardService->>ContentService: getBookmarkedContent(userId)
+        ContentService-->>DashboardService: bookmarkedContent
+        DashboardService->>EventService: getRegisteredEvents(userId)
+        EventService-->>DashboardService: registeredEvents
+        DashboardService->>ForumService: getForumActivity(userId)
+        ForumService-->>DashboardService: forumActivity
+    end
+    DashboardService-->>User: dashboardData
+
+    %% Search Flow
+    User->>SearchService: search(query, filters)
+    SearchService->>ContentService: findMatchingContent(query, filters)
+    ContentService-->>SearchService: matchingContent
+    SearchService->>EventService: findMatchingEvents(query, filters)
+    EventService-->>SearchService: matchingEvents
+    SearchService->>UserService: findMatchingUsers(query, filters)
+    UserService-->>SearchService: matchingUsers
+    SearchService-->>User: searchResults
+
+    %% Notification Flow
+    User->>NotificationService: getUserNotifications(userId)
+    NotificationService-->>User: userNotifications
+    User->>NotificationService: markNotificationAsRead(notificationId)
+    NotificationService-->>User: confirmationStatus

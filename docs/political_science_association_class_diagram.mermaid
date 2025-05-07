@@ -1,0 +1,262 @@
+classDiagram
+    class User {
+        +string id
+        +string email
+        +string password
+        +string firstName
+        +string lastName
+        +string profilePicture
+        +UserRole role
+        +Date registrationDate
+        +boolean isActive
+        +register(userData: object): User
+        +login(email: string, password: string): AuthToken
+        +updateProfile(profileData: object): User
+        +resetPassword(email: string): boolean
+    }
+
+    class Membership {
+        +string id
+        +string userId
+        +MembershipType type
+        +Date startDate
+        +Date expiryDate
+        +boolean isActive
+        +string transactionId
+        +number amount
+        +createMembership(membershipData: object): Membership
+        +renewMembership(userId: string, type: MembershipType): Membership
+        +cancelMembership(membershipId: string): boolean
+        +upgradeMembership(membershipId: string, newType: MembershipType): Membership
+    }
+
+    class MembershipType {
+        +string id
+        +string name
+        +string description
+        +number price
+        +number durationMonths
+        +string[] benefits
+        +createType(typeData: object): MembershipType
+        +updateType(typeId: string, typeData: object): MembershipType
+        +deleteType(typeId: string): boolean
+        +getTypeDetails(typeId: string): MembershipType
+    }
+
+    class Payment {
+        +string id
+        +string userId
+        +string membershipId
+        +PaymentMethod method
+        +number amount
+        +Date paymentDate
+        +string transactionId
+        +string status
+        +processPayment(paymentData: object): Payment
+        +refundPayment(paymentId: string): boolean
+        +getPaymentReceipt(paymentId: string): Receipt
+    }
+
+    class Content {
+        +string id
+        +string title
+        +string description
+        +string authorId
+        +Date creationDate
+        +Date publicationDate
+        +ContentType type
+        +string[] tags
+        +string[] categories
+        +string content
+        +string thumbnailUrl
+        +number viewCount
+        +createContent(contentData: object): Content
+        +updateContent(contentId: string, contentData: object): Content
+        +deleteContent(contentId: string): boolean
+        +publishContent(contentId: string): boolean
+    }
+
+    class ResearchPaper {
+        +string id
+        +string contentId
+        +string abstract
+        +string[] authors
+        +string[] keywords
+        +string doi
+        +string journal
+        +Date publicationDate
+        +string[] references
+        +string pdfUrl
+        +string[] permissions
+        +uploadPaper(paperData: object): ResearchPaper
+        +updatePaperMetadata(paperId: string, metadata: object): ResearchPaper
+        +downloadPaper(paperId: string): File
+        +citePaper(paperId: string, format: string): string
+    }
+
+    class Forum {
+        +string id
+        +string name
+        +string description
+        +string categoryId
+        +Date creationDate
+        +string createdBy
+        +number topicCount
+        +number postCount
+        +createForum(forumData: object): Forum
+        +updateForum(forumId: string, forumData: object): Forum
+        +deleteForum(forumId: string): boolean
+        +getForumTopics(forumId: string, page: number): Topic[]
+    }
+
+    class Topic {
+        +string id
+        +string forumId
+        +string title
+        +string content
+        +string authorId
+        +Date creationDate
+        +number viewCount
+        +number replyCount
+        +boolean isPinned
+        +boolean isLocked
+        +createTopic(topicData: object): Topic
+        +updateTopic(topicId: string, topicData: object): Topic
+        +deleteTopic(topicId: string): boolean
+        +pinTopic(topicId: string): boolean
+        +lockTopic(topicId: string): boolean
+    }
+
+    class Reply {
+        +string id
+        +string topicId
+        +string content
+        +string authorId
+        +Date creationDate
+        +number upvotes
+        +createReply(replyData: object): Reply
+        +updateReply(replyId: string, content: string): Reply
+        +deleteReply(replyId: string): boolean
+        +upvoteReply(replyId: string, userId: string): boolean
+    }
+
+    class Event {
+        +string id
+        +string title
+        +string description
+        +EventType type
+        +Date startDate
+        +Date endDate
+        +string location
+        +string[] organizers
+        +string[] speakers
+        +string bannerUrl
+        +number capacity
+        +number registrationCount
+        +createEvent(eventData: object): Event
+        +updateEvent(eventId: string, eventData: object): Event
+        +deleteEvent(eventId: string): boolean
+        +publishEvent(eventId: string): boolean
+    }
+
+    class EventRegistration {
+        +string id
+        +string eventId
+        +string userId
+        +Date registrationDate
+        +boolean attended
+        +string paymentId
+        +registerForEvent(registrationData: object): EventRegistration
+        +cancelRegistration(registrationId: string): boolean
+        +markAttendance(registrationId: string, attended: boolean): EventRegistration
+    }
+
+    class Committee {
+        +string id
+        +string name
+        +string description
+        +string[] members
+        +string chairpersonId
+        +Date formationDate
+        +string[] responsibilities
+        +createCommittee(committeeData: object): Committee
+        +updateCommittee(committeeId: string, committeeData: object): Committee
+        +deleteCommittee(committeeId: string): boolean
+        +addMember(committeeId: string, userId: string): boolean
+        +removeMember(committeeId: string, userId: string): boolean
+    }
+
+    class Dashboard {
+        +string id
+        +string userId
+        +UserRole role
+        +getStatistics(): Statistics
+        +getRecentActivities(): Activity[]
+        +getUpcomingEvents(): Event[]
+        +getPendingActions(): Action[]
+    }
+
+    class AdminDashboard {
+        +getMembershipStats(): MembershipStats
+        +getContentStats(): ContentStats
+        +getUserStats(): UserStats
+        +getFinancialSummary(): FinancialSummary
+    }
+
+    class MemberDashboard {
+        +getMembershipDetails(): Membership
+        +getBookmarkedContent(): Content[]
+        +getRegisteredEvents(): Event[]
+        +getForumActivity(): TopicActivity[]
+    }
+
+    class SearchService {
+        +searchContent(query: string, filters: object): Content[]
+        +searchEvents(query: string, filters: object): Event[]
+        +searchUsers(query: string, filters: object): User[]
+        +searchResearchPapers(query: string, filters: object): ResearchPaper[]
+        +getSearchSuggestions(query: string): string[]
+    }
+
+    class NotificationService {
+        +string id
+        +string userId
+        +string title
+        +string message
+        +NotificationType type
+        +Date creationDate
+        +boolean isRead
+        +sendNotification(notificationData: object): Notification
+        +markAsRead(notificationId: string): boolean
+        +getUserNotifications(userId: string): Notification[]
+        +deleteNotification(notificationId: string): boolean
+    }
+
+    %% Relationships
+    User "1" -- "1..n" Membership : has
+    User "1" -- "0..n" Content : creates
+    User "1" -- "0..n" Topic : authors
+    User "1" -- "0..n" Reply : writes
+    User "1" -- "0..n" EventRegistration : registers
+    User "1" -- "1" Dashboard : views
+
+    Membership "*" -- "1" MembershipType : isOfType
+    Membership "1" -- "0..n" Payment : generates
+
+    Content <|-- ResearchPaper : extends
+
+    Forum "1" -- "0..n" Topic : contains
+    Topic "1" -- "0..n" Reply : has
+
+    Event "1" -- "0..n" EventRegistration : receives
+    Committee "1" -- "*" User : includes
+
+    Dashboard <|-- AdminDashboard : extends
+    Dashboard <|-- MemberDashboard : extends
+
+    SearchService -- Content : searches
+    SearchService -- Event : searches
+    SearchService -- User : searches
+    SearchService -- ResearchPaper : searches
+
+    NotificationService -- User : notifies

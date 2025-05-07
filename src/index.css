@@ -1,0 +1,39 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    direction: rtl;
+    font-family: 'Cairo', sans-serif;
+  }
+  
+  body {
+    @apply text-gray-800;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300;
+  }
+  
+  .container {
+    @apply max-w-7xl mx-auto px-4;
+  }
+  
+  .section-title {
+    @apply text-3xl font-bold text-center mb-8;
+  }
+}
+
+@layer utilities {
+  .rtl {
+    direction: rtl;
+  }
+  
+  .ltr {
+    direction: ltr;
+  }
+}
