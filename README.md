@@ -1,39 +1,27 @@
-# React + Vite Template
+# الجمعية السعودية للعلوم السياسية (SPSA)
+## نظام إدارة المحتوى والعضوية
 
-A modern React template for web applications and games, featuring React 18, Vite, TailwindCSS, and Material UI.
+### نظرة عامة
+منصة الجمعية السعودية للعلوم السياسية هي نظام متكامل لإدارة المحتوى والعضوية، مطور باستخدام React مع Vite وTailwind CSS.
 
-## Project Structure
+### المتطلبات الأساسية
+- Node.js (الإصدار 16.0.0 أو أحدث)
+- npm أو pnpm (موصى به)
+- متصفح حديث يدعم ES6+
 
-```
-├── src/
-│   ├── App.jsx          # Main application component
-│   ├── main.jsx         # Application entry point
-│   └── index.css        # Global styles (Tailwind)
-├── public/              # Static assets
-├── index.html           # HTML template
-├── vite.config.js       # Vite configuration
-├── tailwind.config.js   # Tailwind configuration
-├── postcss.config.js    # PostCSS configuration
-└── eslint.config.js     # ESLint configuration
-```
+### التثبيت والإعداد
 
-## Development Guidelines
+1. **استنساخ المشروع**
 
-- Modify `index.html` and `src/App.jsx` as needed
-- Create new folders or files in `src/` directory as needed
-- Style components using TailwindCSS utility classes
-- Avoid modifying `src/main.jsx` and `src/index.css`
-- Only modify `vite.config.js` if absolutely necessary
 
-## Available Scripts
-- `pnpm install` - Install dependencies
-- `pnpm run dev` - Start development server
-- `pnpm run lint` - Lint source files
+2. **تثبيت التبعيات**
 
-## Tech Stack
 
-- React
-- Vite
-- TailwindCSS
-- ESLint
-- Javascript
+3. **إعداد ملفات البيئة**
+- قم بنسخ محتويات ملف `.env` إلى ملف جديد باسم `.env.local`
+- قم بتعديل القيم حسب إعدادات بيئتك
+
+4. **تشغيل المشروع محلياً**
+
+
+### هيكل المشروع
