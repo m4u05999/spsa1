@@ -1,18 +1,17 @@
 // src/pages/dashboard/modules/EventsManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import EventModal from '../../../components/modals/EventModal';
 
 const EventsManagement = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     // Simulate API call to fetch events
     const fetchEvents = async () => {
       try {
-        // This would be a real API call in production
         setLoading(true);
         // Simulated data
         const mockEvents = [
@@ -55,13 +54,22 @@ const EventsManagement = () => {
     fetchEvents();
   }, []);
 
+  const handleAddEvent = (newEvent) => {
+    // In a real application, this would be an API call
+    const eventWithId = {
+      ...newEvent,
+      id: events.length + 1
+    };
+    setEvents([...events, eventWithId]);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">إدارة الفعاليات</h1>
         <button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
-          onClick={() => navigate('/dashboard/admin/events/create')}
+          onClick={() => setIsModalOpen(true)}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -69,6 +77,12 @@ const EventsManagement = () => {
           فعالية جديدة
         </button>
       </div>
+
+      <EventModal 
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        onSubmit={handleAddEvent}
+      />
       
       {loading ? (
         <div className="flex justify-center py-10">
@@ -155,13 +169,11 @@ const EventsManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button 
-                          onClick={() => navigate(`/dashboard/admin/events/${event.id}`)} 
                           className="text-blue-600 hover:text-blue-900 ml-4"
                         >
                           عرض
                         </button>
                         <button 
-                          onClick={() => navigate(`/dashboard/admin/events/${event.id}/edit`)}
                           className="text-yellow-600 hover:text-yellow-900 ml-4"
                         >
                           تعديل
@@ -188,7 +200,7 @@ const EventsManagement = () => {
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  عرض <span className="font-medium">1</span> إلى <span className="font-medium">3</span> من <span className="font-medium">3</span> فعالية
+                  عرض <span className="font-medium">1</span> إلى <span className="font-medium">{events.length}</span> من <span className="font-medium">{events.length}</span> فعالية
                 </p>
               </div>
               <div>
