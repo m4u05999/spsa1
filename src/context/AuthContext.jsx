@@ -37,10 +37,10 @@ export const AuthProvider = ({ children }) => {
       
       // Mock users for testing different roles
       const users = {
-        'admin@sapsa.org': {
+        'admin@saudips.org': {
           id: '1',
           name: 'مدير النظام',
-          email: 'admin@sapsa.org',
+          email: 'admin@saudips.org',
           role: 'admin',
           permissions: ['users.manage', 'content.manage', 'events.manage', 'settings.manage'],
           avatar: '/assets/images/avatar-admin.png',
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       // Check if the credentials match any of our mock users
       const foundUser = users[credentials.email];
       
-      if (foundUser && credentials.password === 'password123') {
+      if (foundUser && credentials.password === 'Admin@123') {
         // Store user data in localStorage and state
         localStorage.setItem('user', JSON.stringify(foundUser));
         setUser(foundUser);
