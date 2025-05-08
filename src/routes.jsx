@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Providers (not lazy loaded)
 import { AuthProvider } from './context/AuthContext';
@@ -44,6 +44,14 @@ const PoliticalThought = lazy(() => import('./pages/research/units/PoliticalThou
 const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
 const StaffDashboard = lazy(() => import('./pages/dashboard/StaffDashboard'));
 const MemberDashboard = lazy(() => import('./pages/dashboard/MemberDashboard'));
+
+// Admin Dashboard Modules
+const UserManagement = lazy(() => import('./pages/dashboard/modules/UserManagement'));
+const ContentManagement = lazy(() => import('./pages/dashboard/modules/ContentManagement'));
+const EventsManagement = lazy(() => import('./pages/dashboard/modules/EventsManagement'));
+const Statistics = lazy(() => import('./pages/dashboard/modules/Statistics'));
+const InquiryManagement = lazy(() => import('./pages/dashboard/modules/InquiryManagement'));
+const SystemSettings = lazy(() => import('./pages/dashboard/modules/SystemSettings'));
 
 // Membership Pages
 const MembershipPage = lazy(() => import('./pages/membership/MembershipPage'));
@@ -339,7 +347,7 @@ const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <Navigate to="." replace />
+        element: <Navigate to="/dashboard/admin" replace />
       }
     ]
   },
