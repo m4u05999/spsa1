@@ -1,11 +1,13 @@
 // src/components/Header.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     logout();
@@ -16,32 +18,146 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const navLinks = [
+  const toggleDropdown = (category) => {
+    setActiveDropdown(activeDropdown === category ? null : category);
+  };
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Organized menu structure
+  const menuStructure = [
+    { id: 'home', text: 'الرئيسية', to: '/', type: 'link' },
+    {
+      id: 'about', 
+      text: 'من نحن', 
+      type: 'dropdown',
+      children: [
+        { to: '/about', text: 'عن الجمعية' },
+        { to: '/about/board', text: 'مجلس الإدارة' },
+        { to: '/about/graduates', text: 'خريجو قسم العلوم السياسية' },
+      ]
+    },
+    {
+      id: 'academic', 
+      text: 'المعرفة والأبحاث', 
+      type: 'dropdown',
+      children: [
+        { to: '/publications', text: 'مطبوعات الجمعية' },
+        { to: '/library', text: 'المكتبة التفاعلية' },
+        { to: '/expert-opinions', text: 'آراء الخبراء' },
+        { to: '/research', text: 'البحوث والدراسات' },
+        { to: '/news', text: 'الأخبار' },
+      ]
+    },
+    {
+      id: 'activities', 
+      text: 'الفعاليات والبرامج', 
+      type: 'dropdown',
+      children: [
+        { to: '/events', text: 'المناسبات والفعاليات' },
+        { to: '/programs', text: 'البرامج والدورات' },
+        { to: '/conference', text: 'المؤتمر السنوي' },
+      ]
+    },
+    {
+      id: 'organization', 
+      text: 'الهيكل التنظيمي', 
+      type: 'dropdown',
+      children: [
+        { to: '/committees', text: 'لجان الجمعية' },
+        { to: '/scientific-committee', text: 'اللجنة العلمية والاستشارية' },
+      ]
+    },
+    { id: 'membership', text: 'العضوية', to: '/membership', type: 'link' },
+    { id: 'contact', text: 'التواصل', to: '/contact', type: 'link' },
+  ];
+
+  // Mobile menu items - all available links for mobile view
+  const allMobileLinks = [
     { to: '/', text: 'الرئيسية' },
     { to: '/about', text: 'من نحن' },
+    { to: '/about/board', text: 'مجلس الإدارة' },
+    { to: '/about/graduates', text: 'خريجو قسم العلوم السياسية' },
     { to: '/membership', text: 'العضوية' },
     { to: '/news', text: 'الأخبار' },
     { to: '/events', text: 'المناسبات والفعاليات' },
-    { to: '/publications', text: 'المطبوعات' },
+    { to: '/publications', text: 'مطبوعات الجمعية' },
     { to: '/programs', text: 'البرامج والدورات' },
     { to: '/committees', text: 'لجان الجمعية' },
+    { to: '/scientific-committee', text: 'اللجنة العلمية والاستشارية' },
     { to: '/library', text: 'المكتبة التفاعلية' },
     { to: '/research', text: 'البحوث والدراسات' },
     { to: '/expert-opinions', text: 'آراء الخبراء' },
     { to: '/conference', text: 'المؤتمر السنوي' },
+    { to: '/contact', text: 'التواصل' },
   ];
 
   return (
-    <header className="bg-white text-gray-800 shadow-md">
-      <div className="container mx-auto px-4 py-2 flex justify-center">
-        <nav className="relative w-full max-w-7xl">
+    <header className="bg-white text-gray-800 shadow-md" dir="rtl">
+      {/* Top Bar with Auth and Social Links */}
+      <div className="bg-gray-100 border-b border-gray-200">
+        <div className="container mx-auto px-4 py-1 flex justify-between items-center">
+          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+            <button className="text-sm hover:text-primary-600 text-gray-600">English</button>
+            <div className="flex space-x-4 rtl:space-x-reverse">
+              <a href="#" className="text-gray-600 hover:text-primary-600"><i className="fab fa-twitter"></i></a>
+              <a href="#" className="text-gray-600 hover:text-primary-600"><i className="fab fa-linkedin"></i></a>
+            </div>
+          </div>
+          {user ? (
+            <div className="flex items-center space-x-4 rtl:space-x-reverse text-xs">
+              <Link to="/profile" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">{user.name}</Link>
+              {user.role === 'admin' && (
+                <Link to="/dashboard/admin" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الإدارة</Link>
+              )}
+              {user.role === 'staff' && (
+                <Link to="/dashboard/staff" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الموظفين</Link>
+              )}
+              {user.role === 'member' && (
+                <Link to="/dashboard/member" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الأعضاء</Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 px-2 py-1 rounded hover:bg-red-600 transition-colors duration-300 text-xs text-white"
+              >
+                تسجيل الخروج
+              </button>
+            </div>
+          ) : (
+            <div className="flex space-x-2 rtl:space-x-reverse">
+              <Link to="/login" className="text-xs bg-primary-500 px-3 py-1 rounded hover:bg-primary-600 transition-colors duration-300 text-white">
+                تسجيل الدخول
+              </Link>
+              <Link to="/register" className="text-xs bg-green-500 px-3 py-1 rounded hover:bg-green-600 transition-colors duration-300 text-white">
+                تسجيل جديد
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Main Header */}
+      <div className="container mx-auto px-4 py-3 flex justify-center">
+        <nav className="relative w-full max-w-7xl" ref={dropdownRef}>
           {/* Desktop and Mobile Header */}
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
               <img
                 src="/assets/images/new-logo.png"
                 alt="الجمعية السعودية للعلوم السياسية"
-                className="h-14 w-14 object-contain"
+                className="h-16 w-16 object-contain"
                 loading="eager"
               />
               <span className="text-xl font-bold hidden sm:inline">الجمعية السعودية للعلوم السياسية</span>
@@ -71,45 +187,50 @@ const Header = () => {
             </button>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex lg:items-center lg:flex-wrap lg:justify-end lg:gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="hover:text-primary-600 text-sm font-medium whitespace-nowrap transition-colors duration-300 px-3 py-2 tracking-normal rounded-md hover:bg-gray-100"
-                >
-                  {link.text}
-                </Link>
+            <div className="hidden lg:flex lg:items-center lg:flex-wrap lg:justify-end lg:gap-1">
+              {menuStructure.map((item) => (
+                <div key={item.id} className="relative">
+                  {item.type === 'link' ? (
+                    <Link
+                      to={item.to}
+                      className="hover:text-primary-600 text-sm font-medium whitespace-nowrap transition-colors duration-300 px-3 py-2 tracking-normal rounded-md hover:bg-gray-100"
+                    >
+                      {item.text}
+                    </Link>
+                  ) : (
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown(item.id)}
+                        className={`flex items-center text-sm font-medium whitespace-nowrap transition-colors duration-300 px-3 py-2 tracking-normal rounded-md hover:bg-gray-100 ${activeDropdown === item.id ? 'text-primary-600 bg-gray-100' : ''}`}
+                      >
+                        {item.text}
+                        <svg
+                          className={`w-4 h-4 mr-1 transition-transform duration-200 ${activeDropdown === item.id ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {activeDropdown === item.id && (
+                        <div className="absolute right-0 mt-2 py-2 w-56 bg-white rounded-md shadow-lg z-20 border border-gray-200">
+                          {item.children.map((child, childIndex) => (
+                            <Link
+                              key={childIndex}
+                              to={child.to}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-600 text-right"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              {child.text}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
-              {user ? (
-                <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                  <Link to="/profile" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">{user.name}</Link>
-                  {user.role === 'admin' && (
-                    <Link to="/dashboard/admin" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الإدارة</Link>
-                  )}
-                  {user.role === 'staff' && (
-                    <Link to="/dashboard/staff" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الموظفين</Link>
-                  )}
-                  {user.role === 'member' && (
-                    <Link to="/dashboard/member" className="hover:text-primary-600 transition-colors duration-300 text-gray-700">لوحة تحكم الأعضاء</Link>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-500 px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 text-sm text-white"
-                  >
-                    تسجيل الخروج
-                  </button>
-                </div>
-              ) : (
-                <div className="flex space-x-4 rtl:space-x-reverse">
-                  <Link to="/login" className="bg-primary-500 px-4 py-2 rounded-md hover:bg-primary-600 transition-colors duration-300 text-sm text-white">
-                    تسجيل الدخول
-                  </Link>
-                  <Link to="/register" className="bg-green-500 px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 text-sm text-white">
-                    تسجيل جديد
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
 
@@ -117,12 +238,12 @@ const Header = () => {
           <div
             className={`${
               isMobileMenuOpen ? 'block' : 'hidden'
-            } lg:hidden absolute top-full left-0 right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-lg z-50 overflow-hidden border border-gray-100`}
+            } lg:hidden absolute top-full left-0 right-0 mt-1 bg-white text-gray-800 rounded-lg shadow-lg z-50 overflow-hidden border border-gray-100 max-h-[80vh] overflow-y-auto`}
           >
             <div className="px-4 py-3 space-y-1">
-              {navLinks.map((link) => (
+              {allMobileLinks.map((link, index) => (
                 <Link
-                  key={link.to}
+                  key={index}
                   to={link.to}
                   className="block py-2 px-3 hover:bg-gray-100 rounded-md text-right transition-colors duration-300 text-gray-700"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -130,8 +251,10 @@ const Header = () => {
                   {link.text}
                 </Link>
               ))}
+              
+              {/* Authentication Links for Mobile */}
               {user ? (
-                <div className="border-t border-gray-200 pt-3 space-y-2">
+                <div className="border-t border-gray-200 mt-3 pt-3 space-y-2">
                   <Link
                     to="/profile"
                     className="block py-2 px-3 hover:bg-gray-100 rounded-md text-right transition-colors duration-300 text-gray-700"
@@ -177,7 +300,7 @@ const Header = () => {
                   </button>
                 </div>
               ) : (
-                <div className="border-t border-gray-200 pt-3 space-y-2">
+                <div className="border-t border-gray-200 mt-3 pt-3 space-y-2">
                   <Link
                     to="/login"
                     className="block text-center bg-primary-500 py-2 px-3 rounded-md hover:bg-primary-600 transition-colors duration-300 text-white"
