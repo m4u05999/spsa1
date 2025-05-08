@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@headlessui/react": "^2.2.2",
     "@mui/material": "^6.0.2",
     "@supabase/supabase-js": "^2.47.12",
     "@types/prop-types": "^15.7.14",

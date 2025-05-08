@@ -1,6 +1,8 @@
+// src/pages/dashboard/modules/UserManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { checkPermission } from '../../../utils/permissions';
+import UserModal from '../../../components/modals/UserModal';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -10,6 +12,9 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('create');
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Mock users data for development
   const mockUsers = [
@@ -67,7 +72,6 @@ const UserManagement = () => {
 
   // Load users on component mount
   useEffect(() => {
-    // Simulating API call with a delay
     setIsLoading(true);
     setTimeout(() => {
       setUsers(mockUsers);
@@ -80,7 +84,6 @@ const UserManagement = () => {
   useEffect(() => {
     let result = [...users];
     
-    // Filter by search term
     if (searchTerm) {
       result = result.filter(
         user => 
@@ -89,12 +92,10 @@ const UserManagement = () => {
       );
     }
     
-    // Filter by role
     if (selectedRole !== 'all') {
       result = result.filter(user => user.role === selectedRole);
     }
     
-    // Filter by status
     if (selectedStatus !== 'all') {
       result = result.filter(user => user.status === selectedStatus);
     }
@@ -117,13 +118,44 @@ const UserManagement = () => {
     setUsers(prevUsers =>
       prevUsers.map(user => {
         if (user.id === userId) {
-          // Toggle between active and suspended
           const newStatus = user.status === 'active' ? 'suspended' : 'active';
           return { ...user, status: newStatus };
         }
         return user;
       })
     );
+  };
+
+  // Handle modal actions
+  const openModal = (mode, user = null) => {
+    setModalMode(mode);
+    setSelectedUser(user);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setSelectedUser(null);
+    setModalMode('create');
+  };
+
+  const handleModalSubmit = (formData) => {
+    if (modalMode === 'create') {
+      const newUser = {
+        id: String(users.length + 1),
+        ...formData,
+        status: 'active',
+        joinDate: new Date().toISOString().split('T')[0],
+        lastActive: new Date().toISOString().split('T')[0],
+        avatar: null
+      };
+      setUsers(prev => [...prev, newUser]);
+    } else if (modalMode === 'edit') {
+      setUsers(prev => prev.map(user => 
+        user.id === selectedUser.id ? { ...user, ...formData } : user
+      ));
+    }
+    closeModal();
   };
 
   // User role badge color
@@ -174,12 +206,6 @@ const UserManagement = () => {
     return statuses[status] || status;
   };
 
-  // Create a new user (stub function)
-  const createUser = () => {
-    alert('ستظهر هنا نافذة إنشاء مستخدم جديد');
-    // In a real app, this would open a modal or navigate to a create user form
-  };
-
   // Check if user can manage users
   const canManageUsers = checkPermission(user, 'users.manage');
 
@@ -192,7 +218,7 @@ const UserManagement = () => {
         </div>
         {canManageUsers && (
           <button
-            onClick={createUser}
+            onClick={() => openModal('create')}
             className="mt-4 lg:mt-0 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <span className="flex items-center">
@@ -337,7 +363,7 @@ const UserManagement = () => {
                         <div className="flex space-x-3 space-x-reverse">
                           <button
                             className="text-blue-600 hover:text-blue-900"
-                            onClick={() => alert(`سيتم عرض تفاصيل المستخدم: ${user.name}`)}
+                            onClick={() => openModal('view', user)}
                           >
                             عرض
                           </button>
@@ -345,7 +371,7 @@ const UserManagement = () => {
                             <>
                               <button
                                 className="text-indigo-600 hover:text-indigo-900"
-                                onClick={() => alert(`سيتم تعديل بيانات المستخدم: ${user.name}`)}
+                                onClick={() => openModal('edit', user)}
                               >
                                 تعديل
                               </button>
@@ -375,6 +401,14 @@ const UserManagement = () => {
           </div>
         )}
       </div>
+
+      <UserModal
+        isOpen={modalIsOpen}
+        onClose={closeModal}
+        mode={modalMode}
+        userData={selectedUser}
+        onSubmit={handleModalSubmit}
+      />
     </div>
   );
 };
