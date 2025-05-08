@@ -15,15 +15,13 @@ const LoginForm = () => {
     setError('');
 
     try {
-      // هنا سيتم إضافة التكامل مع الباك إند
-      const mockUser = {
-        id: '1',
-        name: 'مستخدم تجريبي',
-        email: formData.email,
-        role: 'member',
-      };
-      login(mockUser);
-      window.location.href = '/profile';
+      // اتصال بوظيفة تسجيل الدخول في سياق المصادقة
+      const result = await login(formData);
+      
+      if (!result.success) {
+        setError(result.error || 'خطأ في تسجيل الدخول. الرجاء التحقق من البيانات المدخلة.');
+      }
+      // تم التعامل مع التوجيه في سياق المصادقة
     } catch (err) {
       setError('خطأ في تسجيل الدخول. الرجاء التحقق من البيانات المدخلة.');
     }

@@ -10,7 +10,9 @@ import { NotificationProvider } from './context/NotificationContext';
 // Layouts & Core Components (not lazy loaded)
 import MainLayout from './layout/MainLayout';
 import DashboardLayout from './layout/DashboardLayout';
+import AdminDashboardLayout from './layout/AdminDashboardLayout';
 import NotificationSystem from './components/notifications/NotificationSystem';
+import AdminRoutes from './routes/AdminRoutes';
 
 // Lazy load all pages
 const Home = lazy(() => import('./pages/Home'));
@@ -306,22 +308,29 @@ const router = createBrowserRouter([
     path: "dashboard",
     element: <RouteWrapper><DashboardLayout /></RouteWrapper>,
     children: [
-      {
-        path: "admin",
-        element: <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>,
-        loader: () => prefetchComponent(() => import('./pages/dashboard/AdminDashboard')).preload()
-      },
+      // Staff Dashboard
       {
         path: "staff",
         element: <Suspense fallback={<PageLoader />}><StaffDashboard /></Suspense>,
         loader: () => prefetchComponent(() => import('./pages/dashboard/StaffDashboard')).preload()
       },
+      // Member Dashboard
       {
         path: "member",
         element: <Suspense fallback={<PageLoader />}><MemberDashboard /></Suspense>,
         loader: () => prefetchComponent(() => import('./pages/dashboard/MemberDashboard')).preload()
+      },
+      // Fallback for unknown dashboard paths
+      {
+        path: "*",
+        element: <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
       }
     ]
+  },
+  // Admin Dashboard with nested routes
+  {
+    path: "dashboard/admin/*",
+    element: <RouteWrapper><AdminRoutes /></RouteWrapper>
   }
 ]);
 
