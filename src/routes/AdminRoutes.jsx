@@ -15,35 +15,33 @@ const SystemSettings = lazy(() => import('../pages/dashboard/modules/SystemSetti
 
 const AdminRoutes = () => {
   return (
-    <AdminDashboardLayout>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
           {/* Main dashboard */}
           <Route index element={<AdminDashboard />} />
           
           {/* User Management */}
-          <Route path="users" element={<UserManagement />} />
+          <Route path="users/*" element={<UserManagement />} />
           
           {/* Content Management */}
-          <Route path="content" element={<ContentManagement />} />
+          <Route path="content/*" element={<ContentManagement />} />
           
           {/* Events Management */}
-          <Route path="events" element={<EventsManagement />} />
+          <Route path="events/*" element={<EventsManagement />} />
           
           {/* Statistics */}
-          <Route path="statistics" element={<Statistics />} />
+          <Route path="statistics/*" element={<Statistics />} />
           
           {/* Inquiries */}
-          <Route path="inquiries" element={<InquiryManagement />} />
+          <Route path="inquiries/*" element={<InquiryManagement />} />
           
           {/* Settings */}
-          <Route path="settings" element={<SystemSettings />} />
+          <Route path="settings/*" element={<SystemSettings />} />
           
           {/* Fallback for unknown routes */}
-          <Route path="*" element={<Navigate to="/dashboard/admin" replace />} />
+          <Route path="*" element={<Navigate to="." replace />} />
         </Routes>
-      </Suspense>
-    </AdminDashboardLayout>
+    </Suspense>
   );
 };
 

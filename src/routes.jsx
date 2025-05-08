@@ -304,33 +304,61 @@ const router = createBrowserRouter([
       }
     ]
   },
+  // Admin Dashboard with nested routes
+  {
+    path: "dashboard/admin",
+    element: <RouteWrapper><AdminDashboardLayout /></RouteWrapper>,
+    children: [
+      {
+        path: "",
+        element: <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
+      },
+      {
+        path: "users/*",
+        element: <Suspense fallback={<PageLoader />}><UserManagement /></Suspense>
+      },
+      {
+        path: "content/*",
+        element: <Suspense fallback={<PageLoader />}><ContentManagement /></Suspense>
+      },
+      {
+        path: "events/*",
+        element: <Suspense fallback={<PageLoader />}><EventsManagement /></Suspense>
+      },
+      {
+        path: "statistics/*",
+        element: <Suspense fallback={<PageLoader />}><Statistics /></Suspense>
+      },
+      {
+        path: "inquiries/*",
+        element: <Suspense fallback={<PageLoader />}><InquiryManagement /></Suspense>
+      },
+      {
+        path: "settings/*",
+        element: <Suspense fallback={<PageLoader />}><SystemSettings /></Suspense>
+      },
+      {
+        path: "*",
+        element: <Navigate to="." replace />
+      }
+    ]
+  },
+  // Other dashboards
   {
     path: "dashboard",
     element: <RouteWrapper><DashboardLayout /></RouteWrapper>,
     children: [
-      // Staff Dashboard
       {
         path: "staff",
         element: <Suspense fallback={<PageLoader />}><StaffDashboard /></Suspense>,
         loader: () => prefetchComponent(() => import('./pages/dashboard/StaffDashboard')).preload()
       },
-      // Member Dashboard
       {
         path: "member",
         element: <Suspense fallback={<PageLoader />}><MemberDashboard /></Suspense>,
         loader: () => prefetchComponent(() => import('./pages/dashboard/MemberDashboard')).preload()
-      },
-      // Fallback for unknown dashboard paths
-      {
-        path: "*",
-        element: <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
       }
     ]
-  },
-  // Admin Dashboard with nested routes
-  {
-    path: "dashboard/admin/*",
-    element: <RouteWrapper><AdminRoutes /></RouteWrapper>
   }
 ]);
 

@@ -1,6 +1,6 @@
 // src/layout/AdminDashboardLayout.jsx
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import Header from '../components/dashboard/DashboardHeader';
@@ -13,6 +13,10 @@ const AdminDashboardLayout = () => {
 
   // Check if user is authorized to access admin dashboard
   const isAuthorized = user && (user.role === 'admin');
+
+  // Get current admin route
+  const location = useLocation();
+  const isDashboardRoot = location.pathname === '/dashboard/admin';
 
   // Handle window resize for responsive behavior
   useEffect(() => {

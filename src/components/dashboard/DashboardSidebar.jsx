@@ -55,7 +55,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // User management - only for admins
     {
       name: 'إدارة المستخدمين',
-      path: '/dashboard/admin/users',
+      path: 'users',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
@@ -66,7 +66,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // Content management
     {
       name: 'إدارة المحتوى',
-      path: '/dashboard/admin/content',
+      path: 'content',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd" />
@@ -78,7 +78,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // Events management
     {
       name: 'إدارة الفعاليات',
-      path: '/dashboard/admin/events',
+      path: 'events',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -89,7 +89,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // Statistics - only for admins and staff
     {
       name: 'الإحصائيات',
-      path: '/dashboard/admin/statistics',
+      path: 'statistics',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
@@ -101,7 +101,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // Inquiries management
     {
       name: 'الاستفسارات',
-      path: '/dashboard/admin/inquiries',
+      path: 'inquiries',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
@@ -112,7 +112,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     // Settings - only for admins
     {
       name: 'إعدادات النظام',
-      path: '/dashboard/admin/settings',
+      path: 'settings',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -195,16 +195,16 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
           {filteredNavItems.map((item) => (
             <li key={item.path}>
               <Link
-                to={item.path}
+                to={item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`}
                 className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-md group transition-colors ${
-                  isActive(item.path) 
+                  isActive(item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`) 
                     ? 'bg-blue-50 text-blue-700' 
                     : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                 }`}
                 onClick={isMobile ? onClose : undefined}
               >
                 <span className={`inline-flex mr-3 ${
-                  isActive(item.path) ? 'text-blue-500' : 'text-gray-500 group-hover:text-gray-700'
+                  isActive(item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`) ? 'text-blue-500' : 'text-gray-500 group-hover:text-gray-700'
                 }`}>
                   {item.icon}
                 </span>

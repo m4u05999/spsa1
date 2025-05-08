@@ -215,7 +215,7 @@ const AdminDashboard = () => {
           <QuickLinkCard 
             title="إدارة الأعضاء"
             description="إضافة وتعديل بيانات الأعضاء وإدارة طلبات العضوية الجديدة"
-            linkUrl="/dashboard/admin/users"
+            linkUrl="users"
             linkText="إدارة الأعضاء"
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
           <QuickLinkCard 
             title="إدارة المحتوى"
             description="إضافة وتعديل محتوى الموقع والمنشورات والأخبار"
-            linkUrl="/dashboard/admin/content"
+            linkUrl="content"
             linkText="إدارة المحتوى"
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,7 +237,7 @@ const AdminDashboard = () => {
           <QuickLinkCard 
             title="إدارة الفعاليات"
             description="إنشاء وتنظيم فعاليات جديدة وإدارة الحضور"
-            linkUrl="/dashboard/admin/events"
+            linkUrl="events"
             linkText="إدارة الفعاليات"
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
