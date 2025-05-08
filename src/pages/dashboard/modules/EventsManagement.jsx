@@ -1,19 +1,25 @@
 // src/pages/dashboard/modules/EventsManagement.jsx
 import React, { useState, useEffect } from 'react';
+import ViewEventModal from '../../../components/modals/ViewEventModal';
+import EditEventModal from '../../../components/modals/EditEventModal';
 import EventModal from '../../../components/modals/EventModal';
+import { Dialog } from '@headlessui/react';
 
 const EventsManagement = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [eventToDelete, setEventToDelete] = useState(null);
 
   useEffect(() => {
-    // Simulate API call to fetch events
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        // Simulated data
         const mockEvents = [
           { 
             id: 1, 
@@ -55,12 +61,40 @@ const EventsManagement = () => {
   }, []);
 
   const handleAddEvent = (newEvent) => {
-    // In a real application, this would be an API call
     const eventWithId = {
       ...newEvent,
       id: events.length + 1
     };
     setEvents([...events, eventWithId]);
+  };
+
+  const handleEditEvent = (eventId, updatedData) => {
+    setEvents(events.map(event => 
+      event.id === eventId ? { ...event, ...updatedData } : event
+    ));
+  };
+
+  const handleDeleteEvent = () => {
+    if (eventToDelete) {
+      setEvents(events.filter(event => event.id !== eventToDelete.id));
+      setEventToDelete(null);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
+  const openViewModal = (event) => {
+    setSelectedEvent(event);
+    setIsViewModalOpen(true);
+  };
+
+  const openEditModal = (event) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const openDeleteModal = (event) => {
+    setEventToDelete(event);
+    setIsDeleteModalOpen(true);
   };
 
   return (
@@ -69,7 +103,7 @@ const EventsManagement = () => {
         <h1 className="text-2xl font-bold text-gray-900">إدارة الفعاليات</h1>
         <button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsAddModalOpen(true)}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -78,11 +112,60 @@ const EventsManagement = () => {
         </button>
       </div>
 
-      <EventModal 
-        isOpen={isModalOpen}
-        closeModal={() => setIsModalOpen(false)}
+      {/* Add Modal */}
+      <EventModal
+        isOpen={isAddModalOpen}
+        closeModal={() => setIsAddModalOpen(false)}
         onSubmit={handleAddEvent}
       />
+
+      {/* View Modal */}
+      <ViewEventModal 
+        isOpen={isViewModalOpen}
+        closeModal={() => setIsViewModalOpen(false)}
+        event={selectedEvent}
+      />
+
+      {/* Edit Modal */}
+      <EditEventModal 
+        isOpen={isEditModalOpen}
+        closeModal={() => setIsEditModalOpen(false)}
+        event={selectedEvent}
+        onSubmit={handleEditEvent}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6">
+            <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+              تأكيد الحذف
+            </Dialog.Title>
+            <p className="text-gray-600 mb-6">
+              هل أنت متأكد من حذف هذه الفعالية؟ لا يمكن التراجع عن هذا الإجراء.
+            </p>
+            <div className="flex justify-end space-x-3 space-x-reverse">
+              <button
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                إلغاء
+              </button>
+              <button
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                onClick={handleDeleteEvent}
+              >
+                حذف
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
       
       {loading ? (
         <div className="flex justify-center py-10">
@@ -169,16 +252,23 @@ const EventsManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button 
+                          onClick={() => openViewModal(event)}
                           className="text-blue-600 hover:text-blue-900 ml-4"
                         >
                           عرض
                         </button>
                         <button 
+                          onClick={() => openEditModal(event)}
                           className="text-yellow-600 hover:text-yellow-900 ml-4"
                         >
                           تعديل
                         </button>
-                        <button className="text-red-600 hover:text-red-900">حذف</button>
+                        <button 
+                          onClick={() => openDeleteModal(event)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          حذف
+                        </button>
                       </td>
                     </tr>
                   ))
