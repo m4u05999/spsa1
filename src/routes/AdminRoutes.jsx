@@ -14,6 +14,7 @@ const InquiryManagement = lazy(() => import('../pages/dashboard/modules/InquiryM
 const SystemSettings = lazy(() => import('../pages/dashboard/modules/SystemSettings'));
 const StaticPagesManagement = lazy(() => import('../pages/dashboard/modules/StaticPagesManagement'));
 const MediaManagement = lazy(() => import('../pages/dashboard/modules/MediaManagement'));
+const BannerAdvertisementManagement = lazy(() => import('../pages/dashboard/modules/BannerAdvertisementManagement'));
 
 const AdminRoutes = () => {
   return (
@@ -45,6 +46,9 @@ const AdminRoutes = () => {
           
           {/* Media Management */}
           <Route path="media/*" element={<MediaManagement />} />
+          
+          {/* Banner & Advertisement Management */}
+          <Route path="banners/*" element={<BannerAdvertisementManagement />} />
           
           {/* Fallback for unknown routes */}
           <Route path="*" element={<Navigate to="." replace />} />
