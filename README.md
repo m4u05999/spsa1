@@ -1,39 +1,46 @@
-# React + Vite Template
+# Saudi Association for Political Science
 
-A modern React template for web applications and games, featuring React 18, Vite, TailwindCSS, and Material UI.
+This project is a comprehensive web application for the Saudi Association for Political Science, built with React and modern web technologies.
 
-## Project Structure
+## Features
 
-```
-├── src/
-│   ├── App.jsx          # Main application component
-│   ├── main.jsx         # Application entry point
-│   └── index.css        # Global styles (Tailwind)
-├── public/              # Static assets
-├── index.html           # HTML template
-├── vite.config.js       # Vite configuration
-├── tailwind.config.js   # Tailwind configuration
-├── postcss.config.js    # PostCSS configuration
-└── eslint.config.js     # ESLint configuration
-```
-
-## Development Guidelines
-
-- Modify `index.html` and `src/App.jsx` as needed
-- Create new folders or files in `src/` directory as needed
-- Style components using TailwindCSS utility classes
-- Avoid modifying `src/main.jsx` and `src/index.css`
-- Only modify `vite.config.js` if absolutely necessary
-
-## Available Scripts
-- `pnpm install` - Install dependencies
-- `pnpm run dev` - Start development server
-- `pnpm run lint` - Lint source files
+- Modern, responsive UI design
+- Dynamic content management system
+- User authentication and authorization
+- Multilingual support (Arabic/English)
+- Administrative dashboard
+- News and events management
+- Publications and research repository
+- Member management system
 
 ## Tech Stack
 
-- React
+- React 18
 - Vite
-- TailwindCSS
-- ESLint
-- Javascript
+- Tailwind CSS
+- React Router DOM
+- Headless UI
+- Heroicons
+- Redux Toolkit (State Management)
+
+## Prerequisites
+
+Before you begin, ensure you have installed:
+- Node.js (v16 or higher)
+- pnpm (v7 or higher)
+
+## Installation
+
+1. Clone the repository:
+
+
+2. Install dependencies:
+
+
+3. Start the development server:
+
+
+4. Build for production:
+
+
+## Project Structure
