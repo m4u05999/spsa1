@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { checkPermission } from '../../utils/permissions';
+import { checkPermission, hasAnyPermission } from '../../utils/permissions';
 
 const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
   const location = useLocation();
@@ -28,7 +28,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
 
   // Check user permissions for sidebar menu items
   const canManageUsers = checkPermission(user, 'users.manage');
-  const canViewContent = checkPermission(user, 'content.view');
+  const canViewContent = hasAnyPermission(user, ['content.view', 'content.manage']);
   const canManageEvents = checkPermission(user, 'events.manage');
   const canManageSettings = checkPermission(user, 'settings.manage');
 
