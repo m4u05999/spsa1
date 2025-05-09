@@ -47,11 +47,13 @@ const MemberDashboard = lazy(() => import('./pages/dashboard/MemberDashboard'));
 
 // Admin Dashboard Modules
 const UserManagement = lazy(() => import('./pages/dashboard/modules/UserManagement'));
-const ContentManagement = lazy(() => import('./pages/dashboard/modules/ContentManagement'));
+const ContentManagement = lazy(() => import('./pages/dashboard/modules/ContentManagementV2'));
 const EventsManagement = lazy(() => import('./pages/dashboard/modules/EventsManagement'));
 const Statistics = lazy(() => import('./pages/dashboard/modules/Statistics'));
 const InquiryManagement = lazy(() => import('./pages/dashboard/modules/InquiryManagement'));
 const SystemSettings = lazy(() => import('./pages/dashboard/modules/SystemSettings'));
+const MediaManagement = lazy(() => import('./pages/dashboard/modules/MediaManagement'));
+const StaticPagesManagement = lazy(() => import('./pages/dashboard/modules/StaticPagesManagement'));
 
 // Membership Pages
 const MembershipPage = lazy(() => import('./pages/membership/MembershipPage'));
@@ -344,6 +346,14 @@ const router = createBrowserRouter([
       {
         path: "settings/*",
         element: <Suspense fallback={<PageLoader />}><SystemSettings /></Suspense>
+      },
+      {
+        path: "media/*",
+        element: <Suspense fallback={<PageLoader />}><MediaManagement /></Suspense>
+      },
+      {
+        path: "pages/*",
+        element: <Suspense fallback={<PageLoader />}><StaticPagesManagement /></Suspense>
       },
       {
         path: "*",

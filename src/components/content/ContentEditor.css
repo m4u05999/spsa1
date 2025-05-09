@@ -1,0 +1,57 @@
+/* RTL Editor Styling */
+.rtl-editor {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-editor .ql-editor {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-editor .ql-editor p,
+.rtl-editor .ql-editor h1,
+.rtl-editor .ql-editor h2,
+.rtl-editor .ql-editor h3,
+.rtl-editor .ql-editor ul,
+.rtl-editor .ql-editor ol {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix toolbar alignment for RTL */
+.rtl-editor .ql-toolbar.ql-snow {
+  direction: rtl;
+}
+
+/* Add some space for the editor */
+.quill {
+  min-height: 200px;
+  margin-bottom: 1em;
+}
+
+/* Add a border to mimic regular inputs */
+.ql-container.ql-snow {
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  min-height: 150px;
+}
+
+.ql-toolbar.ql-snow {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+}
+
+/* Active input border */
+.ql-container.ql-snow:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.ql-toolbar.ql-snow:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
