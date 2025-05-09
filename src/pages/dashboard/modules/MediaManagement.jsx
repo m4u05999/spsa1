@@ -1,380 +1,230 @@
-// src/pages/dashboard/modules/MediaManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Typography, 
-  Breadcrumb, 
-  Alert, 
-  Divider, 
-  Tabs, 
-  Button, 
-  Space, 
-  Popover, 
-  Statistic, 
-  Row, 
-  Col 
-} from 'antd';
-import { 
-  PictureOutlined, 
-  FileOutlined, 
-  VideoCameraOutlined, 
-  SoundOutlined, 
-  HomeOutlined,
-  SettingOutlined,
-  InfoCircleOutlined 
-} from '@ant-design/icons';
-import { MEDIA_TYPES } from '../../../models/Media';
-import mediaService from '../../../services/mediaService';
-import MediaLibrary from '../../../components/media/MediaLibrary';
+import { PlusIcon, TrashIcon, DocumentIcon, PhotoIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
-const { Title, Paragraph, Text } = Typography;
-const { TabPane } = Tabs;
-
-/**
- * إدارة الوسائط - صفحة لإدارة مكتبة الوسائط المتعددة
- * توفر واجهة لتحميل وتنظيم وإدارة الصور والملفات في النظام
- */
 const MediaManagement = () => {
-  // حالة إحصائيات الوسائط
-  const [stats, setStats] = useState({
-    totalCount: 0,
-    imageCount: 0,
-    documentCount: 0,
-    videoCount: 0,
-    audioCount: 0,
-    otherCount: 0,
-    totalSize: 0,
-    categories: 0,
-    tags: 0
-  });
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [filterType, setFilterType] = useState('all');
 
-  // حالة الفئات
-  const [categories, setCategories] = useState([]);
-  
-  // حالة الوسوم
-  const [tags, setTags] = useState([]);
-  
-  // حالة العرض
-  const [activeTab, setActiveTab] = useState('all');
-  const [loading, setLoading] = useState(true);
-
-  // تحميل البيانات عند تهيئة الصفحة
   useEffect(() => {
-    fetchMediaStats();
-    fetchCategories();
-    fetchTags();
+    // Mock data - replace with actual API call
+    const mockMedia = [
+      {
+        id: 1,
+        name: 'conference-2024.jpg',
+        type: 'image',
+        url: '/assets/images/conference-2024.jpg',
+        size: '2.4 MB',
+        uploadedAt: '2024-03-10',
+      },
+      {
+        id: 2,
+        name: 'annual-report.pdf',
+        type: 'document',
+        url: '/assets/documents/annual-report.pdf',
+        size: '1.2 MB',
+        uploadedAt: '2024-03-09',
+      },
+      {
+        id: 3,
+        name: 'welcome-video.mp4',
+        type: 'video',
+        url: '/assets/videos/welcome-video.mp4',
+        size: '15.7 MB',
+        uploadedAt: '2024-03-08',
+      },
+    ];
+    setMediaFiles(mockMedia);
   }, []);
 
-  // جلب إحصائيات الوسائط
-  const fetchMediaStats = () => {
-    setLoading(true);
-    try {
-      const allMedia = mediaService.getAll();
-      
-      const imageCount = allMedia.filter(item => item.type === MEDIA_TYPES.IMAGE).length;
-      const documentCount = allMedia.filter(item => item.type === MEDIA_TYPES.DOCUMENT).length;
-      const videoCount = allMedia.filter(item => item.type === MEDIA_TYPES.VIDEO).length;
-      const audioCount = allMedia.filter(item => item.type === MEDIA_TYPES.AUDIO).length;
-      const otherCount = allMedia.filter(item => item.type === MEDIA_TYPES.OTHER).length;
-      
-      let totalSize = 0;
-      allMedia.forEach(item => {
-        totalSize += item.size || 0;
-      });
-      
-      setStats({
-        totalCount: allMedia.length,
-        imageCount,
-        documentCount,
-        videoCount,
-        audioCount,
-        otherCount,
-        totalSize,
-        categories: categories.length,
-        tags: tags.length
-      });
-    } catch (error) {
-      console.error('خطأ في جلب إحصائيات الوسائط:', error);
-    } finally {
-      setLoading(false);
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    // Here you would typically upload the files to your backend
+    // For now, we'll just add them to the list with mock data
+    const newFiles = files.map((file, index) => ({
+      id: mediaFiles.length + index + 1,
+      name: file.name,
+      type: file.type.split('/')[0],
+      url: URL.createObjectURL(file),
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      uploadedAt: new Date().toISOString().split('T')[0],
+    }));
+    
+    setMediaFiles([...mediaFiles, ...newFiles]);
+    setUploadModalOpen(false);
+  };
+
+  const handleDelete = (ids) => {
+    if (window.confirm('Are you sure you want to delete the selected files?')) {
+      setMediaFiles(mediaFiles.filter(file => !ids.includes(file.id)));
+      setSelectedFiles([]);
     }
   };
 
-  // جلب الفئات
-  const fetchCategories = () => {
-    try {
-      const categoriesList = mediaService.getCategories();
-      setCategories(categoriesList);
-    } catch (error) {
-      console.error('خطأ في جلب الفئات:', error);
-    }
-  };
-
-  // جلب الوسوم
-  const fetchTags = () => {
-    try {
-      const tagsList = mediaService.getTags();
-      setTags(tagsList);
-    } catch (error) {
-      console.error('خطأ في جلب الوسوم:', error);
-    }
-  };
-
-  // تحديد فلتر حسب التبويب النشط
-  const getFilterByActiveTab = () => {
-    switch (activeTab) {
-      case 'images':
-        return { type: MEDIA_TYPES.IMAGE };
-      case 'documents':
-        return { type: MEDIA_TYPES.DOCUMENT };
-      case 'videos':
-        return { type: MEDIA_TYPES.VIDEO };
-      case 'audio':
-        return { type: MEDIA_TYPES.AUDIO };
+  const getFileIcon = (type) => {
+    switch (type) {
+      case 'image':
+        return <PhotoIcon className="h-6 w-6" />;
+      case 'video':
+        return <VideoCameraIcon className="h-6 w-6" />;
       default:
-        return {};
+        return <DocumentIcon className="h-6 w-6" />;
     }
   };
 
-  // معالجة إضافة فئة جديدة
-  const handleAddCategory = async (name) => {
-    try {
-      const newCategory = await mediaService.createCategory(name);
-      fetchCategories();
-      return newCategory.name;
-    } catch (error) {
-      console.error('خطأ في إضافة الفئة:', error);
-      return false;
-    }
-  };
-
-  // تنسيق حجم الملف ليصبح قابل للقراءة
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 بايت';
-    
-    const k = 1024;
-    const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // محتوى توضيحي حول مكتبة الوسائط
-  const helpContent = (
-    <div style={{ maxWidth: '300px' }}>
-      <Title level={5}>استخدام مكتبة الوسائط</Title>
-      <Paragraph>
-        يمكنك تحميل وإدارة جميع أنواع الوسائط المستخدمة في الموقع من خلال هذه الصفحة.
-      </Paragraph>
-      <ul>
-        <li>
-          <Text strong>رفع الملفات:</Text> يمكنك رفع الملفات بالسحب والإفلات أو بالنقر على منطقة الرفع.
-        </li>
-        <li>
-          <Text strong>التصنيف:</Text> قم بتنظيم الملفات في فئات وإضافة وسوم لتسهيل البحث.
-        </li>
-        <li>
-          <Text strong>البحث:</Text> استخدم شريط البحث وخيارات التصفية للعثور بسرعة على الملفات المطلوبة.
-        </li>
-      </ul>
-      <Paragraph>
-        للحصول على أفضل النتائج، ننصح بإعطاء أسماء واضحة للملفات وتصنيفها بشكل صحيح.
-      </Paragraph>
-    </div>
-  );
+  const filteredMedia = filterType === 'all' 
+    ? mediaFiles 
+    : mediaFiles.filter(file => file.type === filterType);
 
   return (
-    <div className="media-management-page" style={{ marginBottom: '24px' }}>
-      <div className="page-header" style={{ marginBottom: '16px' }}>
-        <Breadcrumb>
-          <Breadcrumb.Item>
-            <HomeOutlined />
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>لوحة التحكم</Breadcrumb.Item>
-          <Breadcrumb.Item>إدارة الوسائط</Breadcrumb.Item>
-        </Breadcrumb>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0' }}>
-          <Title level={2} style={{ margin: 0 }}>
-            <PictureOutlined /> مكتبة الوسائط
-          </Title>
-          
-          <Space>
-            <Popover 
-              content={helpContent} 
-              title="مساعدة" 
-              trigger="click"
-              placement="leftTop"
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Media Management</h1>
+        <div className="flex space-x-4">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="all">All Files</option>
+            <option value="image">Images</option>
+            <option value="video">Videos</option>
+            <option value="document">Documents</option>
+          </select>
+          <button
+            onClick={() => setUploadModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Upload Files
+          </button>
+          {selectedFiles.length > 0 && (
+            <button
+              onClick={() => handleDelete(selectedFiles)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
             >
-              <Button type="text" icon={<InfoCircleOutlined />}>
-                مساعدة
-              </Button>
-            </Popover>
-            
-            <Popover 
-              content={
-                <div style={{ maxWidth: '300px' }}>
-                  <Title level={5}>إعدادات المكتبة</Title>
-                  <Paragraph>قريبًا</Paragraph>
-                </div>
-              } 
-              title="إعدادات" 
-              trigger="click"
-              placement="leftTop"
-            >
-              <Button type="text" icon={<SettingOutlined />}>
-                الإعدادات
-              </Button>
-            </Popover>
-          </Space>
+              <TrashIcon className="h-5 w-5 mr-2" />
+              Delete Selected
+            </button>
+          )}
         </div>
-        
-        <Alert 
-          message="تنظيم الوسائط يسهل إدارة محتوى الموقع"
-          description="قم بإضافة وسوم وفئات لتسهيل البحث والوصول إلى الملفات بسرعة. يمكنك رفع ملفات متعددة في نفس الوقت باستخدام خاصية السحب والإفلات."
-          type="info" 
-          showIcon 
-          style={{ marginBottom: '16px' }} 
-        />
       </div>
-      
-      <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-        <Col xs={24} sm={8} md={8} lg={4} xl={4}>
-          <Card>
-            <Statistic title="إجمالي الملفات" value={stats.totalCount} valueStyle={{ color: '#1890ff' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4} xl={4}>
-          <Card>
-            <Statistic 
-              title="صور" 
-              value={stats.imageCount} 
-              prefix={<PictureOutlined />} 
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4} xl={4}>
-          <Card>
-            <Statistic 
-              title="مستندات" 
-              value={stats.documentCount} 
-              prefix={<FileOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={8} sm={8} md={4} lg={4} xl={4}>
-          <Card>
-            <Statistic 
-              title="فيديو" 
-              value={stats.videoCount} 
-              prefix={<VideoCameraOutlined />}
-              valueStyle={{ color: '#eb2f96' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={8} sm={8} md={4} lg={4} xl={4}>
-          <Card>
-            <Statistic 
-              title="صوت" 
-              value={stats.audioCount} 
-              prefix={<SoundOutlined />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={8} sm={8} md={8} lg={4} xl={4}>
-          <Card>
-            <Statistic 
-              title="الحجم الإجمالي" 
-              value={formatFileSize(stats.totalSize)}
-              valueStyle={{ fontSize: '16px' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-      
-      <Card bordered={false} className="media-management-content">
-        <Tabs 
-          activeKey={activeTab} 
-          onChange={setActiveTab}
-          type="card"
-        >
-          <TabPane tab="جميع الوسائط" key="all">
-            <MediaLibrary 
-              title={null}
-              multiple={true} 
-              showUploadTab={true}
-              onSelect={(item) => console.log('Selected item:', item)}
-            />
-          </TabPane>
-          
-          <TabPane tab={<><PictureOutlined /> صور</>} key="images">
-            <MediaLibrary 
-              title={null}
-              multiple={true} 
-              showUploadTab={true}
-              onSelect={(item) => console.log('Selected item:', item)}
-              initialFilters={{ type: MEDIA_TYPES.IMAGE }}
-            />
-          </TabPane>
-          
-          <TabPane tab={<><FileOutlined /> مستندات</>} key="documents">
-            <MediaLibrary 
-              title={null}
-              multiple={true} 
-              showUploadTab={true}
-              onSelect={(item) => console.log('Selected item:', item)}
-              initialFilters={{ type: MEDIA_TYPES.DOCUMENT }}
-            />
-          </TabPane>
-          
-          <TabPane tab={<><VideoCameraOutlined /> فيديو</>} key="videos">
-            <MediaLibrary 
-              title={null}
-              multiple={true} 
-              showUploadTab={true}
-              onSelect={(item) => console.log('Selected item:', item)}
-              initialFilters={{ type: MEDIA_TYPES.VIDEO }}
-            />
-          </TabPane>
-          
-          <TabPane tab={<><SoundOutlined /> صوت</>} key="audio">
-            <MediaLibrary 
-              title={null}
-              multiple={true} 
-              showUploadTab={true}
-              onSelect={(item) => console.log('Selected item:', item)}
-              initialFilters={{ type: MEDIA_TYPES.AUDIO }}
-            />
-          </TabPane>
-        </Tabs>
-      </Card>
-      
-      <Divider />
-      
-      <Card title="إدارة فئات الوسائط" size="small" style={{ marginBottom: '16px' }}>
-        <Paragraph>
-          تنظيم الفئات يساعد في تصنيف الملفات وتسهيل الوصول إليها. 
-          حاليًا يوجد <Text strong>{categories.length}</Text> فئة و <Text strong>{tags.length}</Text> وسم في النظام.
-        </Paragraph>
-        <div style={{ marginTop: '16px' }}>
-          <Button type="primary" onClick={() => setActiveTab('all')}>
-            عرض مدير الفئات والوسوم
-          </Button>
-        </div>
-      </Card>
-      
-      <Card title="نصائح لإدارة الوسائط" size="small">
-        <ul>
-          <li>قم بتسمية الملفات بأسماء واضحة تسهل البحث عنها لاحقًا</li>
-          <li>استخدم الفئات لتجميع الملفات ذات الصلة معًا</li>
-          <li>أضف وسوم متعددة لتسهيل الوصول إلى الملفات من خلال مصطلحات مختلفة</li>
-          <li>حافظ على ترتيب وتنظيم الملفات بانتظام لتجنب تراكم الملفات غير المستخدمة</li>
-          <li>استخدم خاصية الوصف والنص البديل للصور لتحسين إمكانية الوصول وتحسين محركات البحث</li>
+
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul className="divide-y divide-gray-200">
+          {filteredMedia.map((file) => (
+            <li key={file.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedFiles.includes(file.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedFiles([...selectedFiles, file.id]);
+                      } else {
+                        setSelectedFiles(selectedFiles.filter(id => id !== file.id));
+                      }
+                    }}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-4"
+                  />
+                  <div className="min-w-0 flex-1 flex items-center">
+                    <div className="flex-shrink-0 text-gray-500">
+                      {getFileIcon(file.type)}
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-indigo-600 truncate">
+                        {file.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {file.size} • Uploaded on {file.uploadedAt}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="ml-2 flex-shrink-0 flex space-x-4">
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                  >
+                    View
+                  </a>
+                  <button
+                    onClick={() => handleDelete([file.id])}
+                    className="font-medium text-red-600 hover:text-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
         </ul>
-      </Card>
+      </div>
+
+      {/* Upload Modal */}
+      {uploadModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">Upload Files</h2>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Select files
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                    >
+                      <span>Upload files</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        multiple
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Any file up to 10MB
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setUploadModalOpen(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
