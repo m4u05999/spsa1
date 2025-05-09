@@ -161,10 +161,10 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
     if (!item.permission) return true;
     
     if (Array.isArray(item.permission)) {
-      return item.permission.some(perm => checkPermission(user, perm));
+      return hasAnyPermission(user, item.permission);
     }
     
-    return checkPermission(user, item.permission);
+    return hasAnyPermission(user, [item.permission, item.permission.replace('.view', '.manage')]);
   });
 
   // Sidebar classes based on state
