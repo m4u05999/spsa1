@@ -31,16 +31,46 @@ Before you begin, ensure you have installed:
 
 ## Installation
 
-1. Clone the repository:
+### Standard Setup
 
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd saudi-political-science
+```
 
 2. Install dependencies:
-
+```bash
+pnpm install
+```
 
 3. Start the development server:
-
+```bash
+pnpm run dev
+```
 
 4. Build for production:
+```bash
+pnpm run build
+```
+
+### Docker Setup
+
+1. Using Docker Compose (recommended):
+```bash
+docker-compose up --build
+```
+
+2. Or using Docker directly:
+```bash
+# Build the image
+docker build -t saudi-political-science .
+
+# Run the container
+docker run -p 5173:5173 saudi-political-science
+```
+
+The application will be available at http://localhost:5173
 
 
 ## Project Structure
