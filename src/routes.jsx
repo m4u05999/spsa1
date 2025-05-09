@@ -54,6 +54,7 @@ const InquiryManagement = lazy(() => import(/* webpackChunkName: "admin-module" 
 const SystemSettings = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/SystemSettings'));
 const MediaManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/MediaManagement'));
 const StaticPagesManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/StaticPagesManagement'));
+const AdsManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/AdsManagement'));
 
 // Membership Pages
 const MembershipPage = lazy(() => import(/* webpackChunkName: "membership" */ './pages/membership/MembershipPage'));
@@ -354,6 +355,10 @@ const router = createBrowserRouter([
       {
         path: "pages/*",
         element: <Suspense fallback={<PageLoader />}><StaticPagesManagement /></Suspense>
+      },
+      {
+        path: "banners/*",
+        element: <Suspense fallback={<PageLoader />}><AdsManagement /></Suspense>
       },
       {
         path: "*",
