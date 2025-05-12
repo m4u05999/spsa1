@@ -8,9 +8,9 @@ const LoginPage = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <img
-            className="mx-auto h-24 w-auto"
-            src="/assets/images/logo.png"
-            alt="جمعية العلوم السياسية"
+            className="mx-auto h-50 w-50 object-contain drop-shadow-sm"
+            src="/assets/images/full-logo.PNG"
+            alt="الجمعية السعودية للعلوم السياسية"
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             تسجيل الدخول إلى حسابك

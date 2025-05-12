@@ -3,7 +3,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const DashboardHeader = ({ onMenuClick }) => {
+const DashboardHeader = ({ 
+  onMenuClick, 
+  isDarkMode = false, 
+  onToggleDarkMode = () => {}, 
+  onToggleCollapse = () => {}, 
+  isCollapsed = false,
+  currentTime = '',
+  currentDate = ''
+}) => {
   const { user, logout } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -86,7 +94,7 @@ const DashboardHeader = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm" dir="rtl">
+    <header className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} shadow-sm transition-all duration-300`} dir="rtl">
       <div className="flex justify-between items-center px-4 py-3">
         {/* Mobile menu button */}
         <div className="lg:hidden">
@@ -117,7 +125,7 @@ const DashboardHeader = ({ onMenuClick }) => {
         {/* Logo and Title - Mobile */}
         <div className="lg:hidden flex items-center">
           <Link to="/dashboard" className="flex items-center space-x-2 space-x-reverse">
-            <span className="font-bold text-xl text-blue-900">لوحة التحكم</span>
+            <span className={`font-bold text-xl ${isDarkMode ? 'text-white' : 'text-blue-900'}`}>لوحة التحكم</span>
           </Link>
         </div>
 
@@ -143,19 +151,66 @@ const DashboardHeader = ({ onMenuClick }) => {
               type="text"
               name="search"
               id="search"
-              className="block w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className={`block w-full pr-10 pl-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white placeholder-gray-500'} rounded-md leading-5 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200`}
               placeholder="البحث..."
             />
           </div>
         </div>
 
-        {/* Right section with notifications and profile */}
+        {/* Right section with controls, time, notifications and profile */}
         <div className="flex items-center space-x-4 space-x-reverse">
+          {/* Date and Time Display */}
+          <div className="hidden md:flex items-center space-x-3 space-x-reverse mr-3 border-r pr-3 border-gray-300 dark:border-gray-600">
+            <div className="text-right">
+              <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{currentDate}</div>
+              <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{currentTime}</div>
+            </div>
+            <div className={`rounded-full p-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+              <svg className="h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          
+          {/* Dark Mode Toggle */}
+          <button 
+            onClick={onToggleDarkMode}
+            className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-gray-600'} hover:bg-opacity-80 transition-colors duration-200`}
+            title={isDarkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع المظلم'}
+          >
+            {isDarkMode ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+          
+          {/* Sidebar Collapse Toggle - Desktop Only */}
+          <button
+            className={`hidden lg:block p-2 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'} hover:bg-opacity-80 transition-colors duration-200`}
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية'}
+          >
+            {isCollapsed ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            )}
+          </button>
+          
           {/* Notifications dropdown */}
           <div className="relative">
             <button
               type="button"
-              className="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className={`p-1 rounded-full ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-500 hover:text-gray-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
               onClick={toggleNotifications}
             >
               <span className="sr-only">عرض الإشعارات</span>
@@ -188,25 +243,25 @@ const DashboardHeader = ({ onMenuClick }) => {
                   onClick={handleClickOutside}
                 ></div>
                 
-                <div className="origin-top-left absolute left-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20 text-right">
-                  <div className="py-2 px-3 border-b border-gray-100">
-                    <h3 className="text-sm font-medium text-gray-900">الإشعارات</h3>
+                <div className={`origin-top-left absolute left-0 mt-2 w-80 rounded-md shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} ring-1 ring-black ring-opacity-5 z-20 text-right`}>
+                  <div className={`py-2 px-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                    <h3 className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>الإشعارات</h3>
                   </div>
                   <div className="max-h-64 overflow-y-auto">
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className="px-3 py-2 hover:bg-gray-50 flex items-start space-x-3 space-x-reverse border-b border-gray-100"
+                        className={`px-3 py-2 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} flex items-start space-x-3 space-x-reverse border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}
                       >
                         {getNotificationIcon(notification.type)}
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900">{notification.message}</p>
-                          <p className="text-xs text-gray-500">منذ {notification.time}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{notification.message}</p>
+                          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>منذ {notification.time}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div className="p-2 border-t border-gray-100 text-center">
+                  <div className={`p-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'} text-center`}>
                     <Link to="/dashboard/admin/notifications" className="text-sm text-blue-500 hover:text-blue-700">
                       عرض جميع الإشعارات
                     </Link>
@@ -223,12 +278,12 @@ const DashboardHeader = ({ onMenuClick }) => {
               className="flex items-center space-x-3 space-x-reverse focus:outline-none"
               onClick={toggleProfileMenu}
             >
-              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium hover:bg-blue-600 transition-colors duration-200">
                 {user?.name?.charAt(0) || 'A'}
               </div>
               <div className="hidden md:block text-right">
-                <div className="text-sm font-medium text-gray-700">{user?.name || "المشرف"}</div>
-                <div className="text-xs text-gray-500">{user?.role || "مدير النظام"}</div>
+                <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{user?.name || "المشرف"}</div>
+                <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{user?.role || "مدير النظام"}</div>
               </div>
               <svg
                 className="hidden md:block h-4 w-4 text-gray-400"
@@ -250,25 +305,25 @@ const DashboardHeader = ({ onMenuClick }) => {
                   onClick={handleClickOutside}
                 ></div>
                 
-                <div className="origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                <div className={`origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} ring-1 ring-black ring-opacity-5 z-20`}>
                   <div className="py-1 text-right" role="none">
                     <Link
                       to="/dashboard/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
                       role="menuitem"
                     >
                       الملف الشخصي
                     </Link>
                     <Link
                       to="/dashboard/admin/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
                       role="menuitem"
                     >
                       الإعدادات
                     </Link>
                     <button
                       type="button"
-                      className="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className={`block w-full text-right px-4 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
                       role="menuitem"
                       onClick={handleLogout}
                     >

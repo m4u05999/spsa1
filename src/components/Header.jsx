@@ -155,9 +155,9 @@ const Header = () => {
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
               <img
-                src="/assets/images/new-logo.png"
+                src="/assets/images/spsa-logo.PNG"
                 alt="الجمعية السعودية للعلوم السياسية"
-                className="h-16 w-16 object-contain"
+                className="h-24 w-24 object-contain md:h-28 md:w-28 drop-shadow-sm"
                 loading="eager"
               />
               <span className="text-xl font-bold hidden sm:inline">الجمعية السعودية للعلوم السياسية</span>

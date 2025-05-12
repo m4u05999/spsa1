@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { checkPermission, hasAnyPermission } from '../../utils/permissions';
 
-const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
+const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDarkMode = false }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState({
@@ -168,21 +168,20 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
   });
 
   // Sidebar classes based on state
-  const sidebarClasses = `fixed h-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-40
-    ${isMobile ? 
-      (isOpen ? 'translate-x-0' : 'translate-x-full') : 
-      'translate-x-0 right-0 w-[280px]'}
+  const rightSideWidth = isCollapsed ? 'w-[80px]' : 'w-[280px]';
+  const sidebarClasses = `fixed h-full ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} shadow-xl transform transition-transform duration-300 ease-in-out z-40
+    ${isMobile ? (isOpen ? 'translate-x-0' : 'translate-x-full') : 'translate-x-0 right-0 ' + rightSideWidth}
     ${isMobile ? 'top-0 right-0 w-[280px]' : 'top-16'}`;
 
   return (
     <aside className={sidebarClasses}>
       {/* Mobile sidebar header with close button */}
       {isMobile && (
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="font-semibold text-lg text-gray-900">لوحة التحكم</h2>
+        <div className={`flex items-center justify-between border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} p-4`}>
+          <h2 className={`font-semibold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>لوحة التحكم</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} focus:outline-none`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -192,10 +191,10 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
       )}
 
       {/* User profile section */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center">
+      <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} ${isCollapsed ? 'text-center' : ''}`}>
+        <div className={`${isCollapsed ? 'justify-center' : ''} flex items-center`}>
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden">
+            <div className={`w-12 h-12 rounded-full ${isDarkMode ? 'bg-blue-900' : 'bg-blue-100'} flex items-center justify-center ${isDarkMode ? 'text-blue-300' : 'text-blue-600'} overflow-hidden`}>
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -209,17 +208,19 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
               )}
             </div>
           </div>
-          <div className="mr-4">
-            <h2 className="text-lg font-medium text-gray-900 truncate max-w-[180px]">
-              {user?.name || 'المستخدم'}
-            </h2>
-            <p className="text-sm text-gray-600 truncate max-w-[180px]">
-              {user?.email || 'user@example.com'}
-            </p>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
-              {user?.role === 'admin' ? 'مدير النظام' : user?.role === 'staff' ? 'موظف' : 'عضو'}
-            </span>
-          </div>
+          {!isCollapsed && (
+            <div className="mr-4">
+              <h2 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate max-w-[180px]`}>
+                {user?.name || 'المستخدم'}
+              </h2>
+              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} truncate max-w-[180px]`}>
+                {user?.email || 'user@example.com'}
+              </p>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                {user?.role === 'admin' ? 'مدير النظام' : user?.role === 'staff' ? 'موظف' : 'عضو'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -230,19 +231,22 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
             <li key={item.path}>
               <Link
                 to={item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`}
-                className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-md group transition-colors ${
+                className={`flex ${isCollapsed ? 'justify-center' : 'items-center'} px-4 py-2.5 text-sm font-medium rounded-md group transition-colors ${
                   isActive(item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`) 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? `${isDarkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-50 text-blue-700'}` 
+                    : `${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`
                 }`}
                 onClick={isMobile ? onClose : undefined}
+                title={isCollapsed ? item.name : ''}
               >
-                <span className={`inline-flex mr-3 ${
-                  isActive(item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`) ? 'text-blue-500' : 'text-gray-500 group-hover:text-gray-700'
+                <span className={`inline-flex ${isCollapsed ? '' : 'mr-3'} ${
+                  isActive(item.path.startsWith('/') ? item.path : `/dashboard/admin/${item.path}`) 
+                    ? `${isDarkMode ? 'text-blue-300' : 'text-blue-500'}` 
+                    : `${isDarkMode ? 'text-gray-400 group-hover:text-gray-200' : 'text-gray-500 group-hover:text-gray-700'}`
                 }`}>
                   {item.icon}
                 </span>
-                {item.name}
+                {!isCollapsed && item.name}
               </Link>
             </li>
           ))}
@@ -250,17 +254,18 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile }) => {
       </nav>
 
       {/* Logout button */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+      <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <button
           onClick={logout}
-          className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          className={`flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white ${isDarkMode ? 'bg-red-700 hover:bg-red-800' : 'bg-red-600 hover:bg-red-700'} rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200`}
+          title="تسجيل الخروج"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V9.5a1 1 0 00-1-1h-1.5a1 1 0 010-2H15a3 3 0 013 3V16a3 3 0 01-3 3H3a3 3 0 01-3-3V4a3 3 0 013-3h9a3 3 0 013 3v1.5a1 1 0 01-1 1h-1.5a1 1 0 110-2H12V4a1 1 0 00-1-1H3z" clipRule="evenodd" />
             <path fillRule="evenodd" d="M4 8a1 1 0 011-1h9.5a1 1 0 110 2H5a1 1 0 01-1-1z" clipRule="evenodd" />
             <path fillRule="evenodd" d="M11.5 5a1 1 0 011 1v4.5a1 1 0 11-2 0V6a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
-          تسجيل الخروج
+          {!isCollapsed && 'تسجيل الخروج'}
         </button>
       </div>
     </aside>

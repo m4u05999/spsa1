@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 import LatestPublications from '../components/LatestPublications';
+import GraduatesCards from '../components/GraduatesCards';
 import { Link } from 'react-router-dom';
 import { buttonStyles, cardStyles, colors } from '../utils/theme';
 
@@ -443,6 +444,9 @@ const Home = () => {
         </div>
       </section>
       
+      {/* قسم بطاقات خريجون قسم العلوم السياسية */}
+      <GraduatesCards />
+
       {/* قسم الرؤية والأهداف الاستراتيجية */}
       <section className="py-16 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">

@@ -11,7 +11,7 @@ const Hero = () => {
       title: "المؤتمر السنوي للعلوم السياسية 2024",
       date: "15 مايو 2024",
       description: "انضموا إلينا في المؤتمر السنوي لمناقشة أحدث التطورات في مجال العلوم السياسية والعلاقات الدولية",
-      imageUrl: "/assets/images/hero/image (11).png",
+      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
       gradient: "from-blue-900/85 to-blue-800/70"
     },
     {
@@ -19,7 +19,7 @@ const Hero = () => {
       title: "ندوة: تحليل الأزمات الدولية المعاصرة",
       date: "20 يونيو 2024",
       description: "ندوة متخصصة في طرق تحليل وإدارة الأزمات الدولية في ظل المتغيرات العالمية الحالية",
-      imageUrl: "/assets/images/hero/image (10).png",
+      imageUrl: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?q=80&w=2070&auto=format&fit=crop",
       gradient: "from-green-900/85 to-green-800/70"
     },
     {
@@ -27,7 +27,7 @@ const Hero = () => {
       title: "عضوية الجمعية السعودية للعلوم السياسية",
       date: "متاحة الآن",
       description: "انضم إلى مجتمع الباحثين والأكاديميين في مجال العلوم السياسية واستفد من المزايا الحصرية للأعضاء",
-      imageUrl: "/assets/images/hero/image (11).png",
+      imageUrl: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1974&auto=format&fit=crop",
       gradient: "from-purple-900/85 to-purple-800/70"
     }
   ];
