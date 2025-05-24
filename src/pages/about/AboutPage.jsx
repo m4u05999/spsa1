@@ -6,6 +6,7 @@ import AboutIntro from './components/AboutIntro';
 import ChairmanMessage from './components/ChairmanMessage';
 import VisionMission from './components/VisionMission';
 import Graduates from './components/Graduates';
+import Board from './components/Board';
 
 const AboutPage = () => {
   return (
@@ -30,6 +31,7 @@ const AboutPage = () => {
             <Route path="chairman" element={<ChairmanMessage />} />
             <Route path="vision" element={<VisionMission />} />
             <Route path="graduates" element={<Graduates />} />
+            <Route path="board" element={<Board />} />
           </Routes>
         </div>
       </div>

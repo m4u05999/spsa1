@@ -4,54 +4,39 @@ import React, { useState, useEffect } from 'react';
 const graduates = [
   {
     id: 1,
-    name: 'د. محمد السبيعي',
-    job: 'أستاذ مشارك بجامعة الملك سعود',
+    name: 'صاحب السمو الملكي الامير فيصل بن سلمان آل سعود',
+    job: 'أمير منطقة',
     image: '/assets/images/graduate1.jpg',
-    description: 'باحث في العلاقات الدولية وخبير في السياسات العامة.'
+    description: 'من أبرز خريجي قسم العلوم السياسية ومن القيادات البارزة في المملكة.'
   },
   {
     id: 2,
-    name: 'أ. ريم العبدالله',
-    job: 'محللة سياسات في جهة حكومية',
+    name: 'الامير محمد بن عبد الرحمن',
+    job: 'نائب أمير الرياض',
     image: '/assets/images/graduate2.jpg',
-    description: 'متخصصة في الدراسات الاستراتيجية وصناعة القرار.'
+    description: 'من القيادات الشابة البارزة وخريج قسم العلوم السياسية.'
   },
   {
     id: 3,
-    name: 'د. فهد الغامدي',
-    job: 'مستشار سياسي',
+    name: 'الامير تركي بن طلال',
+    job: 'أمير عسير',
     image: '/assets/images/graduate3.jpg',
-    description: 'مستشار في السياسات الإقليمية وصياغة التشريعات.'
+    description: 'من القيادات المتميزة وخريج قسم العلوم السياسية.'
   },
   {
     id: 4,
-    name: 'د. سارة العتيبي',
-    job: 'باحثة دكتوراه في جامعة الملك عبدالعزيز',
+    name: 'الامير بندر بن سلطان',
+    job: 'نائب أمير مكة السابق',
     image: '/assets/images/graduate4.jpg',
-    description: 'متخصصة في السياسات المقارنة والتنمية السياسية.'
+    description: 'من أبرز القيادات السعودية وخريج قسم العلوم السياسية.'
   },
   {
     id: 5,
-    name: 'أ. خالد الحربي',
-    job: 'محاضر في جامعة الإمام',
+    name: 'رائد قرملي',
+    job: 'سفير سابق في روسيا ومدير عام تخطيط السياسات بوزارة الخارجية',
     image: '/assets/images/graduate5.jpg',
-    description: 'باحث في الفكر السياسي الحديث.'
-  },
-  {
-    id: 6,
-    name: 'د. منى الزهراني',
-    job: 'أستاذ مساعد في جامعة الملك سعود',
-    image: '/assets/images/graduate6.jpg',
-    description: 'متخصصة في العلاقات الدولية وحقوق الإنسان.'
-  },
-  {
-    id: 7,
-    name: 'د. عبدالعزيز المطيري',
-    job: 'مستشار في مركز أبحاث حكومي',
-    image: '/assets/images/graduate7.jpg',
-    description: 'خبير في السياسات العامة والإصلاح الإداري.'
-  },
-  // يمكنك إضافة المزيد لاحقاً
+    description: 'من القيادات الدبلوماسية المتميزة وخريج قسم العلوم السياسية.'
+  }
 ];
 
 
@@ -79,7 +64,7 @@ const GraduatesCards = () => {
   return (
     <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">خريجو قسم العلوم السياسية</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">القيادات من خريجوا القسم</h2>
         
         <div className="relative max-w-6xl mx-auto">
           {/* السلايدر الرئيسي */}

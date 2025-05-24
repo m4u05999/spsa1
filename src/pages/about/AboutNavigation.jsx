@@ -8,8 +8,9 @@ const AboutNavigation = () => {
   
   const links = [
     { path: '/about', title: 'نبذة عن الجمعية' },
-    { path: '/about/chairman', title: 'كلمة رئيس مجلس الإدارة' },
+    { path: '/about/chairman', title: 'كلمة رئيس الجمعية' },
     { path: '/about/vision', title: 'الرؤية والأهداف' },
+    { path: '/about/board', title: 'مجلس الإدارة' },
     { path: '/about/graduates', title: 'الخريجون' }
   ];
 

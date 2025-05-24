@@ -77,7 +77,11 @@ const Header = () => {
       type: 'dropdown',
       children: [
         { to: '/committees', text: 'لجان الجمعية' },
-        { to: '/scientific-committee', text: 'اللجنة العلمية والاستشارية' },
+        { to: '/committees/scientific', text: 'اللجنة العلمية والاستشارية' },
+        { to: '/committees/media', text: 'اللجنة الإعلامية' },
+        { to: '/committees/legal', text: 'اللجنة القانونية' },
+        { to: '/committees/corporate', text: 'الاتصال المؤسسي' },
+        { to: '/committees/finance', text: 'اللجنة المالية' }
       ]
     },
     { id: 'membership', text: 'العضوية', to: '/membership', type: 'link' },
@@ -96,7 +100,11 @@ const Header = () => {
     { to: '/publications', text: 'مطبوعات الجمعية' },
     { to: '/programs', text: 'البرامج والدورات' },
     { to: '/committees', text: 'لجان الجمعية' },
-    { to: '/scientific-committee', text: 'اللجنة العلمية والاستشارية' },
+    { to: '/committees/scientific', text: 'اللجنة العلمية والاستشارية' },
+    { to: '/committees/media', text: 'اللجنة الإعلامية' },
+    { to: '/committees/legal', text: 'اللجنة القانونية' },
+    { to: '/committees/corporate', text: 'الاتصال المؤسسي' },
+    { to: '/committees/finance', text: 'اللجنة المالية' },
     { to: '/library', text: 'المكتبة التفاعلية' },
     { to: '/research', text: 'البحوث والدراسات' },
     { to: '/expert-opinions', text: 'آراء الخبراء' },
