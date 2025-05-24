@@ -92,7 +92,7 @@ const PublicationsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* قسم العنوان */}
-      <section className="relative py-16 bg-gradient-to-r from-blue-700 to-blue-900 text-white">
+      <section className="py-16 bg-blue-700 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl">
             <h1 className="text-4xl font-bold mb-4">مطبوعات الجمعية</h1>
@@ -100,11 +100,6 @@ const PublicationsPage = () => {
               مجموعة متنوعة من الإصدارات العلمية والتقارير والدوريات المتخصصة في مجال العلوم السياسية
             </p>
           </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full h-auto">
-            <path fill="#f8fafc" fillOpacity="1" d="M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,90.7C672,75,768,85,864,112C960,139,1056,181,1152,181.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-          </svg>
         </div>
       </section>
 
