@@ -8,6 +8,15 @@ const Hero = () => {
   const events = [
     {
       id: 1,
+      title: "محاضرة الأمير تركي الفيصل",
+      date: "٢٤ مايو ٢٠٢٥",
+      description: "محاضرة يلقيها صاحب السمو الملكي الأمير تركي الفيصل حول 'مستقبل العالم العربي في ضوء المتغيرات الراهنة' في قاعة رقم (٨٨) بكلية الحقوق والعلوم السياسية بجامعة الملك سعود.",
+      imageUrl: "/assets/images/prince-turki.jpeg",
+      gradient: "from-red-900/85 to-red-800/70",
+      link: "/prince-turki"
+    },
+    {
+      id: 2,
       title: "المؤتمر السنوي للعلوم السياسية 2024",
       date: "15 مايو 2024",
       description: "انضموا إلينا في المؤتمر السنوي لمناقشة أحدث التطورات في مجال العلوم السياسية والعلاقات الدولية",
@@ -15,7 +24,7 @@ const Hero = () => {
       gradient: "from-blue-900/85 to-blue-800/70"
     },
     {
-      id: 2,
+      id: 3,
       title: "ندوة: تحليل الأزمات الدولية المعاصرة",
       date: "20 يونيو 2024",
       description: "ندوة متخصصة في طرق تحليل وإدارة الأزمات الدولية في ظل المتغيرات العالمية الحالية",
@@ -23,7 +32,7 @@ const Hero = () => {
       gradient: "from-green-900/85 to-green-800/70"
     },
     {
-      id: 3,
+      id: 4,
       title: "عضوية الجمعية السعودية للعلوم السياسية",
       date: "متاحة الآن",
       description: "انضم إلى مجتمع الباحثين والأكاديميين في مجال العلوم السياسية واستفد من المزايا الحصرية للأعضاء",
@@ -76,13 +85,13 @@ const Hero = () => {
                 </div>
                 <p className="mb-6 max-w-xl text-lg">{event.description}</p>
                 <div className="flex space-x-4 space-x-reverse">
-                  <Link to={index === 2 ? "/membership" : `/events/${event.id}`}>
+                  <Link to={event.link || (index === events.length - 1 ? "/membership" : `/events/${event.id}`)}>
                     <button className={`${buttonStyles.primary} px-6 py-3`}>
-                      {index === 2 ? "انضم الآن" : "المزيد من التفاصيل"}
+                      {index === events.length - 1 ? "انضم الآن" : "المزيد من التفاصيل"}
                     </button>
                   </Link>
-                  {index !== 2 && (
-                    <Link to={`/events/register/${event.id}`}>
+                  {index !== events.length - 1 && index !== 0 && (
+                    <Link to={event.link ? `${event.link}/register` : `/events/register/${event.id}`}>
                       <button className="border border-white text-white hover:bg-white hover:bg-opacity-20 font-medium rounded-md px-4 py-2 transition-colors duration-300">
                         التسجيل في الفعالية
                       </button>

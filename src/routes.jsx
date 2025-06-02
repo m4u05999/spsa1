@@ -1,3 +1,5 @@
+// src/routes.jsx
+// نظام توجيه موحد للتطبيق
 import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
@@ -12,7 +14,6 @@ import MainLayout from './layout/MainLayout';
 import DashboardLayout from './layout/DashboardLayout';
 import AdminDashboardLayout from './layout/AdminDashboardLayout';
 import NotificationSystem from './components/notifications/NotificationSystem';
-import AdminRoutes from './routes/AdminRoutes';
 
 // Lazy load all pages with relative paths to fix build issues
 const Home = lazy(() => import(/* webpackChunkName: "home" */ './pages/Home'));
@@ -24,6 +25,9 @@ const ProfilePage = lazy(() => import(/* webpackChunkName: "profile" */ './pages
 const NewsPage = lazy(() => import(/* webpackChunkName: "news" */ './pages/news/NewsPage'));
 const AboutPage = lazy(() => import(/* webpackChunkName: "about" */ './pages/about/AboutPage'));
 const EventsPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/EventsPage'));
+const PrinceTurkiLecture = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/lectures/PrinceTurkiLecture'));
+const PrinceTurkiPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/PrinceTurkiPage'));
+const TempPrinceTurkiPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/TempPrinceTurkiPage'));
 const PublicationsPage = lazy(() => import(/* webpackChunkName: "publications" */ './pages/publications/PublicationsPage'));
 const PublicationDetails = lazy(() => import(/* webpackChunkName: "publications" */ './pages/publications/PublicationDetails'));
 const ProgramsPage = lazy(() => import(/* webpackChunkName: "programs" */ './pages/programs/ProgramsPage'));
@@ -75,6 +79,13 @@ const PoliticalMediaUnit = lazy(() => import(/* webpackChunkName: "committee-uni
 const PoliticalPsychologyUnit = lazy(() => import(/* webpackChunkName: "committee-units" */ './pages/committees/units/PoliticalPsychologyUnit'));
 const WomenEmpowermentUnit = lazy(() => import(/* webpackChunkName: "committee-units" */ './pages/committees/units/WomenEmpowermentUnit'));
 
+// مكونات الحماية والتحميل
+// مكون الحماية للمسارات التي تتطلب تسجيل الدخول
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token'); // أو استخدم سياق المصادقة الخاص بك
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
 // Loading component with skeleton
 const PageLoader = () => (
   <div className="min-h-screen bg-gray-50 p-4">
@@ -90,6 +101,11 @@ const PageLoader = () => (
     </div>
   </div>
 );
+
+// مكون التحميل مع الهيكل العظمي
+const SuspenseWrapper = ({ children }) => {
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
+};
 
 // Prefetch component
 const prefetchComponent = (importFn) => {
@@ -122,7 +138,7 @@ const RouteWrapper = ({ children }) => (
   </AuthProvider>
 );
 
-// Configure routes with prefetching
+// تعريف الراوتر الرئيسي الموحد
 const router = createBrowserRouter([
   {
     path: "/",
@@ -162,6 +178,16 @@ const router = createBrowserRouter([
         path: "events",
         element: <Suspense fallback={<PageLoader />}><EventsPage /></Suspense>,
         loader: () => prefetchComponent(() => import(/* webpackChunkName: "events" */ './pages/events/EventsPage')).preload()
+      },
+      {
+        path: "prince-turki",
+        element: <Suspense fallback={<PageLoader />}><TempPrinceTurkiPage /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "events" */ './pages/TempPrinceTurkiPage')).preload()
+      },
+      {
+        path: "events/lecture/prince-turki",
+        element: <Suspense fallback={<PageLoader />}><PrinceTurkiLecture /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "events" */ './pages/events/lectures/PrinceTurkiLecture')).preload()
       },
       {
         path: "publications",

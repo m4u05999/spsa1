@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 import LatestPublications from '../components/LatestPublications';
-import GraduatesCards from '../components/GraduatesCards';
+
 import { Link } from 'react-router-dom';
 import { buttonStyles, cardStyles, colors } from '../utils/theme';
 
@@ -363,12 +363,12 @@ const Home = () => {
             <div className="md:col-span-2 rounded-xl overflow-hidden shadow-lg bg-white transition-all hover:shadow-xl">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=2070" 
-                  alt="مؤتمر العلوم السياسية" 
+                  src="/assets/images/prince-turki.jpeg" 
+                  alt="الأمير تركي الفيصل" 
                   className="w-full h-72 object-cover"
                 />
                 <div className="absolute top-4 right-4 bg-secondary-500 text-white rounded-md px-3 py-1">
-                  خبر رئيسي
+                  محاضرة استثنائية
                 </div>
               </div>
               <div className="p-6">
@@ -376,12 +376,12 @@ const Home = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span>١٥ أبريل ٢٠٢٤</span>
+                  <span>٢٤ مايو ٢٠٢٥</span>
                 </div>
-                <h3 className="text-2xl font-bold mb-3">افتتاح التسجيل في المؤتمر السنوي للعلوم السياسية</h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">أعلنت رابطة العلوم السياسية عن فتح باب التسجيل في المؤتمر السنوي الذي سيعقد في الرياض بمشاركة نخبة من الخبراء والأكاديميين من مختلف أنحاء العالم لمناقشة أبرز التطورات في الساحة السياسية الإقليمية والدولية.</p>
-                <Link to="/news/1" className="text-primary-600 hover:text-primary-800 font-medium inline-flex items-center">
-                  اقرأ المزيد <span className="mr-2">←</span>
+                <h3 className="text-2xl font-bold mb-3">الجمعية السعودية للعلوم السياسية تستضيف الأمير تركي الفيصل</h3>
+                <p className="text-gray-600 mb-4 line-clamp-3">محاضرة يلقيها صاحب السمو الملكي الأمير تركي الفيصل حول "مستقبل العالم العربي في ضوء المتغيرات الراهنة" في قاعة رقم (٨٨) بكلية الحقوق والعلوم السياسية بجامعة الملك سعود.</p>
+                <Link to="/events/lecture/prince-turki" className="text-primary-600 hover:text-primary-800 font-medium inline-flex items-center">
+                  التفاصيل الكاملة <span className="mr-2">←</span>
                 </Link>
               </div>
             </div>
@@ -444,8 +444,6 @@ const Home = () => {
         </div>
       </section>
       
-      {/* قسم بطاقات خريجون قسم العلوم السياسية */}
-      <GraduatesCards />
 
       {/* قسم الرؤية والأهداف الاستراتيجية */}
       <section className="py-16 bg-gradient-to-b from-white to-gray-50">

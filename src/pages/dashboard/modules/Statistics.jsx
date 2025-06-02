@@ -1,9 +1,16 @@
 // src/pages/dashboard/modules/Statistics.jsx
 import React, { useEffect, useState } from 'react';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 const Statistics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('monthly');
+  const [showDetailedStats, setShowDetailedStats] = useState(false);
 
   useEffect(() => {
     // Simulate API call to fetch statistics
@@ -64,6 +71,59 @@ const Statistics = () => {
     fetchStatistics();
   }, []);
 
+  // Prepare data for charts
+  const prepareTrafficData = () => {
+    if (!stats) return [];
+    
+    if (timeFilter === 'daily') {
+      return stats.traffic.daily.map((value, index) => ({
+        name: `اليوم ${index + 1}`,
+        زوار: value
+      }));
+    } else if (timeFilter === 'weekly') {
+      return stats.traffic.weekly.map((value, index) => ({
+        name: `الأسبوع ${index + 1}`,
+        زوار: value
+      }));
+    } else {
+      return stats.traffic.monthly.map((value, index) => ({
+        name: `الشهر ${index + 1}`,
+        زوار: value
+      }));
+    }
+  };
+
+  const prepareMembershipData = () => {
+    if (!stats) return [];
+    
+    return [
+      { name: 'مقبولة', value: stats.membership.approved, fill: '#4ade80' },
+      { name: 'قيد المراجعة', value: stats.membership.pending, fill: '#facc15' },
+      { name: 'مرفوضة', value: stats.membership.rejected, fill: '#f87171' },
+    ];
+  };
+
+  const prepareContentData = () => {
+    if (!stats) return [];
+    
+    return [
+      { name: 'مقالات', value: stats.content.articles, fill: '#8884d8' },
+      { name: 'أخبار', value: stats.content.news, fill: '#82ca9d' },
+      { name: 'أبحاث', value: stats.content.research, fill: '#ffc658' },
+      { name: 'منشورات', value: stats.content.publications, fill: '#ff8042' },
+    ];
+  };
+
+  const prepareEngagementData = () => {
+    if (!stats) return [];
+    
+    return [
+      { name: 'تعليقات', value: stats.engagement.comments, fill: '#8884d8' },
+      { name: 'إعجابات', value: stats.engagement.likes, fill: '#82ca9d' },
+      { name: 'مشاركات', value: stats.engagement.shares, fill: '#ffc658' },
+    ];
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -74,7 +134,51 @@ const Statistics = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900">الإحصائيات والتحليلات</h1>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">الإحصائيات والتحليلات</h1>
+        
+        <div className="flex flex-wrap mt-4 md:mt-0 gap-2">
+          <div className="flex rounded-md shadow-sm" role="group">
+            <button
+              type="button"
+              id="filter-daily"
+              name="filter-daily"
+              onClick={() => setTimeFilter('daily')}
+              className={`px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 ${timeFilter === 'daily' ? 'bg-blue-50 text-blue-700' : ''}`}
+            >
+              يومي
+            </button>
+            <button
+              type="button"
+              id="filter-weekly"
+              name="filter-weekly"
+              onClick={() => setTimeFilter('weekly')}
+              className={`px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 ${timeFilter === 'weekly' ? 'bg-blue-50 text-blue-700' : ''}`}
+            >
+              أسبوعي
+            </button>
+            <button
+              type="button"
+              id="filter-monthly"
+              name="filter-monthly"
+              onClick={() => setTimeFilter('monthly')}
+              className={`px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 ${timeFilter === 'monthly' ? 'bg-blue-50 text-blue-700' : ''}`}
+            >
+              شهري
+            </button>
+          </div>
+          
+          <button
+            type="button"
+            id="toggle-detailed-view"
+            name="toggle-detailed-view"
+            onClick={() => setShowDetailedStats(!showDetailedStats)}
+            className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700"
+          >
+            {showDetailedStats ? 'عرض موجز' : 'عرض تفصيلي'}
+          </button>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {/* User Statistics Card */}
@@ -190,7 +294,7 @@ const Statistics = () => {
       </div>
 
       {/* Engagement & Traffic Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white border rounded-lg shadow-sm p-4">
           <h2 className="text-lg font-semibold mb-4">التفاعل</h2>
           <div className="space-y-4">
@@ -278,6 +382,109 @@ const Statistics = () => {
           </div>
         </div>
       </div>
+
+      {/* المخططات البيانية التفاعلية - تظهر فقط في العرض التفصيلي */}
+      {showDetailedStats && (
+        <div className="mt-8 space-y-8">
+          {/* مخطط حركة الزوار عبر الزمن */}
+          <div className="bg-white border rounded-lg shadow-sm p-4">
+            <h2 className="text-lg font-semibold mb-4">حركة الزوار ({timeFilter === 'daily' ? 'يومي' : timeFilter === 'weekly' ? 'أسبوعي' : 'شهري'})</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart
+                data={prepareTrafficData()}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Tooltip formatter={(value) => [`${value}`, 'عدد الزوار']} />
+                <Area type="monotone" dataKey="زوار" stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* مخطط توزيع المحتوى */}
+            <div className="bg-white border rounded-lg shadow-sm p-4">
+              <h2 className="text-lg font-semibold mb-4">توزيع أنواع المحتوى</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={prepareContentData()}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    nameKey="name"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {prepareContentData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value}`, 'العدد']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* مخطط نشاط المستخدمين */}
+            <div className="bg-white border rounded-lg shadow-sm p-4">
+              <h2 className="text-lg font-semibold mb-4">نشاط المستخدمين</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={prepareEngagementData()}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`${value}`, 'العدد']} />
+                  <Legend />
+                  <Bar dataKey="value" name="العدد" fill="#8884d8">
+                    {prepareEngagementData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* مخطط طلبات العضوية */}
+          <div className="bg-white border rounded-lg shadow-sm p-4">
+            <h2 className="text-lg font-semibold mb-4">حالة طلبات العضوية</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={prepareMembershipData()}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {prepareMembershipData().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => [`${value}`, 'العدد']} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
