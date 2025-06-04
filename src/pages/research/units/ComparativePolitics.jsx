@@ -38,12 +38,14 @@ const ComparativePolitics = () => {
       {
         title: 'الإصلاح السياسي والإداري: نماذج ناجحة',
         authors: ['د. نواف الدوسري', 'د. طارق المالكي'],
-        date: '2023'
+        date: '2023',
+        pdfUrl: '/assets/documents/publications/political-administrative-reform.pdf'
       },
       {
         title: 'التحولات السياسية في الشرق الأوسط: دراسة مقارنة',
         authors: ['د. مها الراشد'],
-        date: '2022'
+        date: '2022',
+        pdfUrl: '/assets/documents/publications/middle-east-political-transitions.pdf'
       }
     ]
   };

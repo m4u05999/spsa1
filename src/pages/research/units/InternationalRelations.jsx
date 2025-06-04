@@ -38,12 +38,14 @@ const InternationalRelations = () => {
       {
         title: 'مستقبل النظام الدولي متعدد الأقطاب',
         authors: ['د. خالد المنصور', 'د. سارة العتيبي'],
-        date: '2023'
+        date: '2023',
+        pdfUrl: '/assets/documents/publications/multipolar-international-system.pdf'
       },
       {
         title: 'تحديات الحوكمة العالمية في القرن الحادي والعشرين',
         authors: ['د. فيصل الشمري'],
-        date: '2022'
+        date: '2022',
+        pdfUrl: '/assets/documents/publications/global-governance-challenges.pdf'
       }
     ]
   };

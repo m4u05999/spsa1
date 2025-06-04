@@ -38,12 +38,14 @@ const PoliticalThought = () => {
       {
         title: 'الفكر السياسي الإسلامي المعاصر: اتجاهات ومدارس',
         authors: ['د. عبدالرحمن الشهري', 'د. منيرة السبيعي'],
-        date: '2022'
+        date: '2022',
+        pdfUrl: '/assets/documents/publications/islamic-political-thought.pdf'
       },
       {
         title: 'نقد النظريات الغربية في العلوم السياسية من منظور حضاري',
         authors: ['د. سلمان الحربي'],
-        date: '2023'
+        date: '2023',
+        pdfUrl: '/assets/documents/publications/western-theories-critique.pdf'
       }
     ]
   };

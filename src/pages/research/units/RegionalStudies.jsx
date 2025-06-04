@@ -36,14 +36,25 @@ const RegionalStudies = () => {
     ],
     publications: [
       {
-        title: 'مستقبل التعاون الإقليمي في الشرق الأوسط',
-        authors: ['د. محمد العمري', 'د. فاطمة الزهراني'],
-        date: '2023'
+        title: 'الاستثنائية التنموية الأوروبية «الحروب نموذجاً»',
+        authors: ['أ.د. عبد الله بن جمعان الغامدي'],
+        date: '2023',
+        group: 'مجموعة الدراسات الأوروبية',
+        pdfUrl: '/assets/documents/publications/european-development-exceptionalism-wars.pdf'
       },
       {
-        title: 'تحديات الأمن الإقليمي في الخليج العربي',
-        authors: ['د. عبدالله القحطاني'],
-        date: '2022'
+        title: 'السياسة الخارجية السعودية: نحو صياغة جديدة',
+        authors: ['أ.د. صالح محمد الخثلان'],
+        date: '2022',
+        group: 'مجموعة دراسات المملكة',
+        pdfUrl: '/assets/documents/publications/saudi-foreign-policy-new-formulation.pdf'
+      },
+      {
+        title: 'السياسة الخارجية التركية تجاه منطقة الشرق الأوسط',
+        authors: ['د. أحمد محمد وهبان'],
+        date: 'يونيو 2013',
+        group: 'مجموعة دراسات الشرق الأوسط (تركيا)',
+        pdfUrl: '/assets/documents/publications/turkish-foreign-policy-middle-east.pdf'
       }
     ]
   };
@@ -122,18 +133,55 @@ const RegionalStudies = () => {
     }
   ];
 
+  // فلترة المنشورات حسب المجموعة البحثية
+  const getPublicationsForGroup = (groupTitle) => {
+    // حالة خاصة لمعالجة منشورات "مجموعة دراسات الشرق الأوسط" وعناصرها الفرعية
+    if (groupTitle === "مجموعة دراسات الشرق الأوسط") {
+      // إرجاع المنشورات التي تحتوي على "مجموعة دراسات الشرق الأوسط" في اسم المجموعة
+      // ولكن استثناء تلك التي تحتوي على أقواس، لأنها مخصصة للفروع
+      return unitData.publications.filter(pub => 
+        pub.group.includes("مجموعة دراسات الشرق الأوسط") && 
+        !pub.group.includes("(") // استثناء المنشورات التي تنتمي للفروع
+      );
+    }
+    
+    // للمجموعات الأخرى، نستخدم التطابق الدقيق
+    return unitData.publications.filter(pub => pub.group === groupTitle);
+  };
+  
+  // الحصول على جميع المنشورات لمجموعة معينة بما في ذلك الفروع - يستخدم لتمرير جميع المنشورات للمكون
+  const getAllPublicationsForGroup = (groupTitle) => {
+    if (groupTitle === "مجموعة دراسات الشرق الأوسط") {
+      return unitData.publications.filter(pub => 
+        pub.group.includes("مجموعة دراسات الشرق الأوسط")
+      );
+    }
+    
+    return unitData.publications.filter(pub => pub.group === groupTitle);
+  };
+
+  // إنشاء نسخة من وحدة البحث بدون المنشورات لعرضها في الصفحة الرئيسية
+  const unitDataWithoutPublications = {
+    ...unitData,
+    publications: [] // إزالة المنشورات من الصفحة الرئيسية
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 rtl" dir="rtl">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <ResearchUnitLayout {...unitData} />
+          <ResearchUnitLayout {...unitDataWithoutPublications} />
         </div>
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-bold mb-6">المجموعات البحثية</h2>
           <div className="space-y-6">
             {researchGroups.map((group, index) => (
-              <ResearchSubGroup key={index} group={group} />
+              <ResearchSubGroup 
+                key={index} 
+                group={group} 
+                publications={getAllPublicationsForGroup(group.title)} 
+              />
             ))}
           </div>
         </div>

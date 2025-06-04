@@ -26,8 +26,6 @@ const NewsPage = lazy(() => import(/* webpackChunkName: "news" */ './pages/news/
 const AboutPage = lazy(() => import(/* webpackChunkName: "about" */ './pages/about/AboutPage'));
 const EventsPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/EventsPage'));
 const PrinceTurkiLecture = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/lectures/PrinceTurkiLecture'));
-const PrinceTurkiPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/PrinceTurkiPage'));
-const TempPrinceTurkiPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/TempPrinceTurkiPage'));
 const PublicationsPage = lazy(() => import(/* webpackChunkName: "publications" */ './pages/publications/PublicationsPage'));
 const PublicationDetails = lazy(() => import(/* webpackChunkName: "publications" */ './pages/publications/PublicationDetails'));
 const ProgramsPage = lazy(() => import(/* webpackChunkName: "programs" */ './pages/programs/ProgramsPage'));
@@ -178,11 +176,6 @@ const router = createBrowserRouter([
         path: "events",
         element: <Suspense fallback={<PageLoader />}><EventsPage /></Suspense>,
         loader: () => prefetchComponent(() => import(/* webpackChunkName: "events" */ './pages/events/EventsPage')).preload()
-      },
-      {
-        path: "prince-turki",
-        element: <Suspense fallback={<PageLoader />}><TempPrinceTurkiPage /></Suspense>,
-        loader: () => prefetchComponent(() => import(/* webpackChunkName: "events" */ './pages/TempPrinceTurkiPage')).preload()
       },
       {
         path: "events/lecture/prince-turki",
