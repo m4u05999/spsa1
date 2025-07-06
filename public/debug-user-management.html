@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص مشكلة UserManagement - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #e74c3c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .test-result {
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .test-result.pass { background: #28a745; color: white; }
+        .test-result.fail { background: #dc3545; color: white; }
+        .test-result.warning { background: #ffc107; color: black; }
+        .test-result.info { background: #17a2b8; color: white; }
+        button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #e9ecef;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .status-green { background: #28a745; }
+        .status-red { background: #dc3545; }
+        .status-yellow { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 تشخيص مشكلة UserManagement</h1>
+            <p>أداة تشخيص شاملة لحل مشكلة "Failed to fetch dynamically imported module"</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h3>📊 حالة النظام الحالية</h3>
+                <div id="systemStatus">
+                    <button onclick="checkSystemStatus()">فحص حالة النظام</button>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="test-section">
+                    <h3>🔧 اختبار الملفات</h3>
+                    <button onclick="testFiles()">فحص الملفات</button>
+                    <div id="filesResult"></div>
+                </div>
+
+                <div class="test-section">
+                    <h3>📦 اختبار الـ Imports</h3>
+                    <button onclick="testImports()">فحص الـ Imports</button>
+                    <div id="importsResult"></div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <h3>🌐 اختبار التحميل الديناميكي</h3>
+                <button onclick="testDynamicLoading()">اختبار Dynamic Loading</button>
+                <div id="dynamicResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🔄 حلول مقترحة</h3>
+                <div id="solutions">
+                    <button onclick="applySolution1()">الحل 1: إعادة تشغيل الخادم</button>
+                    <button onclick="applySolution2()">الحل 2: مسح Cache المتصفح</button>
+                    <button onclick="applySolution3()">الحل 3: تهيئة البيانات</button>
+                    <button onclick="applySolution4()">الحل 4: استخدام المكون البديل</button>
+                </div>
+                <div id="solutionsResult"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📋 سجل الأخطاء</h3>
+                <button onclick="clearErrorLog()">مسح السجل</button>
+                <button onclick="exportErrorLog()">تصدير السجل</button>
+                <div id="errorLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let errorLog = [];
+        let systemData = {};
+
+        // تسجيل الأخطاء تلقائياً
+        window.addEventListener('error', function(e) {
+            logError('JavaScript Error', e.message, e.filename + ':' + e.lineno);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            logError('Promise Rejection', e.reason, 'Unhandled Promise');
+        });
+
+        function logError(type, message, source) {
+            const error = {
+                timestamp: new Date().toISOString(),
+                type: type,
+                message: message,
+                source: source
+            };
+            errorLog.push(error);
+            updateErrorLog();
+        }
+
+        function updateErrorLog() {
+            const container = document.getElementById('errorLog');
+            if (errorLog.length === 0) {
+                container.innerHTML = '<div class="test-result info">لا توجد أخطاء مسجلة</div>';
+                return;
+            }
+
+            const html = errorLog.map(error => `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <strong>${error.type}</strong> - ${error.timestamp}
+                    <br><strong>الرسالة:</strong> ${error.message}
+                    <br><strong>المصدر:</strong> ${error.source}
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        async function checkSystemStatus() {
+            const container = document.getElementById('systemStatus');
+            container.innerHTML = '<div>🔄 جاري فحص النظام...</div>';
+
+            try {
+                // فحص localStorage
+                const users = localStorage.getItem('spsa_users');
+                const flags = localStorage.getItem('spsa_feature_flags');
+                const auth = localStorage.getItem('spsa_auth_token');
+
+                // فحص الخادم
+                const serverResponse = await fetch('/');
+                const serverStatus = serverResponse.ok;
+
+                // فحص Console Errors
+                const hasConsoleErrors = errorLog.length > 0;
+
+                systemData = {
+                    users: users ? JSON.parse(users).length : 0,
+                    flags: flags ? Object.keys(JSON.parse(flags)).length : 0,
+                    auth: !!auth,
+                    server: serverStatus,
+                    errors: errorLog.length
+                };
+
+                const html = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>👥 المستخدمون</h4>
+                            <span class="status-indicator ${systemData.users > 0 ? 'status-green' : 'status-red'}"></span>
+                            ${systemData.users} مستخدم
+                        </div>
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>⚙️ الإعدادات</h4>
+                            <span class="status-indicator ${systemData.flags > 0 ? 'status-green' : 'status-red'}"></span>
+                            ${systemData.flags} إعداد
+                        </div>
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>🔐 المصادقة</h4>
+                            <span class="status-indicator ${systemData.auth ? 'status-green' : 'status-red'}"></span>
+                            ${systemData.auth ? 'متصل' : 'غير متصل'}
+                        </div>
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>🌐 الخادم</h4>
+                            <span class="status-indicator ${systemData.server ? 'status-green' : 'status-red'}"></span>
+                            ${systemData.server ? 'يعمل' : 'متوقف'}
+                        </div>
+                        <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+                            <h4>⚠️ الأخطاء</h4>
+                            <span class="status-indicator ${systemData.errors === 0 ? 'status-green' : 'status-red'}"></span>
+                            ${systemData.errors} خطأ
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                container.innerHTML = `<div class="test-result fail">خطأ في فحص النظام: ${error.message}</div>`;
+                logError('System Check', error.message, 'checkSystemStatus');
+            }
+        }
+
+        async function testFiles() {
+            const container = document.getElementById('filesResult');
+            container.innerHTML = '<div>🔄 جاري فحص الملفات...</div>';
+
+            const filesToTest = [
+                '/src/pages/dashboard/modules/UserManagement.jsx',
+                '/src/pages/dashboard/modules/UserManagementTest.jsx',
+                '/src/components/modals/UserModal.jsx',
+                '/src/services/api/userManagementApi.js',
+                '/src/context/AuthContext.jsx',
+                '/src/utils/permissions.js'
+            ];
+
+            let results = [];
+            
+            for (const file of filesToTest) {
+                try {
+                    const response = await fetch(file);
+                    const status = response.status;
+                    
+                    if (status === 403) {
+                        results.push(`✅ ${file.split('/').pop()}: محمي (طبيعي)`);
+                    } else if (status === 404) {
+                        results.push(`❌ ${file.split('/').pop()}: مفقود!`);
+                    } else if (status === 200) {
+                        results.push(`⚠️ ${file.split('/').pop()}: قابل للوصول`);
+                    } else {
+                        results.push(`❓ ${file.split('/').pop()}: حالة غير معروفة (${status})`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${file.split('/').pop()}: خطأ - ${error.message}`);
+                }
+            }
+
+            container.innerHTML = `<pre>${results.join('\n')}</pre>`;
+        }
+
+        async function testImports() {
+            const container = document.getElementById('importsResult');
+            container.innerHTML = '<div>🔄 جاري اختبار الـ Imports...</div>';
+
+            const importTests = [
+                {
+                    name: 'React',
+                    test: () => typeof React !== 'undefined'
+                },
+                {
+                    name: 'localStorage',
+                    test: () => typeof localStorage !== 'undefined'
+                },
+                {
+                    name: 'fetch',
+                    test: () => typeof fetch !== 'undefined'
+                }
+            ];
+
+            let results = [];
+            
+            importTests.forEach(test => {
+                try {
+                    const result = test.test();
+                    results.push(`${result ? '✅' : '❌'} ${test.name}: ${result ? 'متاح' : 'غير متاح'}`);
+                } catch (error) {
+                    results.push(`❌ ${test.name}: خطأ - ${error.message}`);
+                }
+            });
+
+            container.innerHTML = `<pre>${results.join('\n')}</pre>`;
+        }
+
+        async function testDynamicLoading() {
+            const container = document.getElementById('dynamicResult');
+            container.innerHTML = '<div>🔄 جاري اختبار التحميل الديناميكي...</div>';
+
+            const tests = [
+                {
+                    name: 'UserManagement.jsx',
+                    path: '/src/pages/dashboard/modules/UserManagement.jsx'
+                },
+                {
+                    name: 'UserManagementTest.jsx',
+                    path: '/src/pages/dashboard/modules/UserManagementTest.jsx'
+                }
+            ];
+
+            let results = [];
+
+            for (const test of tests) {
+                try {
+                    const module = await import(test.path);
+                    if (module.default) {
+                        results.push(`✅ ${test.name}: تم التحميل بنجاح`);
+                    } else {
+                        results.push(`⚠️ ${test.name}: تم التحميل لكن بدون default export`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${test.name}: فشل التحميل - ${error.message}`);
+                    logError('Dynamic Import', error.message, test.path);
+                }
+            }
+
+            container.innerHTML = `<pre>${results.join('\n')}</pre>`;
+        }
+
+        function applySolution1() {
+            const container = document.getElementById('solutionsResult');
+            container.innerHTML = `
+                <div class="test-result info">الحل 1: إعادة تشغيل الخادم</div>
+                <div>يرجى تشغيل الأوامر التالية في Terminal:</div>
+                <pre>Ctrl+C (لإيقاف الخادم)
+npm run dev (لإعادة تشغيل الخادم)</pre>
+            `;
+        }
+
+        function applySolution2() {
+            const container = document.getElementById('solutionsResult');
+            container.innerHTML = `
+                <div class="test-result info">الحل 2: مسح Cache المتصفح</div>
+                <div>يرجى تنفيذ الخطوات التالية:</div>
+                <pre>1. اضغط Ctrl+Shift+R (Hard Reload)
+2. أو اضغط F12 > Network > Disable Cache
+3. أو امسح بيانات الموقع من إعدادات المتصفح</pre>
+            `;
+        }
+
+        function applySolution3() {
+            const container = document.getElementById('solutionsResult');
+            container.innerHTML = `
+                <div class="test-result info">الحل 3: تهيئة البيانات</div>
+                <div>
+                    <button onclick="window.open('/initialize-system-data.html', '_blank')" 
+                            style="background: #28a745;">
+                        فتح أداة التهيئة
+                    </button>
+                </div>
+            `;
+        }
+
+        function applySolution4() {
+            const container = document.getElementById('solutionsResult');
+            container.innerHTML = `
+                <div class="test-result info">الحل 4: استخدام المكون البديل</div>
+                <div>تم إنشاء مكون بديل مبسط للاختبار</div>
+                <div>
+                    <button onclick="window.open('/', '_blank')" 
+                            style="background: #17a2b8;">
+                        اختبار التطبيق الآن
+                    </button>
+                </div>
+            `;
+        }
+
+        function clearErrorLog() {
+            errorLog = [];
+            updateErrorLog();
+        }
+
+        function exportErrorLog() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                systemData: systemData,
+                errors: errorLog,
+                userAgent: navigator.userAgent,
+                url: window.location.href
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `spsa-debug-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // تشغيل فحص أولي عند تحميل الصفحة
+        window.onload = function() {
+            console.log('أداة التشخيص جاهزة');
+            checkSystemStatus();
+            updateErrorLog();
+        };
+    </script>
+</body>
+</html>

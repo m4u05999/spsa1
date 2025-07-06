@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار Dynamic Import - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 اختبار Dynamic Import - userManagementApi</h1>
+        <p>هذا الاختبار يتحقق من إمكانية تحميل وحدة userManagementApi باستخدام dynamic import</p>
+
+        <div class="test-section info">
+            <h3>📋 معلومات الاختبار</h3>
+            <p><strong>الخادم:</strong> <span id="server-url">http://localhost:5174</span></p>
+            <p><strong>المسار المطلوب:</strong> <span id="module-path">/src/services/api/userManagementApi.js</span></p>
+            <p><strong>الوقت:</strong> <span id="current-time"></span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 اختبارات Dynamic Import</h3>
+            <button onclick="testDirectImport()">اختبار Import مباشر</button>
+            <button onclick="testRelativeImport()">اختبار Import نسبي</button>
+            <button onclick="testAbsoluteImport()">اختبار Import مطلق</button>
+            <button onclick="testFetchFirst()">اختبار Fetch ثم Import</button>
+            <button onclick="clearResults()">مسح النتائج</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        // Update current time
+        document.getElementById('current-time').textContent = new Date().toLocaleString('ar-SA');
+
+        let testCounter = 0;
+
+        function addResult(title, status, message, details = null) {
+            testCounter++;
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-section ${status}`;
+            
+            let html = `
+                <h4>${testCounter}. ${title}</h4>
+                <div class="status">${status === 'success' ? '✅ نجح' : status === 'error' ? '❌ فشل' : 'ℹ️ معلومات'}</div>
+                <p>${message}</p>
+            `;
+            
+            if (details) {
+                html += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultsDiv.appendChild(resultDiv);
+            
+            // Scroll to the new result
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Test 1: Direct import
+        window.testDirectImport = async function() {
+            try {
+                addResult('اختبار Import مباشر', 'info', 'جاري تحميل الوحدة...');
+                
+                const startTime = performance.now();
+                const module = await import('/src/services/api/userManagementApi.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (module.default) {
+                    const api = module.default;
+                    const status = api.getServiceStatus();
+                    
+                    addResult(
+                        'اختبار Import مباشر', 
+                        'success', 
+                        `تم تحميل الوحدة بنجاح في ${loadTime}ms`,
+                        {
+                            hasDefault: !!module.default,
+                            serviceStatus: status,
+                            exportedKeys: Object.keys(module),
+                            loadTimeMs: loadTime
+                        }
+                    );
+                } else {
+                    addResult(
+                        'اختبار Import مباشر', 
+                        'error', 
+                        'تم تحميل الوحدة لكن لا يوجد default export',
+                        { exportedKeys: Object.keys(module) }
+                    );
+                }
+            } catch (error) {
+                addResult(
+                    'اختبار Import مباشر', 
+                    'error', 
+                    `فشل في تحميل الوحدة: ${error.message}`,
+                    {
+                        errorName: error.name,
+                        errorMessage: error.message,
+                        errorStack: error.stack
+                    }
+                );
+            }
+        };
+
+        // Test 2: Relative import (simulating from localStorageInspector.js)
+        window.testRelativeImport = async function() {
+            try {
+                addResult('اختبار Import نسبي', 'info', 'جاري تحميل الوحدة بمسار نسبي...');
+                
+                const startTime = performance.now();
+                // Simulate the exact import from localStorageInspector.js
+                const module = await import('../src/services/api/userManagementApi.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (module.default) {
+                    addResult(
+                        'اختبار Import نسبي', 
+                        'success', 
+                        `تم تحميل الوحدة بنجاح بمسار نسبي في ${loadTime}ms`,
+                        { loadTimeMs: loadTime }
+                    );
+                } else {
+                    addResult('اختبار Import نسبي', 'error', 'لا يوجد default export');
+                }
+            } catch (error) {
+                addResult(
+                    'اختبار Import نسبي', 
+                    'error', 
+                    `فشل في تحميل الوحدة بمسار نسبي: ${error.message}`,
+                    { errorDetails: error }
+                );
+            }
+        };
+
+        // Test 3: Absolute import
+        window.testAbsoluteImport = async function() {
+            try {
+                addResult('اختبار Import مطلق', 'info', 'جاري تحميل الوحدة بمسار مطلق...');
+                
+                const startTime = performance.now();
+                const module = await import('http://localhost:5174/src/services/api/userManagementApi.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (module.default) {
+                    addResult(
+                        'اختبار Import مطلق', 
+                        'success', 
+                        `تم تحميل الوحدة بنجاح بمسار مطلق في ${loadTime}ms`,
+                        { loadTimeMs: loadTime }
+                    );
+                } else {
+                    addResult('اختبار Import مطلق', 'error', 'لا يوجد default export');
+                }
+            } catch (error) {
+                addResult(
+                    'اختبار Import مطلق', 
+                    'error', 
+                    `فشل في تحميل الوحدة بمسار مطلق: ${error.message}`,
+                    { errorDetails: error }
+                );
+            }
+        };
+
+        // Test 4: Fetch first, then import
+        window.testFetchFirst = async function() {
+            try {
+                addResult('اختبار Fetch ثم Import', 'info', 'جاري اختبار الوصول للملف أولاً...');
+                
+                // First, try to fetch the file
+                const fetchResponse = await fetch('/src/services/api/userManagementApi.js');
+                
+                if (!fetchResponse.ok) {
+                    addResult(
+                        'اختبار Fetch ثم Import', 
+                        'error', 
+                        `فشل في الوصول للملف: ${fetchResponse.status} ${fetchResponse.statusText}`,
+                        {
+                            status: fetchResponse.status,
+                            statusText: fetchResponse.statusText,
+                            url: fetchResponse.url
+                        }
+                    );
+                    return;
+                }
+                
+                const fileContent = await fetchResponse.text();
+                addResult(
+                    'اختبار Fetch', 
+                    'success', 
+                    `تم الوصول للملف بنجاح (${fileContent.length} حرف)`,
+                    { 
+                        fileSize: fileContent.length,
+                        hasDefaultExport: fileContent.includes('export default')
+                    }
+                );
+                
+                // Now try to import
+                const startTime = performance.now();
+                const module = await import('/src/services/api/userManagementApi.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (module.default) {
+                    addResult(
+                        'اختبار Import بعد Fetch', 
+                        'success', 
+                        `تم تحميل الوحدة بنجاح بعد التحقق من الملف في ${loadTime}ms`,
+                        { loadTimeMs: loadTime }
+                    );
+                } else {
+                    addResult('اختبار Import بعد Fetch', 'error', 'لا يوجد default export');
+                }
+                
+            } catch (error) {
+                addResult(
+                    'اختبار Fetch ثم Import', 
+                    'error', 
+                    `خطأ في الاختبار: ${error.message}`,
+                    { errorDetails: error }
+                );
+            }
+        };
+
+        // Clear results
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+            testCounter = 0;
+        };
+
+        // Auto-run first test
+        setTimeout(() => {
+            addResult('بدء الاختبار', 'info', 'بدء اختبار تحميل وحدة userManagementApi...');
+        }, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect width="400" height="300" fill="#f2f2f2"/>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle" fill="#888888">صورة غير متوفرة</text>
+  <path d="M200,90 L230,150 L270,150 L240,190 L250,240 L200,210 L150,240 L160,190 L130,150 L170,150 Z" fill="#bbbbbb"/>
+</svg>

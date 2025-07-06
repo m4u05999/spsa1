@@ -2,6 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { buttonStyles, colors } from '../utils/theme';
 import { Link } from 'react-router-dom';
+import { getImageWithFallback } from '../assets/images/placeholders';
+
+
+// Helper function to replace Unsplash URLs with local placeholders
+const replaceUnsplashUrl = (url, contentType = 'default') => {
+  if (url && url.includes('images.unsplash.com')) {
+    return getImageWithFallback(url, contentType);
+  }
+  return url;
+};
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -20,7 +30,7 @@ const Hero = () => {
       title: "المؤتمر السنوي للعلوم السياسية 2024",
       date: "15 مايو 2024",
       description: "انضموا إلينا في المؤتمر السنوي لمناقشة أحدث التطورات في مجال العلوم السياسية والعلاقات الدولية",
-      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+      imageUrl: replaceUnsplashUrl("https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop", "default"),
       gradient: "from-blue-900/85 to-blue-800/70"
     },
     {
@@ -28,7 +38,7 @@ const Hero = () => {
       title: "ندوة: تحليل الأزمات الدولية المعاصرة",
       date: "20 يونيو 2024",
       description: "ندوة متخصصة في طرق تحليل وإدارة الأزمات الدولية في ظل المتغيرات العالمية الحالية",
-      imageUrl: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?q=80&w=2070&auto=format&fit=crop",
+      imageUrl: replaceUnsplashUrl("https://images.unsplash.com/photo-1577563908411-5077b6dc7624?q=80&w=2070&auto=format&fit=crop", "default"),
       gradient: "from-green-900/85 to-green-800/70"
     },
     {
@@ -36,7 +46,7 @@ const Hero = () => {
       title: "عضوية الجمعية السعودية للعلوم السياسية",
       date: "متاحة الآن",
       description: "انضم إلى مجتمع الباحثين والأكاديميين في مجال العلوم السياسية واستفد من المزايا الحصرية للأعضاء",
-      imageUrl: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1974&auto=format&fit=crop",
+      imageUrl: replaceUnsplashUrl("https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=1974&auto=format&fit=crop", "default"),
       gradient: "from-purple-900/85 to-purple-800/70"
     }
   ];

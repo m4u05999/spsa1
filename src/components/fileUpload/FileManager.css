@@ -1,0 +1,621 @@
+/**
+ * File Manager Component Styles
+ * أنماط مكون إدارة الملفات
+ */
+
+/* Main Container */
+.file-manager {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header */
+.file-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.files-count {
+  font-size: 14px;
+  color: #6b7280;
+  background: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* View Mode Toggle */
+.view-mode-toggle {
+  display: flex;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.view-mode-toggle button {
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-toggle button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.view-mode-toggle button.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Filters */
+.file-manager-filters {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.search-box input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #3b82f6;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-controls select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.filter-controls select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #3b82f6;
+}
+
+.sort-order {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-order:hover {
+  background: #f3f4f6;
+}
+
+.sort-order.desc svg {
+  transform: rotate(180deg);
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.error-message button {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid #dc2626;
+  border-radius: 4px;
+  color: #dc2626;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Files Container */
+.files-container {
+  padding: 24px;
+  min-height: 300px;
+}
+
+.files-container.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.files-container.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* File Item */
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  position: relative;
+}
+
+.file-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.file-item.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.files-container.grid .file-item {
+  flex-direction: column;
+  text-align: center;
+  gap: 12px;
+}
+
+.files-container.list .file-item {
+  flex-direction: row;
+  gap: 16px;
+}
+
+/* File Icon */
+.file-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.files-container.list .file-icon {
+  font-size: 24px;
+}
+
+/* File Info */
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.files-container.grid .file-info {
+  text-align: center;
+}
+
+.files-container.list .file-info {
+  text-align: right;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-container.grid .file-name {
+  white-space: normal;
+  line-height: 1.4;
+  max-height: 2.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.file-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.files-container.grid .file-meta {
+  justify-content: center;
+}
+
+.files-container.list .file-meta {
+  justify-content: flex-start;
+}
+
+.file-description {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* File Actions */
+.file-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.file-item:hover .file-actions {
+  opacity: 1;
+}
+
+.action-button {
+  padding: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-button.download {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-button.download:hover {
+  background: #2563eb;
+}
+
+.action-button.delete {
+  background: #ef4444;
+  color: white;
+}
+
+.action-button.delete:hover {
+  background: #dc2626;
+}
+
+/* Sync Indicator */
+.sync-indicator {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #f59e0b;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #374151;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Selected Actions */
+.selected-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #eff6ff;
+  border-top: 1px solid #bfdbfe;
+}
+
+.selected-actions span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.clear-selection,
+.delete-selected {
+  padding: 6px 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-selection {
+  background: white;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+.clear-selection:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.delete-selected {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.delete-selected:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-manager-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    justify-content: space-between;
+  }
+  
+  .file-manager-filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filter-controls {
+    flex-wrap: wrap;
+  }
+  
+  .files-container.grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  
+  .files-container {
+    padding: 16px;
+  }
+  
+  .selected-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-manager-header,
+  .file-manager-filters,
+  .files-container {
+    padding: 12px;
+  }
+  
+  .files-container.grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .file-item {
+    padding: 12px;
+  }
+  
+  .file-actions {
+    opacity: 1;
+  }
+  
+  .view-mode-toggle {
+    width: 100%;
+  }
+  
+  .view-mode-toggle button {
+    flex: 1;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .file-manager {
+    background: #1f2937;
+  }
+  
+  .file-manager-header {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .header-left h2 {
+    color: #f9fafb;
+  }
+  
+  .files-count {
+    background: #4b5563;
+    color: #d1d5db;
+  }
+  
+  .file-manager-filters {
+    background: #1f2937;
+    border-color: #4b5563;
+  }
+  
+  .search-box input,
+  .filter-controls select,
+  .sort-order {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .file-item {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .file-item:hover {
+    border-color: #3b82f6;
+  }
+  
+  .file-item.selected {
+    background: #1e3a8a;
+  }
+  
+  .file-name {
+    color: #f9fafb;
+  }
+  
+  .file-meta,
+  .file-description {
+    color: #d1d5db;
+  }
+  
+  .empty-state h3 {
+    color: #f9fafb;
+  }
+  
+  .selected-actions {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+  }
+  
+  .selected-actions span {
+    color: #93c5fd;
+  }
+  
+  .clear-selection {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .file-manager {
+    box-shadow: none;
+  }
+  
+  .file-actions,
+  .selected-actions,
+  .file-manager-filters {
+    display: none;
+  }
+}

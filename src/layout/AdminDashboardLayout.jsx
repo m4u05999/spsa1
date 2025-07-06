@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
-import Header from '../components/dashboard/DashboardHeader';
+import DashboardHeader from '../components/dashboard/DashboardHeader';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const AdminDashboardLayout = () => {
@@ -124,14 +124,15 @@ const AdminDashboardLayout = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" dir="rtl">
       {/* Header */}
-      <Header
-        onMenuClick={toggleSidebar}
+      <DashboardHeader
+        onToggleSidebar={toggleSidebar}
         isDarkMode={isDarkMode}
         onToggleDarkMode={toggleDarkMode}
         onToggleCollapse={toggleCollapse}
         isCollapsed={isCollapsed}
         currentTime={formatTime(currentTime)}
         currentDate={formatDate(currentTime)}
+        isMobile={isMobile}
       />
 
       {/* Main content with sidebar */}
@@ -153,8 +154,17 @@ const AdminDashboardLayout = () => {
           isDarkMode={isDarkMode}
         />
 
-        {/* Main content */}
-        <main className={`flex-1 ${isMobile ? 'mr-0' : isCollapsed ? 'mr-[80px]' : 'mr-[280px]'} transition-all duration-300 p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}>
+        {/* Main content - Fixed margin and proper spacing */}
+        <main className={`
+          flex-1
+          ${isMobile ? 'mr-0' : isCollapsed ? 'mr-[80px]' : 'mr-[280px]'}
+          transition-all duration-300
+          p-6
+          pt-4
+          min-h-screen
+          ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}
+          ${isMobile && isSidebarOpen ? 'overflow-hidden' : ''}
+        `}>
           <div className="container mx-auto">
             {/* لوحة المعلومات السريعة */}
             <div className={`mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${location.pathname === '/dashboard/admin' ? 'block' : 'hidden'}`}>
@@ -238,6 +248,13 @@ const AdminDashboardLayout = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span>إدارة الوسائط</span>
+                </Link>
+
+                <Link to="/dashboard/admin/migration" className={`${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} p-4 rounded-lg shadow-sm flex flex-col items-center justify-center text-center transition-all duration-200 transform hover:-translate-y-1`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-orange-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                  </svg>
+                  <span>ترحيل البيانات</span>
                 </Link>
               </div>
             </div>

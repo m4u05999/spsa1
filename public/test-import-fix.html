@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إصلاح Dynamic Import - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #28a745;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 اختبار إصلاح Dynamic Import - userManagementApi</h1>
+        <p>هذا الاختبار يتحقق من إصلاح مشكلة 503 Service Unavailable في dynamic import</p>
+
+        <div class="test-section info">
+            <h3>📋 معلومات الإصلاح</h3>
+            <p><strong>المشكلة الأصلية:</strong> Failed to fetch dynamically imported module: http://localhost:5174/src/services/api/userManagementApi.js</p>
+            <p><strong>الحل المطبق:</strong> تغيير المسار النسبي إلى مسار مطلق في localStorageInspector.js</p>
+            <p><strong>الملف المُصلح:</strong> src/debug/localStorageInspector.js (السطر 205)</p>
+            <p><strong>التغيير:</strong> <code>../services/api/userManagementApi.js</code> → <code>/src/services/api/userManagementApi.js</code></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 اختبارات التحقق من الإصلاح</h3>
+            <button onclick="testDirectImport()" id="directBtn">اختبار Import مباشر</button>
+            <button onclick="testLocalStorageInspector()" id="inspectorBtn">اختبار localStorageInspector</button>
+            <button onclick="testCompleteFlow()" id="flowBtn">اختبار التدفق الكامل</button>
+            <button onclick="runAllTests()" id="allBtn">تشغيل جميع الاختبارات</button>
+            <button onclick="clearResults()">مسح النتائج</button>
+            
+            <div class="progress" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        let testCounter = 0;
+        let isRunning = false;
+
+        function updateProgress(percentage) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (percentage > 0) {
+                progressContainer.style.display = 'block';
+                progressBar.style.width = percentage + '%';
+            } else {
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        function setButtonsDisabled(disabled) {
+            const buttons = ['directBtn', 'inspectorBtn', 'flowBtn', 'allBtn'];
+            buttons.forEach(id => {
+                document.getElementById(id).disabled = disabled;
+            });
+        }
+
+        function addResult(title, status, message, details = null) {
+            testCounter++;
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-section ${status}`;
+            
+            let statusIcon = '';
+            switch(status) {
+                case 'success': statusIcon = '✅'; break;
+                case 'error': statusIcon = '❌'; break;
+                case 'warning': statusIcon = '⚠️'; break;
+                default: statusIcon = 'ℹ️'; break;
+            }
+            
+            let html = `
+                <h4>${testCounter}. ${title}</h4>
+                <div class="status">${statusIcon} ${message}</div>
+            `;
+            
+            if (details) {
+                html += `<pre>${typeof details === 'string' ? details : JSON.stringify(details, null, 2)}</pre>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultsDiv.appendChild(resultDiv);
+            
+            // Scroll to the new result
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Test 1: Direct import of userManagementApi
+        window.testDirectImport = async function() {
+            if (isRunning) return;
+            isRunning = true;
+            setButtonsDisabled(true);
+            
+            try {
+                addResult('اختبار Import مباشر', 'info', 'جاري تحميل userManagementApi...');
+                
+                const startTime = performance.now();
+                const module = await import('/src/services/api/userManagementApi.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (module.default) {
+                    const api = module.default;
+                    const status = api.getServiceStatus();
+                    
+                    addResult(
+                        'اختبار Import مباشر', 
+                        'success', 
+                        `تم تحميل userManagementApi بنجاح في ${loadTime}ms`,
+                        {
+                            loadTimeMs: loadTime,
+                            serviceStatus: status,
+                            hasGetUsers: typeof api.getUsers === 'function',
+                            hasCreateUser: typeof api.createUser === 'function'
+                        }
+                    );
+                } else {
+                    addResult(
+                        'اختبار Import مباشر', 
+                        'error', 
+                        'تم تحميل الوحدة لكن لا يوجد default export'
+                    );
+                }
+            } catch (error) {
+                addResult(
+                    'اختبار Import مباشر', 
+                    'error', 
+                    `فشل في تحميل userManagementApi: ${error.message}`,
+                    {
+                        errorName: error.name,
+                        errorMessage: error.message,
+                        errorStack: error.stack?.split('\n').slice(0, 3).join('\n')
+                    }
+                );
+            } finally {
+                isRunning = false;
+                setButtonsDisabled(false);
+            }
+        };
+
+        // Test 2: Test localStorageInspector import
+        window.testLocalStorageInspector = async function() {
+            if (isRunning) return;
+            isRunning = true;
+            setButtonsDisabled(true);
+            
+            try {
+                addResult('اختبار localStorageInspector', 'info', 'جاري تحميل localStorageInspector...');
+                
+                const startTime = performance.now();
+                const inspector = await import('/src/debug/localStorageInspector.js');
+                const endTime = performance.now();
+                
+                const loadTime = Math.round(endTime - startTime);
+                
+                if (inspector && inspector.testRegistrationFlow) {
+                    addResult(
+                        'اختبار localStorageInspector', 
+                        'success', 
+                        `تم تحميل localStorageInspector بنجاح في ${loadTime}ms`,
+                        {
+                            loadTimeMs: loadTime,
+                            hasTestRegistrationFlow: typeof inspector.testRegistrationFlow === 'function',
+                            hasInspectLocalStorage: typeof inspector.inspectLocalStorage === 'function',
+                            exportedFunctions: Object.keys(inspector).filter(key => typeof inspector[key] === 'function')
+                        }
+                    );
+                } else {
+                    addResult(
+                        'اختبار localStorageInspector', 
+                        'error', 
+                        'تم تحميل الوحدة لكن الهيكل غير صحيح'
+                    );
+                }
+            } catch (error) {
+                addResult(
+                    'اختبار localStorageInspector', 
+                    'error', 
+                    `فشل في تحميل localStorageInspector: ${error.message}`,
+                    { error: error.toString() }
+                );
+            } finally {
+                isRunning = false;
+                setButtonsDisabled(false);
+            }
+        };
+
+        // Test 3: Test complete flow (the actual problematic function)
+        window.testCompleteFlow = async function() {
+            if (isRunning) return;
+            isRunning = true;
+            setButtonsDisabled(true);
+            updateProgress(10);
+            
+            try {
+                addResult('اختبار التدفق الكامل', 'info', 'بدء اختبار testRegistrationFlow...');
+                updateProgress(30);
+                
+                // Import the inspector
+                const inspector = await import('/src/debug/localStorageInspector.js');
+                updateProgress(50);
+                
+                // Run the actual test that was failing
+                const result = await inspector.testRegistrationFlow();
+                updateProgress(90);
+                
+                if (result.success) {
+                    addResult(
+                        'اختبار التدفق الكامل', 
+                        'success', 
+                        'نجح اختبار التدفق الكامل! تم إصلاح مشكلة Dynamic Import',
+                        {
+                            registrationSuccess: result.steps?.registration?.success || false,
+                            apiTestSuccess: result.steps?.api?.success || false,
+                            registeredUsersCount: result.steps?.registeredUsers?.length || 0,
+                            spsaUsersCount: result.steps?.spsaUsers?.length || 0
+                        }
+                    );
+                } else {
+                    addResult(
+                        'اختبار التدفق الكامل', 
+                        'error', 
+                        `فشل في اختبار التدفق: ${result.error}`,
+                        result
+                    );
+                }
+                updateProgress(100);
+                
+            } catch (error) {
+                addResult(
+                    'اختبار التدفق الكامل', 
+                    'error', 
+                    `خطأ في اختبار التدفق الكامل: ${error.message}`,
+                    {
+                        errorName: error.name,
+                        errorMessage: error.message,
+                        errorStack: error.stack?.split('\n').slice(0, 5).join('\n')
+                    }
+                );
+            } finally {
+                updateProgress(0);
+                isRunning = false;
+                setButtonsDisabled(false);
+            }
+        };
+
+        // Run all tests
+        window.runAllTests = async function() {
+            if (isRunning) return;
+            
+            addResult('تشغيل جميع الاختبارات', 'info', 'بدء تشغيل جميع اختبارات التحقق من الإصلاح...');
+            
+            await testDirectImport();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testLocalStorageInspector();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testCompleteFlow();
+            
+            addResult('انتهاء جميع الاختبارات', 'info', 'تم الانتهاء من جميع اختبارات التحقق من الإصلاح');
+        };
+
+        // Clear results
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+            testCounter = 0;
+            updateProgress(0);
+        };
+
+        // Auto-run info
+        setTimeout(() => {
+            addResult('معلومات الإصلاح', 'info', 'تم تطبيق إصلاح Dynamic Import. اضغط على الأزرار لاختبار الإصلاح.');
+        }, 500);
+    </script>
+</body>
+</html>

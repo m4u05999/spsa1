@@ -7,13 +7,26 @@ const AdminHeader = ({ toggleSidebar }) => {
   const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  
+
+  // Handle logout with proper error handling and logging
+  const handleLogout = async () => {
+    console.log('🚪 AdminHeader: Logout button clicked');
+    try {
+      console.log('🔄 AdminHeader: Starting logout process...');
+      await logout();
+      console.log('✅ AdminHeader: Logout completed successfully');
+      // Redirect will be handled by the auth context
+    } catch (error) {
+      console.error('❌ AdminHeader: Error during logout:', error);
+    }
+  };
+
   // Toggle profile dropdown menu
   const toggleProfileMenu = () => {
     setShowProfileMenu(!showProfileMenu);
     if (showNotifications) setShowNotifications(false);
   };
-  
+
   // Toggle notifications dropdown
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
@@ -236,7 +249,7 @@ const AdminHeader = ({ toggleSidebar }) => {
                   </Link>
                   
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="block w-full text-right px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     role="menuitem"
                   >

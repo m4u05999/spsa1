@@ -1,5 +1,6 @@
 // src/pages/about/components/ChairmanMessage.jsx
 import React from 'react';
+import ImageComponent from '../../../components/ImageComponent';
 
 const ChairmanMessage = () => {
   return (
@@ -8,7 +9,7 @@ const ChairmanMessage = () => {
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/3">
           <div className="text-center">
-            <img
+            <ImageComponent
               src="/assets/images/chairman.jpg"
               alt="رئيس الجمعية"
               className="rounded-full w-48 h-48 mx-auto mb-4 object-cover"

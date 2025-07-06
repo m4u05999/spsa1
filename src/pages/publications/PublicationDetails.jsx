@@ -1,6 +1,7 @@
 // src/pages/publications/PublicationDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import ImageComponent from '../../components/ImageComponent';
 
 const PublicationDetails = () => {
   const { id } = useParams();
@@ -174,7 +175,7 @@ const PublicationDetails = () => {
           <div className="md:flex">
             <div className="md:w-1/3 p-6">
               <div className="bg-gray-100 p-4 rounded-lg flex justify-center">
-                <img 
+                <ImageComponent 
                   src={publication.image} 
                   alt={publication.title} 
                   className="h-auto max-h-96 rounded-md shadow-sm"
@@ -357,7 +358,7 @@ const PublicationDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedPublications.map((pub) => (
                 <Link key={pub.id} to={`/publications/${pub.id}`} className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
-                  <img
+                  <ImageComponent
                     src={pub.image}
                     alt={pub.title}
                     className="w-full h-40 object-cover"

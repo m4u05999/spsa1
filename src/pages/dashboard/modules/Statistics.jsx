@@ -5,69 +5,51 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import { dashboardStatsService } from '../../../services/dashboardStatsService';
+import { useDashboard } from '../../../context/DashboardContext';
 
 const Statistics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('monthly');
   const [showDetailedStats, setShowDetailedStats] = useState(false);
+  const { stats: dashboardStats } = useDashboard();
+
+  // Function to fetch real statistics using the enhanced dashboard stats service
+  const fetchRealStatistics = async () => {
+    try {
+      setLoading(true);
+      console.log('📊 Fetching detailed statistics...');
+      const realStatistics = await dashboardStatsService.getDetailedStats();
+      console.log('✅ Detailed statistics loaded:', realStatistics);
+      return realStatistics;
+    } catch (error) {
+      console.error('❌ Error fetching real statistics:', error);
+      // Return fallback mock data with proper structure
+      return {
+        users: { total: 0, active: 0, new: 0, growthRate: 0 },
+        content: { articles: 0, news: 0, research: 0, publications: 0 },
+        events: { total: 0, upcoming: 0, past: 0, participants: 0 },
+        membership: { applications: 0, approved: 0, pending: 0, rejected: 0 },
+        engagement: { comments: 0, likes: 0, shares: 0 },
+        traffic: { daily: [], weekly: [], monthly: [] },
+        isUsingFallback: true
+      };
+    }
+  };
 
   useEffect(() => {
-    // Simulate API call to fetch statistics
     const fetchStatistics = async () => {
       try {
-        // In a real app, this would be an API call
-        setLoading(true);
-        
-        // Mock data for statistics
-        const mockStatistics = {
-          users: {
-            total: 1250,
-            active: 876,
-            new: 124,
-            growthRate: 12.5
-          },
-          content: {
-            articles: 345,
-            news: 142,
-            research: 73,
-            publications: 48
-          },
-          events: {
-            total: 24,
-            upcoming: 8,
-            past: 16,
-            participants: 2450
-          },
-          membership: {
-            applications: 56,
-            approved: 42,
-            pending: 14,
-            rejected: 8
-          },
-          engagement: {
-            comments: 1245,
-            likes: 3670,
-            shares: 890
-          },
-          traffic: {
-            daily: [120, 145, 132, 167, 190, 178, 199],
-            weekly: [780, 890, 932, 1050, 1200],
-            monthly: [3200, 3800, 4100, 4500, 5100, 4800]
-          }
-        };
-        
-        // Simulate network delay
-        setTimeout(() => {
-          setStats(mockStatistics);
-          setLoading(false);
-        }, 800);
+        const realStats = await fetchRealStatistics();
+        setStats(realStats);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching statistics:", error);
         setLoading(false);
       }
     };
-    
+
     fetchStatistics();
   }, []);
 

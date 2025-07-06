@@ -3,6 +3,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { validateEmail, validatePassword, validatePhone } from '../utils/validators';
+import RegistrationSuccess from '../components/auth/RegistrationSuccess';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,8 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: المعلومات الأساسية، 2: التخصص والتفاصيل
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState(null);
   const { register, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   
@@ -35,7 +38,7 @@ const Register = () => {
       ...prevState,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // مسح أخطاء الحقل عند التعديل
     if (errors[name]) {
       setErrors(prevState => ({
@@ -44,6 +47,9 @@ const Register = () => {
       }));
     }
   };
+
+  // معالج تغيير حقول النموذج (alias for compatibility)
+  const handleInputChange = handleChange;
   
   // التحقق من صحة النموذج للخطوة الأولى
   const validateStep1 = () => {
@@ -106,30 +112,52 @@ const Register = () => {
   // معالج إرسال النموذج
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (step === 1) {
       if (validateStep1()) {
         setStep(2);
       }
       return;
     }
-    
+
     if (validateStep2()) {
       setIsLoading(true);
-      
+      setErrors({});
+
       try {
-        await register(formData);
-        navigate('/payment', { replace: true });
+        console.log('🚀 Register: Starting registration process...');
+        const result = await register(formData);
+
+        if (result.success) {
+          console.log('✅ Register: Registration successful', result);
+          setRegisteredUser(result.user);
+          setRegistrationSuccess(true);
+        } else {
+          throw new Error(result.message || 'فشل في إنشاء الحساب');
+        }
       } catch (error) {
-        console.error('خطأ في التسجيل:', error);
+        console.error('❌ Register: Registration error:', error);
         setErrors({
-          form: 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.'
+          form: error.message || 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.'
         });
       } finally {
         setIsLoading(false);
       }
     }
   };
+
+  // Show registration success component
+  if (registrationSuccess && registeredUser) {
+    return (
+      <RegistrationSuccess
+        user={registeredUser}
+        message="تم إنشاء الحساب بنجاح!"
+        redirectPath="/dashboard"
+        redirectDelay={5000}
+        showPaymentInfo={true}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8" dir="rtl">

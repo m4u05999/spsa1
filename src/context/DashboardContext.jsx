@@ -1,6 +1,7 @@
 // src/context/DashboardContext.jsx
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { dashboardStatsService } from '../services/dashboardStatsService';
 
 const DashboardContext = createContext(null);
 
@@ -8,25 +9,32 @@ const initialState = {
   tasks: [],
   users: [],
   stats: {
-    totalMembers: 1250,
-    activeProjects: 8,
-    pendingTasks: 15,
-    completedTasks: 45,
+    totalMembers: 0,
+    activeProjects: 0,
+    pendingTasks: 0,
+    completedTasks: 0,
+    totalContent: 0,
+    publishedContent: 0,
+    draftContent: 0,
+    totalEvents: 0,
+    upcomingEvents: 0,
+    totalViews: 0,
+    totalLikes: 0,
     membershipStats: {
-      activePercentage: 78,
-      platinum: { count: 50, percentage: 4 },
-      gold: { count: 200, percentage: 16 },
-      silver: { count: 450, percentage: 36 },
-      bronze: { count: 550, percentage: 44 }
+      activePercentage: 0,
+      platinum: { count: 0, percentage: 0 },
+      gold: { count: 0, percentage: 0 },
+      silver: { count: 0, percentage: 0 },
+      bronze: { count: 0, percentage: 0 }
     },
     revenue: {
-      total: 125000,
-      growth: 10,
+      total: 0,
+      growth: 0,
       byLevel: {
-        platinum: 35000,
-        gold: 45000,
-        silver: 30000,
-        bronze: 15000
+        platinum: 0,
+        gold: 0,
+        silver: 0,
+        bronze: 0
       }
     }
   },
@@ -35,7 +43,9 @@ const initialState = {
     canManageTasks: false,
     canViewReports: false,
     canEditContent: false
-  }
+  },
+  loading: true,
+  error: null
 };
 
 const dashboardReducer = (state, action) => {
@@ -47,7 +57,11 @@ const dashboardReducer = (state, action) => {
     case 'SET_USERS':
       return { ...state, users: action.payload };
     case 'SET_STATS':
-      return { ...state, stats: action.payload };
+      return { ...state, stats: action.payload, loading: false };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, loading: false };
     case 'UPDATE_TASK':
       return {
         ...state,
@@ -60,9 +74,51 @@ const dashboardReducer = (state, action) => {
   }
 };
 
+// Function to fetch real statistics using the enhanced dashboard stats service
+const fetchRealStats = async () => {
+  try {
+    console.log('🔄 Fetching dashboard statistics...');
+    const stats = await dashboardStatsService.getDashboardStats();
+    console.log('✅ Dashboard statistics loaded successfully:', stats);
+    return stats;
+  } catch (error) {
+    console.error('❌ Error fetching dashboard stats:', error);
+    // Return fallback stats instead of throwing
+    return {
+      totalMembers: 0,
+      activeMembers: 0,
+      newMembers: 0,
+      totalContent: 0,
+      publishedContent: 0,
+      totalEvents: 0,
+      upcomingEvents: 0,
+      totalViews: 0,
+      totalLikes: 0,
+      isUsingFallback: true
+    };
+  }
+};
+
 export const DashboardProvider = ({ children }) => {
   const [state, dispatch] = useReducer(dashboardReducer, initialState);
   const { user } = useAuth();
+
+  // Fetch real statistics on component mount
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        const realStats = await fetchRealStats();
+        dispatch({ type: 'SET_STATS', payload: realStats });
+      } catch (error) {
+        console.error('Failed to load dashboard statistics:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'فشل في تحميل الإحصائيات' });
+        // Keep initial mock data as fallback
+      }
+    };
+
+    loadStats();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -96,3 +152,6 @@ export const useDashboard = () => {
   }
   return context;
 };
+
+// Export default for better compatibility
+export default DashboardProvider;

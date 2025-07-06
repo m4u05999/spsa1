@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  getContentTypeBadgeColor, 
-  getContentStatusBadgeColor, 
+import {
+  getContentTypeBadgeColor,
+  getContentStatusBadgeColor,
   translateContentType,
   translateContentStatus
 } from '../../models/Content';
+import { getImageWithFallback } from '../../assets/images/placeholders';
 
 // مصفوفة من الصور الافتراضية حسب نوع المحتوى
 const DEFAULT_IMAGES = {
@@ -25,8 +26,18 @@ const ContentCard = ({ content, onClick, onEdit, onDelete, onToggleFeatured }) =
   const [imageError, setImageError] = useState(false);
   
   // الحصول على الصورة الافتراضية المناسبة لنوع المحتوى
-  const getDefaultImage = () => {
-    return DEFAULT_IMAGES[content.type] || DEFAULT_IMAGES.default;
+  
+// Helper function to replace Unsplash URLs with local placeholders
+const replaceUnsplashUrl = (url, contentType = 'default') => {
+  if (url && url.includes('images.unsplash.com')) {
+    return getImageWithFallback(url, contentType);
+  }
+  return url;
+};
+
+const getDefaultImage = () => {
+    const externalImage = DEFAULT_IMAGES[content.type] || DEFAULT_IMAGES.default;
+    return getImageWithFallback(externalImage, content.type);
   };
 
   // Format date to Arabic format

@@ -112,6 +112,209 @@ const localStorageService = {
   logout: () => {
     localStorageService.removeItem('user');
     localStorageService.removeItem('authToken');
+  },
+
+  /**
+   * التحقق من دعم التخزين المحلي في المتصفح
+   * @returns {boolean} - true إذا كان التخزين المحلي مدعوماً
+   */
+  isSupported: () => {
+    try {
+      const test = '__localStorage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
+
+  /**
+   * الحصول على حجم التخزين المحلي المستخدم
+   * @returns {number} - حجم التخزين بالبايت
+   */
+  getStorageSize: () => {
+    try {
+      let total = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          total += localStorage[key].length + key.length;
+        }
+      }
+      return total;
+    } catch (error) {
+      console.error('خطأ في حساب حجم التخزين المحلي:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * الحصول على جميع المفاتيح في التخزين المحلي
+   * @returns {string[]} - مصفوفة بجميع المفاتيح
+   */
+  getAllKeys: () => {
+    try {
+      return Object.keys(localStorage);
+    } catch (error) {
+      console.error('خطأ في الحصول على مفاتيح التخزين المحلي:', error);
+      return [];
+    }
+  },
+
+  /**
+   * إنشاء نسخة احتياطية من البيانات
+   * @param {string[]} keys - المفاتيح المراد نسخها احتياطياً
+   * @returns {Object} - كائن يحتوي على النسخة الاحتياطية
+   */
+  createBackup: (keys = []) => {
+    try {
+      const backup = {
+        timestamp: new Date().toISOString(),
+        data: {}
+      };
+
+      const keysToBackup = keys.length > 0 ? keys : localStorageService.getAllKeys();
+
+      keysToBackup.forEach(key => {
+        const value = localStorageService.getItem(key);
+        if (value !== null) {
+          backup.data[key] = value;
+        }
+      });
+
+      return backup;
+    } catch (error) {
+      console.error('خطأ في إنشاء النسخة الاحتياطية:', error);
+      return null;
+    }
+  },
+
+  /**
+   * استعادة البيانات من النسخة الاحتياطية
+   * @param {Object} backup - النسخة الاحتياطية
+   * @param {boolean} overwrite - هل يتم استبدال البيانات الموجودة
+   * @returns {boolean} - true إذا تمت الاستعادة بنجاح
+   */
+  restoreBackup: (backup, overwrite = false) => {
+    try {
+      if (!backup || !backup.data) {
+        console.error('النسخة الاحتياطية غير صالحة');
+        return false;
+      }
+
+      Object.keys(backup.data).forEach(key => {
+        const existingValue = localStorageService.getItem(key);
+
+        if (overwrite || existingValue === null) {
+          localStorageService.setItem(key, backup.data[key]);
+        }
+      });
+
+      console.log('تمت استعادة النسخة الاحتياطية بنجاح');
+      return true;
+    } catch (error) {
+      console.error('خطأ في استعادة النسخة الاحتياطية:', error);
+      return false;
+    }
+  },
+
+  /**
+   * حفظ النسخة الاحتياطية في sessionStorage
+   * @param {Object} backup - النسخة الاحتياطية
+   * @param {string} backupKey - مفتاح النسخة الاحتياطية
+   */
+  saveBackupToSession: (backup, backupKey = 'spsa_backup') => {
+    try {
+      const serializedBackup = JSON.stringify(backup);
+      sessionStorage.setItem(backupKey, serializedBackup);
+      console.log('تم حفظ النسخة الاحتياطية في sessionStorage');
+    } catch (error) {
+      console.error('خطأ في حفظ النسخة الاحتياطية في sessionStorage:', error);
+    }
+  },
+
+  /**
+   * استرجاع النسخة الاحتياطية من sessionStorage
+   * @param {string} backupKey - مفتاح النسخة الاحتياطية
+   * @returns {Object|null} - النسخة الاحتياطية أو null
+   */
+  getBackupFromSession: (backupKey = 'spsa_backup') => {
+    try {
+      const serializedBackup = sessionStorage.getItem(backupKey);
+      if (serializedBackup) {
+        return JSON.parse(serializedBackup);
+      }
+      return null;
+    } catch (error) {
+      console.error('خطأ في استرجاع النسخة الاحتياطية من sessionStorage:', error);
+      return null;
+    }
+  },
+
+  /**
+   * تنظيف البيانات القديمة
+   * @param {number} maxAge - العمر الأقصى بالأيام
+   */
+  cleanupOldData: (maxAge = 30) => {
+    try {
+      const now = new Date();
+      const keys = localStorageService.getAllKeys();
+
+      keys.forEach(key => {
+        const data = localStorageService.getItem(key);
+
+        if (data && data.timestamp) {
+          const dataDate = new Date(data.timestamp);
+          const ageInDays = (now - dataDate) / (1000 * 60 * 60 * 24);
+
+          if (ageInDays > maxAge) {
+            localStorageService.removeItem(key);
+            console.log(`تم حذف البيانات القديمة: ${key}`);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('خطأ في تنظيف البيانات القديمة:', error);
+    }
+  },
+
+  /**
+   * إنشاء نسخة احتياطية تلقائية للمستخدمين
+   */
+  autoBackupUsers: () => {
+    try {
+      const userKeys = ['spsa_users', 'user', 'authToken'];
+      const backup = localStorageService.createBackup(userKeys);
+
+      if (backup) {
+        localStorageService.saveBackupToSession(backup, 'spsa_users_backup');
+        console.log('تم إنشاء نسخة احتياطية تلقائية للمستخدمين');
+      }
+    } catch (error) {
+      console.error('خطأ في إنشاء النسخة الاحتياطية التلقائية:', error);
+    }
+  },
+
+  /**
+   * استعادة المستخدمين من النسخة الاحتياطية التلقائية
+   */
+  restoreUsersFromAutoBackup: () => {
+    try {
+      const backup = localStorageService.getBackupFromSession('spsa_users_backup');
+
+      if (backup) {
+        const restored = localStorageService.restoreBackup(backup, false);
+        if (restored) {
+          console.log('تمت استعادة المستخدمين من النسخة الاحتياطية التلقائية');
+        }
+        return restored;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('خطأ في استعادة المستخدمين من النسخة الاحتياطية:', error);
+      return false;
+    }
   }
 };
 

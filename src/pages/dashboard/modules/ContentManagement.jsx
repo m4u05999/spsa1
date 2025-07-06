@@ -1,405 +1,172 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { checkPermission } from '../../../utils/permissions';
+import ContentManager from '../../../components/content/ContentManager.jsx';
+import { useContentManagement } from '../../../hooks/useContentManagement.js';
+import { CONTENT_TYPES, CONTENT_STATUS } from '../../../schemas/contentManagementSchema.js';
 
 const ContentManagement = () => {
   const { user } = useAuth();
-  const [contents, setContents] = useState([]);
-  const [filteredContents, setFilteredContents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedContentType, setSelectedContentType] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
 
-  // Mock content data for development
-  const mockContents = [
-    {
-      id: '1',
-      title: 'مستقبل العلاقات الدولية في الشرق الأوسط',
-      type: 'article',
-      author: 'د. محمد العتيبي',
-      status: 'published',
-      createdAt: '2023-04-15',
-      updatedAt: '2023-04-20',
-      viewCount: 1254,
-      featured: true,
-      image: '/assets/images/article1.jpg'
-    },
-    {
-      id: '2',
-      title: 'تأثير الاقتصاد السياسي على التنمية المستدامة',
-      type: 'research',
-      author: 'د. فاطمة الزهراني',
-      status: 'published',
-      createdAt: '2023-03-10',
-      updatedAt: '2023-03-15',
-      viewCount: 875,
-      featured: false,
-      image: '/assets/images/research1.jpg'
-    },
-    {
-      id: '3',
-      title: 'دور المرأة في صنع السياسات العامة',
-      type: 'article',
-      author: 'د. نورة العنزي',
-      status: 'draft',
-      createdAt: '2023-05-05',
-      updatedAt: '2023-05-05',
-      viewCount: 0,
-      featured: false,
-      image: null
-    },
-    {
-      id: '4',
-      title: 'تحليل الخطاب السياسي في وسائل الإعلام',
-      type: 'analysis',
-      author: 'د. أحمد الغامدي',
-      status: 'review',
-      createdAt: '2023-05-01',
-      updatedAt: '2023-05-03',
-      viewCount: 0,
-      featured: false,
-      image: '/assets/images/analysis1.jpg'
-    },
-    {
-      id: '5',
-      title: 'ملخص المؤتمر السنوي للعلوم السياسية',
-      type: 'news',
-      author: 'إدارة الجمعية',
-      status: 'published',
-      createdAt: '2023-02-20',
-      updatedAt: '2023-02-25',
-      viewCount: 2130,
-      featured: true,
-      image: '/assets/images/news1.jpg'
-    }
-  ];
+  // Use the new content management system
+  const {
+    selectedItems,
+    viewMode: currentViewMode,
+    setViewMode: updateViewMode,
+    performBulkAction,
+    createFromTemplate,
+    exportContent
+  } = useContentManagement();
 
-  // Load contents on component mount
-  useEffect(() => {
-    // Simulating API call with a delay
-    setIsLoading(true);
-    setTimeout(() => {
-      setContents(mockContents);
-      setFilteredContents(mockContents);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  // Filter contents when search or filters change
-  useEffect(() => {
-    let result = [...contents];
-    
-    // Filter by search term
-    if (searchTerm) {
-      result = result.filter(
-        content => 
-          content.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          content.author.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Filter by content type
-    if (selectedType !== 'all') {
-      result = result.filter(content => content.type === selectedType);
-    }
-    
-    // Filter by status
-    if (selectedStatus !== 'all') {
-      result = result.filter(content => content.status === selectedStatus);
-    }
-    
-    setFilteredContents(result);
-  }, [searchTerm, selectedType, selectedStatus, contents]);
-
-  // Format date to Arabic format
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('ar-SA', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }).format(date);
+  // Handle content type filter change
+  const handleContentTypeChange = (type) => {
+    setSelectedContentType(type);
   };
 
-  // Toggle featured state
-  const toggleFeatured = (contentId) => {
-    setContents(prevContents =>
-      prevContents.map(content => {
-        if (content.id === contentId) {
-          return { ...content, featured: !content.featured };
-        }
-        return content;
-      })
+  // Handle view mode change
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    updateViewMode(mode);
+  };
+
+  // Handle bulk actions
+  const handleBulkAction = async (action) => {
+    try {
+      await performBulkAction(action, selectedItems);
+      // Show success message
+    } catch (error) {
+      console.error('Bulk action failed:', error);
+      // Show error message
+    }
+  };
+
+  // Handle content export
+  const handleExport = async (format) => {
+    try {
+      await exportContent(selectedItems, format);
+      // Show success message
+    } catch (error) {
+      console.error('Export failed:', error);
+      // Show error message
+    }
+  };
+  // Check permissions
+  const canManageContent = checkPermission(user, 'content', 'write');
+  const canDeleteContent = checkPermission(user, 'content', 'delete');
+
+  if (!canManageContent) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">غير مصرح</h3>
+          <p className="text-gray-600">ليس لديك صلاحية لإدارة المحتوى</p>
+        </div>
+      </div>
     );
-  };
-
-  // Get content type badge color
-  const getTypeBadgeColor = (type) => {
-    switch (type) {
-      case 'article':
-        return 'bg-blue-100 text-blue-800';
-      case 'research':
-        return 'bg-purple-100 text-purple-800';
-      case 'news':
-        return 'bg-green-100 text-green-800';
-      case 'analysis':
-        return 'bg-amber-100 text-amber-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get status badge color
-  const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'published':
-        return 'bg-green-100 text-green-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
-      case 'review':
-        return 'bg-amber-100 text-amber-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Translate content type to Arabic
-  const translateType = (type) => {
-    const types = {
-      'article': 'مقال',
-      'research': 'بحث',
-      'news': 'خبر',
-      'analysis': 'تحليل',
-      'event': 'فعالية'
-    };
-    return types[type] || type;
-  };
-
-  // Translate status to Arabic
-  const translateStatus = (status) => {
-    const statuses = {
-      'published': 'منشور',
-      'draft': 'مسودة',
-      'review': 'قيد المراجعة',
-      'rejected': 'مرفوض'
-    };
-    return statuses[status] || status;
-  };
-
-  // Create new content (stub function)
-  const createContent = () => {
-    alert('ستظهر هنا نافذة إنشاء محتوى جديد');
-    // In a real app, this would open a modal or navigate to a create content form
-  };
-
-  // Check if user can manage content
-  const canManageContent = checkPermission(user, 'content.manage');
-  const canCreateContent = checkPermission(user, 'content.create') || canManageContent;
-  const canEditContent = checkPermission(user, 'content.edit') || canManageContent;
-  const canDeleteContent = checkPermission(user, 'content.delete') || canManageContent;
-
+  }
   return (
-    <div>
-      <div className="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">إدارة المحتوى</h1>
           <p className="text-gray-600 mt-1">عرض وإدارة جميع المحتويات في النظام</p>
         </div>
-        {canCreateContent && (
-          <button
-            onClick={createContent}
-            className="mt-4 lg:mt-0 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <span className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-              إضافة محتوى جديد
-            </span>
-          </button>
-        )}
-      </div>
 
-      {/* Filters and search */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Search */}
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">بحث</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                id="search"
-                className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-right"
-                placeholder="البحث بالعنوان أو اسم الكاتب"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Type filter */}
-          <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">نوع المحتوى</label>
-            <select
-              id="type"
-              className="block w-full border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-right"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              <option value="all">جميع الأنواع</option>
-              <option value="article">مقال</option>
-              <option value="research">بحث</option>
-              <option value="news">خبر</option>
-              <option value="analysis">تحليل</option>
-              <option value="event">فعالية</option>
-            </select>
-          </div>
-
-          {/* Status filter */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">الحالة</label>
-            <select
-              id="status"
-              className="block w-full border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-right"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="all">جميع الحالات</option>
-              <option value="published">منشور</option>
-              <option value="draft">مسودة</option>
-              <option value="review">قيد المراجعة</option>
-              <option value="rejected">مرفوض</option>
-            </select>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2 mt-4 lg:mt-0">
+          {selectedItems.length > 0 && (
+            <>
+              <button
+                onClick={() => handleBulkAction('publish')}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                نشر المحدد ({selectedItems.length})
+              </button>
+              <button
+                onClick={() => handleBulkAction('unpublish')}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+              >
+                إلغاء النشر
+              </button>
+              {canDeleteContent && (
+                <button
+                  onClick={() => handleBulkAction('delete')}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  حذف المحدد
+                </button>
+              )}
+              <button
+                onClick={() => handleExport('json')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                تصدير
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Content table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {isLoading ? (
-          <div className="p-6 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-3 text-gray-600">جاري تحميل المحتويات...</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    العنوان
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    النوع
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    الكاتب
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    الحالة
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    تاريخ الإنشاء
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    المشاهدات
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    الإجراءات
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredContents.length > 0 ? (
-                  filteredContents.map((content) => (
-                    <tr key={content.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          {content.featured && (
-                            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full ml-2">
-                              مميز
-                            </span>
-                          )}
-                          <div className="text-sm font-medium text-gray-900 truncate max-w-md">
-                            {content.title}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeBadgeColor(content.type)}`}>
-                          {translateType(content.type)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {content.author}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(content.status)}`}>
-                          {translateStatus(content.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(content.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {content.viewCount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3 space-x-reverse">
-                          <button
-                            className="text-blue-600 hover:text-blue-900"
-                            onClick={() => alert(`سيتم عرض تفاصيل المحتوى: ${content.title}`)}
-                          >
-                            عرض
-                          </button>
-                          {canEditContent && (
-                            <button
-                              className="text-indigo-600 hover:text-indigo-900"
-                              onClick={() => alert(`سيتم تعديل المحتوى: ${content.title}`)}
-                            >
-                              تعديل
-                            </button>
-                          )}
-                          {canManageContent && (
-                            <button
-                              className={content.featured ? 'text-amber-600 hover:text-amber-900' : 'text-gray-600 hover:text-gray-900'}
-                              onClick={() => toggleFeatured(content.id)}
-                            >
-                              {content.featured ? 'إلغاء التمييز' : 'تمييز'}
-                            </button>
-                          )}
-                          {canDeleteContent && content.status !== 'published' && (
-                            <button
-                              className="text-red-600 hover:text-red-900"
-                              onClick={() => alert(`سيتم حذف المحتوى: ${content.title}`)}
-                            >
-                              حذف
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                      لا توجد نتائج مطابقة للبحث
-                    </td>
-                  </tr>
+      {/* Content Type Tabs */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 space-x-reverse px-6" aria-label="Tabs">
+            {[
+              { key: 'all', label: 'الكل', count: null },
+              { key: CONTENT_TYPES.NEWS, label: 'الأخبار', count: null },
+              { key: CONTENT_TYPES.ARTICLE, label: 'المقالات', count: null },
+              { key: CONTENT_TYPES.EVENT, label: 'الفعاليات', count: null },
+              { key: CONTENT_TYPES.LECTURE, label: 'المحاضرات', count: null },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => handleContentTypeChange(tab.key)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  selectedContentType === tab.key
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {tab.label}
+                {tab.count && (
+                  <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                    {tab.count}
+                  </span>
                 )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Content Manager Component */}
+        <div className="p-6">
+          <ContentManager
+            contentType={selectedContentType === 'all' ? null : selectedContentType}
+            showFilters={true}
+            showBulkActions={true}
+            showSearch={true}
+            showViewModes={true}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            enableSelection={true}
+            enableSorting={true}
+            enableExport={true}
+            permissions={{
+              canCreate: canManageContent,
+              canEdit: canManageContent,
+              canDelete: canDeleteContent,
+              canPublish: canManageContent
+            }}
+          />
+        </div>
       </div>
     </div>
   );

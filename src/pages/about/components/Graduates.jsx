@@ -1,5 +1,6 @@
 // src/pages/about/components/Graduates.jsx
 import React from 'react';
+import ImageComponent from '../../../components/ImageComponent';
 
 const Graduates = () => {
   const graduates = [
@@ -63,13 +64,11 @@ const Graduates = () => {
               className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               <div className="h-48 overflow-hidden relative">
-                <img 
+                <ImageComponent 
                   src={leader.image} 
                   alt={leader.name}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/assets/images/default-avatar.jpg';
-                  }}
+                  fallbackSrc="/assets/images/default-avatar.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900 to-transparent opacity-60"></div>
               </div>

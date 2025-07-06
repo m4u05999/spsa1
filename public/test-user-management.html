@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نظام إدارة المستخدمين - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0369a1;
+            background: #f0f9ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .results {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار نظام إدارة المستخدمين - SPSA</h1>
+        <p>هذه الصفحة لاختبار وظائف نظام إدارة المستخدمين المحدث</p>
+
+        <div class="test-section">
+            <h3>📊 معلومات النظام</h3>
+            <button onclick="checkSystemInfo()">فحص معلومات النظام</button>
+            <div id="systemInfo" class="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💾 اختبار التخزين المحلي</h3>
+            <button onclick="testLocalStorage()">اختبار localStorage</button>
+            <button onclick="testBackupSystem()">اختبار النسخ الاحتياطي</button>
+            <button onclick="clearStorage()">مسح التخزين</button>
+            <div id="storageResults" class="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 اختبار إدارة المستخدمين</h3>
+            <button onclick="testUserCreation()">إنشاء مستخدم تجريبي</button>
+            <button onclick="testUserRetrieval()">استرجاع المستخدمين</button>
+            <button onclick="testUserUpdate()">تحديث مستخدم</button>
+            <button onclick="testUserDeletion()">حذف مستخدم</button>
+            <div id="userResults" class="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 اختبار الاستعادة التلقائية</h3>
+            <button onclick="testAutoRestore()">اختبار الاستعادة التلقائية</button>
+            <button onclick="simulateDataLoss()">محاكاة فقدان البيانات</button>
+            <div id="restoreResults" class="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📈 إحصائيات الأداء</h3>
+            <button onclick="runPerformanceTest()">اختبار الأداء</button>
+            <div id="performanceResults" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // تحقق من وجود localStorage
+        function checkSystemInfo() {
+            const results = document.getElementById('systemInfo');
+            let info = '<div class="info"><h4>معلومات النظام:</h4>';
+            
+            info += `<p>✅ دعم localStorage: ${localStorage ? 'مدعوم' : 'غير مدعوم'}</p>`;
+            info += `<p>✅ دعم sessionStorage: ${sessionStorage ? 'مدعوم' : 'غير مدعوم'}</p>`;
+            info += `<p>📊 حجم localStorage المستخدم: ${getStorageSize()} بايت</p>`;
+            info += `<p>🔑 عدد المفاتيح في localStorage: ${Object.keys(localStorage).length}</p>`;
+            info += `<p>🕒 الوقت الحالي: ${new Date().toLocaleString('ar-SA')}</p>`;
+            
+            info += '</div>';
+            results.innerHTML = info;
+        }
+
+        function getStorageSize() {
+            let total = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    total += localStorage[key].length + key.length;
+                }
+            }
+            return total;
+        }
+
+        function testLocalStorage() {
+            const results = document.getElementById('storageResults');
+            let output = '<div class="info"><h4>اختبار التخزين المحلي:</h4>';
+            
+            try {
+                // اختبار الكتابة
+                const testData = { test: 'بيانات تجريبية', timestamp: new Date().toISOString() };
+                localStorage.setItem('spsa_test', JSON.stringify(testData));
+                output += '<p>✅ تم حفظ البيانات التجريبية بنجاح</p>';
+                
+                // اختبار القراءة
+                const retrieved = JSON.parse(localStorage.getItem('spsa_test'));
+                if (retrieved && retrieved.test === 'بيانات تجريبية') {
+                    output += '<p>✅ تم استرجاع البيانات بنجاح</p>';
+                } else {
+                    output += '<p class="error">❌ فشل في استرجاع البيانات</p>';
+                }
+                
+                // تنظيف
+                localStorage.removeItem('spsa_test');
+                output += '<p>✅ تم حذف البيانات التجريبية</p>';
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في اختبار التخزين: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function testBackupSystem() {
+            const results = document.getElementById('storageResults');
+            let output = '<div class="info"><h4>اختبار النسخ الاحتياطي:</h4>';
+            
+            try {
+                // إنشاء بيانات تجريبية
+                const testUsers = [
+                    { id: 'test1', name: 'مستخدم تجريبي 1', email: 'test1@example.com' },
+                    { id: 'test2', name: 'مستخدم تجريبي 2', email: 'test2@example.com' }
+                ];
+                
+                localStorage.setItem('spsa_users', JSON.stringify(testUsers));
+                output += '<p>✅ تم إنشاء بيانات تجريبية</p>';
+                
+                // إنشاء نسخة احتياطية
+                const backup = {
+                    timestamp: new Date().toISOString(),
+                    data: {
+                        'spsa_users': testUsers
+                    }
+                };
+                
+                sessionStorage.setItem('spsa_users_backup', JSON.stringify(backup));
+                output += '<p>✅ تم إنشاء نسخة احتياطية في sessionStorage</p>';
+                
+                // اختبار الاستعادة
+                const retrievedBackup = JSON.parse(sessionStorage.getItem('spsa_users_backup'));
+                if (retrievedBackup && retrievedBackup.data) {
+                    output += '<p>✅ تم استرجاع النسخة الاحتياطية بنجاح</p>';
+                    output += `<p>📊 عدد المستخدمين في النسخة الاحتياطية: ${retrievedBackup.data.spsa_users?.length || 0}</p>`;
+                }
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في اختبار النسخ الاحتياطي: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function clearStorage() {
+            const results = document.getElementById('storageResults');
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                results.innerHTML = '<div class="success">✅ تم مسح جميع البيانات من التخزين المحلي</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ خطأ في مسح التخزين: ${error.message}</div>`;
+            }
+        }
+
+        function testUserCreation() {
+            const results = document.getElementById('userResults');
+            let output = '<div class="info"><h4>اختبار إنشاء المستخدمين:</h4>';
+            
+            try {
+                const newUser = {
+                    id: 'user_' + Date.now(),
+                    firstName: 'أحمد',
+                    lastName: 'محمد',
+                    email: 'ahmed.mohammed@example.com',
+                    role: 'member',
+                    status: 'active',
+                    membershipType: 'regular',
+                    phone: '+966501234567',
+                    specialization: 'علوم سياسية',
+                    workplace: 'جامعة الملك سعود',
+                    academicDegree: 'ماجستير',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // الحصول على المستخدمين الحاليين
+                const existingUsers = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                existingUsers.push(newUser);
+                
+                // حفظ المستخدمين
+                localStorage.setItem('spsa_users', JSON.stringify(existingUsers));
+                
+                output += '<p>✅ تم إنشاء مستخدم جديد بنجاح</p>';
+                output += `<p>👤 المعرف: ${newUser.id}</p>`;
+                output += `<p>📧 البريد الإلكتروني: ${newUser.email}</p>`;
+                output += `<p>📊 إجمالي المستخدمين: ${existingUsers.length}</p>`;
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في إنشاء المستخدم: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function testUserRetrieval() {
+            const results = document.getElementById('userResults');
+            let output = '<div class="info"><h4>اختبار استرجاع المستخدمين:</h4>';
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                
+                output += `<p>📊 عدد المستخدمين المحفوظين: ${users.length}</p>`;
+                
+                if (users.length > 0) {
+                    output += '<p>👥 قائمة المستخدمين:</p>';
+                    output += '<ul>';
+                    users.forEach((user, index) => {
+                        output += `<li>${index + 1}. ${user.firstName} ${user.lastName} (${user.email})</li>`;
+                    });
+                    output += '</ul>';
+                } else {
+                    output += '<p>⚠️ لا توجد مستخدمين محفوظين</p>';
+                }
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في استرجاع المستخدمين: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function testUserUpdate() {
+            const results = document.getElementById('userResults');
+            let output = '<div class="info"><h4>اختبار تحديث المستخدمين:</h4>';
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                
+                if (users.length > 0) {
+                    // تحديث أول مستخدم
+                    users[0].firstName = 'محمد المحدث';
+                    users[0].updatedAt = new Date().toISOString();
+                    
+                    localStorage.setItem('spsa_users', JSON.stringify(users));
+                    
+                    output += '<p>✅ تم تحديث المستخدم الأول بنجاح</p>';
+                    output += `<p>👤 الاسم الجديد: ${users[0].firstName} ${users[0].lastName}</p>`;
+                } else {
+                    output += '<p>⚠️ لا توجد مستخدمين للتحديث</p>';
+                }
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في تحديث المستخدم: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function testUserDeletion() {
+            const results = document.getElementById('userResults');
+            let output = '<div class="info"><h4>اختبار حذف المستخدمين:</h4>';
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                const originalCount = users.length;
+                
+                if (users.length > 0) {
+                    // حذف آخر مستخدم
+                    const deletedUser = users.pop();
+                    localStorage.setItem('spsa_users', JSON.stringify(users));
+                    
+                    output += '<p>✅ تم حذف المستخدم بنجاح</p>';
+                    output += `<p>👤 المستخدم المحذوف: ${deletedUser.firstName} ${deletedUser.lastName}</p>`;
+                    output += `<p>📊 العدد قبل الحذف: ${originalCount}</p>`;
+                    output += `<p>📊 العدد بعد الحذف: ${users.length}</p>`;
+                } else {
+                    output += '<p>⚠️ لا توجد مستخدمين للحذف</p>';
+                }
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في حذف المستخدم: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function testAutoRestore() {
+            const results = document.getElementById('restoreResults');
+            let output = '<div class="info"><h4>اختبار الاستعادة التلقائية:</h4>';
+            
+            try {
+                // التحقق من وجود نسخة احتياطية
+                const backup = sessionStorage.getItem('spsa_users_backup');
+                
+                if (backup) {
+                    const backupData = JSON.parse(backup);
+                    output += '<p>✅ تم العثور على نسخة احتياطية</p>';
+                    output += `<p>🕒 تاريخ النسخة الاحتياطية: ${new Date(backupData.timestamp).toLocaleString('ar-SA')}</p>`;
+                    
+                    // استعادة البيانات
+                    if (backupData.data && backupData.data.spsa_users) {
+                        localStorage.setItem('spsa_users', JSON.stringify(backupData.data.spsa_users));
+                        output += `<p>✅ تم استعادة ${backupData.data.spsa_users.length} مستخدم من النسخة الاحتياطية</p>`;
+                    }
+                } else {
+                    output += '<p>⚠️ لا توجد نسخة احتياطية متاحة</p>';
+                }
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في الاستعادة التلقائية: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        function simulateDataLoss() {
+            const results = document.getElementById('restoreResults');
+            try {
+                // حذف بيانات المستخدمين فقط (محاكاة فقدان البيانات)
+                localStorage.removeItem('spsa_users');
+                results.innerHTML = '<div class="success">✅ تم محاكاة فقدان بيانات المستخدمين. جرب الآن الاستعادة التلقائية.</div>';
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ خطأ في محاكاة فقدان البيانات: ${error.message}</div>`;
+            }
+        }
+
+        function runPerformanceTest() {
+            const results = document.getElementById('performanceResults');
+            let output = '<div class="info"><h4>اختبار الأداء:</h4>';
+            
+            try {
+                const startTime = performance.now();
+                
+                // إنشاء 1000 مستخدم تجريبي
+                const testUsers = [];
+                for (let i = 0; i < 1000; i++) {
+                    testUsers.push({
+                        id: `perf_user_${i}`,
+                        firstName: `مستخدم${i}`,
+                        lastName: `اختبار${i}`,
+                        email: `user${i}@test.com`,
+                        role: 'member',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                
+                const createTime = performance.now();
+                
+                // حفظ البيانات
+                localStorage.setItem('spsa_performance_test', JSON.stringify(testUsers));
+                const saveTime = performance.now();
+                
+                // استرجاع البيانات
+                const retrieved = JSON.parse(localStorage.getItem('spsa_performance_test'));
+                const retrieveTime = performance.now();
+                
+                // تنظيف
+                localStorage.removeItem('spsa_performance_test');
+                const cleanupTime = performance.now();
+                
+                output += `<p>⏱️ وقت إنشاء 1000 مستخدم: ${(createTime - startTime).toFixed(2)} مللي ثانية</p>`;
+                output += `<p>💾 وقت حفظ البيانات: ${(saveTime - createTime).toFixed(2)} مللي ثانية</p>`;
+                output += `<p>📖 وقت استرجاع البيانات: ${(retrieveTime - saveTime).toFixed(2)} مللي ثانية</p>`;
+                output += `<p>🧹 وقت التنظيف: ${(cleanupTime - retrieveTime).toFixed(2)} مللي ثانية</p>`;
+                output += `<p>⏱️ إجمالي الوقت: ${(cleanupTime - startTime).toFixed(2)} مللي ثانية</p>`;
+                output += `<p>✅ تم استرجاع ${retrieved.length} مستخدم بنجاح</p>`;
+                
+            } catch (error) {
+                output += `<p class="error">❌ خطأ في اختبار الأداء: ${error.message}</p>`;
+            }
+            
+            output += '</div>';
+            results.innerHTML = output;
+        }
+
+        // تشغيل فحص النظام عند تحميل الصفحة
+        window.onload = function() {
+            checkSystemInfo();
+        };
+    </script>
+</body>
+</html>

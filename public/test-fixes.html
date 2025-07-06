@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الإصلاحات - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .test-section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .result {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 اختبار الإصلاحات</h1>
+            <p>اختبار شامل للتحقق من إصلاح مشاكل Rate Limiting والاستيرادات الديناميكية</p>
+        </div>
+        
+        <div class="content">
+            <!-- اختبار Rate Limiting -->
+            <div class="test-section">
+                <h2>🚦 اختبار Rate Limiting</h2>
+                <p>التحقق من أن Rate Limiting تم تعطيله للاختبارات</p>
+                <button class="btn" onclick="testRateLimiting()">اختبار Rate Limiting</button>
+                <div id="rateLimitResult" class="result"></div>
+            </div>
+            
+            <!-- اختبار الاستيرادات الديناميكية -->
+            <div class="test-section">
+                <h2>📦 اختبار الاستيرادات الديناميكية</h2>
+                <p>التحقق من أن جميع الاستيرادات الديناميكية تعمل بشكل صحيح</p>
+                <button class="btn" onclick="testDynamicImports()">اختبار الاستيرادات</button>
+                <div id="importResult" class="result"></div>
+            </div>
+            
+            <!-- اختبار شامل -->
+            <div class="test-section">
+                <h2>🎯 اختبار شامل</h2>
+                <p>تشغيل الاختبار الشامل للتسجيل مع الإصلاحات الجديدة</p>
+                <button class="btn success" onclick="runComprehensiveTest()">تشغيل الاختبار الشامل</button>
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="comprehensiveResult" class="result"></div>
+            </div>
+            
+            <!-- تنظيف البيانات -->
+            <div class="test-section">
+                <h2>🧹 تنظيف البيانات</h2>
+                <p>مسح جميع البيانات المخزنة لبدء اختبار نظيف</p>
+                <button class="btn warning" onclick="clearAllData()">مسح جميع البيانات</button>
+                <button class="btn info" onclick="showCurrentData()">عرض البيانات الحالية</button>
+                <div id="dataResult" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // تحديث شريط التقدم
+        function updateProgress(percentage) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+        }
+
+        // عرض النتيجة في العنصر المحدد
+        function displayResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content;
+            element.className = `result ${type}`;
+        }
+
+        // اختبار Rate Limiting
+        window.testRateLimiting = async function() {
+            displayResult('rateLimitResult', '🔄 جاري اختبار Rate Limiting...', 'info');
+            
+            try {
+                // محاولة تسجيل عدة مستخدمين بسرعة
+                const testUsers = [
+                    { name: 'اختبار 1', email: 'test1@spsa.org.sa', password: 'Test123!' },
+                    { name: 'اختبار 2', email: 'test2@spsa.org.sa', password: 'Test123!' },
+                    { name: 'اختبار 3', email: 'test3@spsa.org.sa', password: 'Test123!' }
+                ];
+                
+                let results = [];
+                
+                for (let i = 0; i < testUsers.length; i++) {
+                    try {
+                        const response = await fetch('/api/auth/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(testUsers[i])
+                        });
+                        
+                        if (response.ok) {
+                            results.push(`✅ تسجيل ${testUsers[i].name}: نجح`);
+                        } else {
+                            const error = await response.text();
+                            if (error.includes('تم تجاوز عدد محاولات التسجيل')) {
+                                results.push(`❌ تسجيل ${testUsers[i].name}: Rate Limiting لا يزال مفعل`);
+                            } else {
+                                results.push(`⚠️ تسجيل ${testUsers[i].name}: ${error}`);
+                            }
+                        }
+                    } catch (error) {
+                        results.push(`❌ تسجيل ${testUsers[i].name}: ${error.message}`);
+                    }
+                    
+                    // انتظار قصير بين المحاولات
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                const successCount = results.filter(r => r.includes('✅')).length;
+                const rateLimitCount = results.filter(r => r.includes('Rate Limiting')).length;
+                
+                let summary = `📊 النتائج:\n`;
+                summary += `✅ نجح: ${successCount}/${testUsers.length}\n`;
+                summary += `🚦 Rate Limiting: ${rateLimitCount > 0 ? 'لا يزال مفعل' : 'تم تعطيله بنجاح'}\n\n`;
+                summary += results.join('\n');
+                
+                displayResult('rateLimitResult', summary, rateLimitCount > 0 ? 'error' : 'success');
+                
+            } catch (error) {
+                displayResult('rateLimitResult', `❌ خطأ في اختبار Rate Limiting: ${error.message}`, 'error');
+            }
+        };
+
+        // اختبار الاستيرادات الديناميكية
+        window.testDynamicImports = async function() {
+            displayResult('importResult', '🔄 جاري اختبار الاستيرادات الديناميكية...', 'info');
+            
+            try {
+                let results = [];
+                
+                // اختبار userManagementApi
+                try {
+                    const userManagementApi = (await import('/src/services/api/userManagementApi.js')).default;
+                    if (userManagementApi && typeof userManagementApi.getUsers === 'function') {
+                        results.push('✅ userManagementApi: تم الاستيراد بنجاح');
+                        
+                        // اختبار استدعاء الدالة
+                        const apiResult = await userManagementApi.getUsers();
+                        if (apiResult.success) {
+                            results.push(`✅ getUsers(): يعمل بشكل صحيح (${apiResult.data?.length || 0} مستخدم)`);
+                        } else {
+                            results.push(`⚠️ getUsers(): ${apiResult.error || 'خطأ غير محدد'}`);
+                        }
+                    } else {
+                        results.push('❌ userManagementApi: تم الاستيراد لكن الهيكل غير صحيح');
+                    }
+                } catch (error) {
+                    results.push(`❌ userManagementApi: فشل الاستيراد - ${error.message}`);
+                }
+                
+                // اختبار localStorageInspector
+                try {
+                    const inspector = await import('/src/debug/localStorageInspector.js');
+                    if (inspector && typeof inspector.inspectLocalStorage === 'function') {
+                        results.push('✅ localStorageInspector: تم الاستيراد بنجاح');
+                    } else {
+                        results.push('❌ localStorageInspector: تم الاستيراد لكن الهيكل غير صحيح');
+                    }
+                } catch (error) {
+                    results.push(`❌ localStorageInspector: فشل الاستيراد - ${error.message}`);
+                }
+                
+                // اختبار comprehensiveTest
+                try {
+                    const comprehensive = await import('/src/debug/comprehensiveTest.js');
+                    if (comprehensive && typeof comprehensive.runComprehensiveTest === 'function') {
+                        results.push('✅ comprehensiveTest: تم الاستيراد بنجاح');
+                    } else {
+                        results.push('❌ comprehensiveTest: تم الاستيراد لكن الهيكل غير صحيح');
+                    }
+                } catch (error) {
+                    results.push(`❌ comprehensiveTest: فشل الاستيراد - ${error.message}`);
+                }
+                
+                const successCount = results.filter(r => r.includes('✅')).length;
+                const totalTests = results.length;
+                
+                let summary = `📊 نتائج اختبار الاستيرادات:\n`;
+                summary += `✅ نجح: ${successCount}/${totalTests}\n\n`;
+                summary += results.join('\n');
+                
+                displayResult('importResult', summary, successCount === totalTests ? 'success' : 'warning');
+                
+            } catch (error) {
+                displayResult('importResult', `❌ خطأ في اختبار الاستيرادات: ${error.message}`, 'error');
+            }
+        };
+
+        // تشغيل الاختبار الشامل
+        window.runComprehensiveTest = async function() {
+            displayResult('comprehensiveResult', '🔄 جاري تشغيل الاختبار الشامل...', 'info');
+            updateProgress(0);
+            
+            try {
+                // استيراد الوحدات المطلوبة
+                updateProgress(10);
+                const { runComprehensiveTest } = await import('/src/debug/comprehensiveTest.js');
+                
+                updateProgress(20);
+                displayResult('comprehensiveResult', '📦 تم تحميل الوحدات، بدء الاختبار...', 'info');
+                
+                // تشغيل الاختبار
+                updateProgress(30);
+                const result = await runComprehensiveTest();
+                
+                updateProgress(100);
+                
+                // عرض النتائج
+                let summary = `🎯 نتائج الاختبار الشامل:\n\n`;
+                summary += `📊 الحالة العامة: ${result.success ? '✅ نجح' : '❌ فشل'}\n`;
+                summary += `📝 عدد الأخطاء: ${result.errors?.length || 0}\n\n`;
+                
+                if (result.registrationTests) {
+                    summary += `👥 اختبارات التسجيل:\n`;
+                    result.registrationTests.forEach((test, index) => {
+                        summary += `${index + 1}. ${test.user}: ${test.success ? '✅ نجح' : '❌ فشل'}\n`;
+                        if (!test.success && test.error) {
+                            summary += `   خطأ: ${test.error}\n`;
+                        }
+                    });
+                    summary += `\n`;
+                }
+                
+                if (result.finalState) {
+                    summary += `📦 الحالة النهائية:\n`;
+                    summary += `- registeredUsers: ${result.finalState.registeredUsers?.length || 0} مستخدم\n`;
+                    summary += `- spsa_users: ${result.finalState.spsaUsers?.length || 0} مستخدم\n\n`;
+                }
+                
+                if (result.errors && result.errors.length > 0) {
+                    summary += `❌ الأخطاء المكتشفة:\n`;
+                    result.errors.forEach((error, index) => {
+                        summary += `${index + 1}. ${error}\n`;
+                    });
+                }
+                
+                displayResult('comprehensiveResult', summary, result.success ? 'success' : 'error');
+                
+            } catch (error) {
+                updateProgress(100);
+                displayResult('comprehensiveResult', `❌ خطأ في تشغيل الاختبار الشامل: ${error.message}`, 'error');
+            }
+        };
+
+        // مسح جميع البيانات
+        window.clearAllData = function() {
+            try {
+                const keys = ['spsa_users', 'registeredUsers', 'spsa_auth_token', 'spsa_feature_flags'];
+                keys.forEach(key => localStorage.removeItem(key));
+                
+                displayResult('dataResult', '✅ تم مسح جميع البيانات بنجاح', 'success');
+            } catch (error) {
+                displayResult('dataResult', `❌ خطأ في مسح البيانات: ${error.message}`, 'error');
+            }
+        };
+
+        // عرض البيانات الحالية
+        window.showCurrentData = function() {
+            try {
+                const data = {
+                    spsa_users: JSON.parse(localStorage.getItem('spsa_users') || '[]'),
+                    registeredUsers: JSON.parse(localStorage.getItem('registeredUsers') || '[]'),
+                    auth_token: localStorage.getItem('spsa_auth_token') ? 'موجود' : 'غير موجود',
+                    feature_flags: localStorage.getItem('spsa_feature_flags') ? 'موجود' : 'غير موجود'
+                };
+                
+                let summary = `📊 البيانات الحالية:\n\n`;
+                summary += `👥 spsa_users: ${data.spsa_users.length} مستخدم\n`;
+                summary += `📝 registeredUsers: ${data.registeredUsers.length} مستخدم\n`;
+                summary += `🔐 Auth Token: ${data.auth_token}\n`;
+                summary += `🚩 Feature Flags: ${data.feature_flags}\n\n`;
+                
+                if (data.spsa_users.length > 0) {
+                    summary += `عينة من spsa_users:\n`;
+                    data.spsa_users.slice(0, 3).forEach((user, index) => {
+                        summary += `${index + 1}. ${user.firstName || user.name} ${user.lastName || ''} (${user.email})\n`;
+                    });
+                }
+                
+                displayResult('dataResult', summary, 'info');
+                
+            } catch (error) {
+                displayResult('dataResult', `❌ خطأ في عرض البيانات: ${error.message}`, 'error');
+            }
+        };
+
+        // عرض البيانات الحالية عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            showCurrentData();
+        });
+    </script>
+</body>
+</html>

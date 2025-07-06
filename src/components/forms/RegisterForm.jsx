@@ -12,31 +12,47 @@ const RegisterForm = () => {
     organization: '',
   });
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       setError('كلمات المرور غير متطابقة');
+      setIsLoading(false);
       return;
     }
 
     try {
-      // هنا سيتم إضافة التكامل مع الباك إند
-      const mockUser = {
-        id: '1',
+      console.log('🚀 RegisterForm: Starting registration...');
+
+      const registrationData = {
         name: formData.name,
         email: formData.email,
-        specialty: formData.specialty,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        specialization: formData.specialty,
         organization: formData.organization,
-        role: 'member',
+        agreeTerms: true // Assume user agreed to terms
       };
-      login(mockUser);
-      window.location.href = '/profile';
+
+      const result = await register(registrationData);
+
+      if (result.success) {
+        console.log('✅ RegisterForm: Registration successful');
+        // Redirect to dashboard or success page
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error(result.message || 'فشل في إنشاء الحساب');
+      }
     } catch (err) {
-      setError('خطأ في إنشاء الحساب. الرجاء المحاولة مرة أخرى.');
+      console.error('❌ RegisterForm: Registration error:', err);
+      setError(err.message || 'خطأ في إنشاء الحساب. الرجاء المحاولة مرة أخرى.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,9 +159,10 @@ const RegisterForm = () => {
       <div>
         <button
           type="submit"
-          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          disabled={isLoading}
+          className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed"
         >
-          إنشاء حساب
+          {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
         </button>
       </div>
     </form>

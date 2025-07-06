@@ -84,6 +84,15 @@ const Header = () => {
         { to: '/committees/finance', text: 'اللجنة المالية' }
       ]
     },
+    {
+      id: 'services',
+      text: 'الخدمات الرقمية',
+      type: 'dropdown',
+      children: [
+        { to: '/file-upload', text: 'رفع الملفات' },
+        { to: '/notifications', text: 'إدارة الإشعارات' },
+      ]
+    },
     { id: 'membership', text: 'العضوية', to: '/membership', type: 'link' },
     { id: 'contact', text: 'التواصل', to: '/contact', type: 'link' },
   ];
@@ -109,6 +118,8 @@ const Header = () => {
     { to: '/research', text: 'البحوث والدراسات' },
     { to: '/expert-opinions', text: 'آراء الخبراء' },
     { to: '/conference', text: 'المؤتمر السنوي' },
+    { to: '/file-upload', text: 'رفع الملفات' },
+    { to: '/notifications', text: 'إدارة الإشعارات' },
     { to: '/contact', text: 'التواصل' },
   ];
 

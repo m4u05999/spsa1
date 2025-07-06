@@ -13,6 +13,20 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDa
     events: false
   });
 
+  // Early return if user is not loaded yet
+  if (!user) {
+    return (
+      <div className={`${isMobile ? 'fixed inset-0 z-50' : 'relative'} ${isOpen ? 'block' : 'hidden'} lg:block`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-b-2 border-blue-600 rounded-full animate-spin mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-500">جاري التحميل...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Handle menu expansion
   const toggleMenu = (menu) => {
     setExpandedMenus(prev => ({
@@ -34,6 +48,7 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDa
 
   // Get dashboard path based on user role
   const getDashboardPath = () => {
+    if (!user) return '/dashboard';
     if (user.role === 'admin') return '/dashboard/admin';
     if (user.role === 'staff') return '/dashboard/staff';
     return '/dashboard/member';
@@ -143,6 +158,17 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDa
       ),
       permission: ['users.manage', 'content.manage']
     },
+    // Migration - only for admins
+    {
+      name: 'ترحيل البيانات',
+      path: 'migration',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        </svg>
+      ),
+      permission: 'settings.manage'
+    },
     // Settings - only for admins
     {
       name: 'إعدادات النظام',
@@ -169,9 +195,17 @@ const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDa
 
   // Sidebar classes based on state
   const rightSideWidth = isCollapsed ? 'w-[80px]' : 'w-[280px]';
-  const sidebarClasses = `fixed h-full ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} shadow-xl transform transition-transform duration-300 ease-in-out z-40
-    ${isMobile ? (isOpen ? 'translate-x-0' : 'translate-x-full') : 'translate-x-0 right-0 ' + rightSideWidth}
-    ${isMobile ? 'top-0 right-0 w-[280px]' : 'top-16'}`;
+  const sidebarClasses = `
+    fixed h-full
+    ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}
+    shadow-xl transform transition-transform duration-300 ease-in-out
+    ${isMobile ? 'z-50' : 'z-40'}
+    ${isMobile
+      ? (isOpen ? 'translate-x-0' : 'translate-x-full') + ' top-0 right-0 w-[280px]'
+      : 'translate-x-0 right-0 top-16 ' + rightSideWidth
+    }
+    ${isMobile ? 'bottom-0' : ''}
+  `.trim();
 
   return (
     <aside className={sidebarClasses}>

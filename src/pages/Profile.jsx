@@ -3,9 +3,25 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getUserData, updateUserProfile } from '../services/userService';
+import useErrorMessages from '../hooks/useErrorMessages';
+import EnhancedMessage, { FieldErrorMessage } from '../components/ui/EnhancedMessage';
+import { VALIDATION_MESSAGES } from '../utils/errorMessages';
 
 const Profile = () => {
   const { currentUser } = useContext(AuthContext);
+  const {
+    errors,
+    globalError,
+    successMessage,
+    clearAllMessages,
+    setFieldError,
+    setFieldErrors,
+    handleApiError,
+    showSuccess,
+    getFieldError,
+    hasFieldError
+  } = useErrorMessages();
+
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -17,13 +33,10 @@ const Profile = () => {
     committees: [],
     researchUnits: []
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
-  const [errors, setErrors] = useState({});
-  const [updateSuccess, setUpdateSuccess] = useState(false);
-  const [updateError, setUpdateError] = useState('');
 
   // استرجاع بيانات المستخدم عند تحميل الصفحة
   useEffect(() => {
@@ -76,41 +89,53 @@ const Profile = () => {
   // التحقق من صحة المدخلات
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name || formData.name.trim() === '') {
-      newErrors.name = 'الاسم مطلوب';
+      newErrors.name = VALIDATION_MESSAGES.REQUIRED.name;
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = VALIDATION_MESSAGES.LENGTH.nameMin;
+    } else if (formData.name.trim().length > 100) {
+      newErrors.name = VALIDATION_MESSAGES.LENGTH.nameMax;
     }
-    
+
     if (!formData.email || formData.email.trim() === '') {
-      newErrors.email = 'البريد الإلكتروني مطلوب';
+      newErrors.email = VALIDATION_MESSAGES.REQUIRED.email;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'صيغة البريد الإلكتروني غير صحيحة';
+      newErrors.email = VALIDATION_MESSAGES.FORMAT.email;
     }
-    
+
     if (formData.phone && !/^(05)[0-9]{8}$/.test(formData.phone)) {
-      newErrors.phone = 'رقم الهاتف غير صحيح، يجب أن يبدأ بـ 05 ويتكون من 10 أرقام';
+      newErrors.phone = VALIDATION_MESSAGES.FORMAT.phone;
     }
-    
-    setErrors(newErrors);
+
+    if (formData.bio && formData.bio.length > 2000) {
+      newErrors.bio = VALIDATION_MESSAGES.LENGTH.descriptionMax;
+    }
+
+    setFieldErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // معالج حفظ البيانات
   const handleSave = async (e) => {
     e.preventDefault();
-    
+
+    // مسح الرسائل السابقة
+    clearAllMessages();
+
     if (!validateForm()) {
       return;
     }
-    
+
     try {
       setLoading(true);
       await updateUserProfile(formData);
       setUserData(formData);
-      setUpdateSuccess(true);
+      setEditing(false);
+      showSuccess('تم تحديث الملف الشخصي بنجاح');
     } catch (error) {
       console.error('خطأ في تحديث البيانات:', error);
-      setUpdateError('حدث خطأ أثناء محاولة تحديث البيانات، يرجى المحاولة مرة أخرى.');
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -164,15 +189,24 @@ const Profile = () => {
               )}
             </div>
 
-            {updateSuccess && (
-              <div className="mb-4 bg-green-50 border-l-4 border-green-400 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <i className="fas fa-check-circle text-green-400"></i>
-                  </div>
-                  <div className="mr-3">
-                    <p className="text-sm text-green-700">
-                      تم تحديث بياناتك بنجاح
+            {/* رسائل النجاح والخطأ */}
+            {successMessage && (
+              <EnhancedMessage
+                type="success"
+                message={successMessage}
+                onClose={() => showSuccess('')}
+                className="mb-4"
+              />
+            )}
+
+            {globalError && (
+              <EnhancedMessage
+                type="error"
+                message={globalError}
+                onClose={() => clearAllMessages()}
+                className="mb-4"
+              />
+            )}
                     </p>
                   </div>
                 </div>
@@ -233,12 +267,10 @@ const Profile = () => {
                       value={formData.name || ''}
                       onChange={handleInputChange}
                       className={`mt-1 block w-full border ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
+                        hasFieldError('name') ? 'border-red-300' : 'border-gray-300'
                       } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     />
-                    {errors.name && (
-                      <p className="mt-2 text-sm text-red-600">{errors.name}</p>
-                    )}
+                    <FieldErrorMessage error={getFieldError('name')} />
                   </div>
 
                   <div>
@@ -252,12 +284,10 @@ const Profile = () => {
                       value={formData.email || ''}
                       onChange={handleInputChange}
                       className={`mt-1 block w-full border ${
-                        errors.email ? 'border-red-300' : 'border-gray-300'
+                        hasFieldError('email') ? 'border-red-300' : 'border-gray-300'
                       } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     />
-                    {errors.email && (
-                      <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-                    )}
+                    <FieldErrorMessage error={getFieldError('email')} />
                   </div>
 
                   <div>

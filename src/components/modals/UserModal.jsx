@@ -5,9 +5,15 @@ import { Dialog, Transition } from '@headlessui/react';
 
 const UserModal = ({ isOpen, onClose, mode, userData, onSubmit }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     role: 'member',
+    phone: '',
+    specialization: '',
+    workplace: '',
+    academicDegree: '',
+    membershipType: 'regular',
     password: '',
     confirmPassword: ''
   });
@@ -16,17 +22,29 @@ const UserModal = ({ isOpen, onClose, mode, userData, onSubmit }) => {
   useEffect(() => {
     if (userData && (mode === 'edit' || mode === 'view')) {
       setFormData({
-        name: userData.name || '',
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
         email: userData.email || '',
         role: userData.role || 'member',
+        phone: userData.phone || '',
+        specialization: userData.specialization || '',
+        workplace: userData.workplace || '',
+        academicDegree: userData.academicDegree || '',
+        membershipType: userData.membershipType || 'regular',
         password: '',
         confirmPassword: ''
       });
     } else {
       setFormData({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         role: 'member',
+        phone: '',
+        specialization: '',
+        workplace: '',
+        academicDegree: '',
+        membershipType: 'regular',
         password: '',
         confirmPassword: ''
       });
@@ -46,8 +64,8 @@ const UserModal = ({ isOpen, onClose, mode, userData, onSubmit }) => {
     setError('');
 
     if (mode === 'create' || mode === 'edit') {
-      if (!formData.name || !formData.email) {
-        setError('جميع الحقول مطلوبة');
+      if (!formData.firstName || !formData.lastName || !formData.email) {
+        setError('الاسم الأول والأخير والبريد الإلكتروني مطلوبة');
         return;
       }
 
@@ -112,20 +130,38 @@ const UserModal = ({ isOpen, onClose, mode, userData, onSubmit }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                      الاسم
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      disabled={mode === 'view'}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      dir="rtl"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                        الاسم الأول
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                        الاسم الأخير
+                      </label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -161,6 +197,95 @@ const UserModal = ({ isOpen, onClose, mode, userData, onSubmit }) => {
                       <option value="staff">موظف</option>
                       <option value="admin">مدير</option>
                     </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                        رقم الهاتف
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="membershipType" className="block text-sm font-medium text-gray-700">
+                        نوع العضوية
+                      </label>
+                      <select
+                        id="membershipType"
+                        name="membershipType"
+                        value={formData.membershipType}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      >
+                        <option value="regular">عادية</option>
+                        <option value="student">طالب</option>
+                        <option value="academic">أكاديمية</option>
+                        <option value="honorary">فخرية</option>
+                        <option value="corporate">مؤسسية</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
+                      التخصص
+                    </label>
+                    <input
+                      type="text"
+                      id="specialization"
+                      name="specialization"
+                      value={formData.specialization}
+                      onChange={handleChange}
+                      disabled={mode === 'view'}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      dir="rtl"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="workplace" className="block text-sm font-medium text-gray-700">
+                        مكان العمل
+                      </label>
+                      <input
+                        type="text"
+                        id="workplace"
+                        name="workplace"
+                        value={formData.workplace}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="academicDegree" className="block text-sm font-medium text-gray-700">
+                        الدرجة العلمية
+                      </label>
+                      <input
+                        type="text"
+                        id="academicDegree"
+                        name="academicDegree"
+                        value={formData.academicDegree}
+                        onChange={handleChange}
+                        disabled={mode === 'view'}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        dir="rtl"
+                      />
+                    </div>
                   </div>
 
                   {(mode === 'create' || (mode === 'edit' && formData.changePassword)) && (

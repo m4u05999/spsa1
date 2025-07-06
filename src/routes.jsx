@@ -2,27 +2,35 @@
 // نظام توجيه موحد للتطبيق
 import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 // Providers (not lazy loaded)
-import { AuthProvider } from './context/AuthContext';
+import AuthProvider from './context/AuthContext';
 import { DashboardProvider } from './context/DashboardContext';
 import { PaymentProvider } from './context/PaymentContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { SecurityProvider } from './components/security/SecurityProvider';
+import { RealtimeProvider } from './contexts/RealtimeContext';
 
 // Layouts & Core Components (not lazy loaded)
 import MainLayout from './layout/MainLayout';
 import DashboardLayout from './layout/DashboardLayout';
 import AdminDashboardLayout from './layout/AdminDashboardLayout';
 import NotificationSystem from './components/notifications/NotificationSystem';
+import SessionWarning from './components/security/SessionWarning';
 
-// Lazy load all pages with relative paths to fix build issues
-const Home = lazy(() => import(/* webpackChunkName: "home" */ './pages/Home'));
-const LoginPage = lazy(() => import(/* webpackChunkName: "auth" */ './pages/auth/LoginPage'));
-const RegisterPage = lazy(() => import(/* webpackChunkName: "auth" */ './pages/auth/RegisterPage'));
-const ProfilePage = lazy(() => import(/* webpackChunkName: "profile" */ './pages/profile/ProfilePage'));
+// Lazy load all pages with optimized chunking
+const Home = lazy(() => import(/* webpackChunkName: "page-home" */ './pages/Home'));
+const LoginPage = lazy(() => import(/* webpackChunkName: "page-auth" */ './pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import(/* webpackChunkName: "page-auth" */ './pages/auth/RegisterPage'));
+const RegistrationTest = lazy(() => import(/* webpackChunkName: "page-test" */ './pages/RegistrationTest'));
+const SimpleRegistrationTest = lazy(() => import(/* webpackChunkName: "page-test" */ './pages/SimpleRegistrationTest'));
+const UserStorageTest = lazy(() => import(/* webpackChunkName: "page-test" */ './pages/UserStorageTest'));
+const ProfilePage = lazy(() => import(/* webpackChunkName: "page-profile" */ './pages/profile/ProfilePage'));
 
 // Main Pages
 const NewsPage = lazy(() => import(/* webpackChunkName: "news" */ './pages/news/NewsPage'));
+const NewsDetailsPage = lazy(() => import(/* webpackChunkName: "news-details" */ './pages/news/NewsDetailsPage'));
 const AboutPage = lazy(() => import(/* webpackChunkName: "about" */ './pages/about/AboutPage'));
 const EventsPage = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/EventsPage'));
 const PrinceTurkiLecture = lazy(() => import(/* webpackChunkName: "events" */ './pages/events/lectures/PrinceTurkiLecture'));
@@ -34,6 +42,7 @@ const LibraryPage = lazy(() => import(/* webpackChunkName: "library" */ './pages
 const ExpertOpinionsPage = lazy(() => import(/* webpackChunkName: "opinions" */ './pages/opinions/ExpertOpinionsPage'));
 const ResourceDetailsPage = lazy(() => import(/* webpackChunkName: "resources" */ './pages/resources/ResourceDetailsPage'));
 const OpinionDetailsPage = lazy(() => import(/* webpackChunkName: "opinions" */ './pages/opinions/OpinionDetailsPage'));
+const ContactPage = lazy(() => import(/* webpackChunkName: "contact" */ './pages/contact/ContactPage'));
 
 // Research Pages
 const ResearchPage = lazy(() => import(/* webpackChunkName: "research" */ './pages/research/ResearchPage'));
@@ -48,15 +57,17 @@ const StaffDashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ './
 const MemberDashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ './pages/dashboard/MemberDashboard'));
 
 // Admin Dashboard Modules
-const UserManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/UserManagement'));
-const ContentManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/ContentManagementV2'));
-const EventsManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/EventsManagement'));
-const Statistics = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/Statistics'));
-const InquiryManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/InquiryManagement'));
-const SystemSettings = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/SystemSettings'));
-const MediaManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/MediaManagement'));
-const StaticPagesManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/StaticPagesManagement'));
-const AdsManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/AdsManagement'));
+const UserManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/UserManagementFixed.jsx'));
+const ContentManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/ContentManagementV2.jsx'));
+const EventsManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/EventsManagement.jsx'));
+const Statistics = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/Statistics.jsx'));
+const InquiryManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/InquiryManagement.jsx'));
+const SystemSettings = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/SystemSettings.jsx'));
+const MediaManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/MediaManagement.jsx'));
+const StaticPagesManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/StaticPagesManagement.jsx'));
+const AdsManagement = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/dashboard/modules/AdsManagement.jsx'));
+const MigrationPage = lazy(() => import(/* webpackChunkName: "admin-module" */ './pages/admin/MigrationPage.jsx'));
+const LayoutTest = lazy(() => import(/* webpackChunkName: "admin-module" */ './components/dashboard/LayoutTest.jsx'));
 
 // Membership Pages
 const MembershipPage = lazy(() => import(/* webpackChunkName: "membership" */ './pages/membership/MembershipPage'));
@@ -77,28 +88,66 @@ const PoliticalMediaUnit = lazy(() => import(/* webpackChunkName: "committee-uni
 const PoliticalPsychologyUnit = lazy(() => import(/* webpackChunkName: "committee-units" */ './pages/committees/units/PoliticalPsychologyUnit'));
 const WomenEmpowermentUnit = lazy(() => import(/* webpackChunkName: "committee-units" */ './pages/committees/units/WomenEmpowermentUnit'));
 
+// Notification Management Page
+const NotificationManagementPage = lazy(() => import(/* webpackChunkName: "notifications" */ './pages/notifications/NotificationManagementPage'));
+
+// Phase 3 - Advanced Features
+const FileUploadPage = lazy(() => import(/* webpackChunkName: "file-upload" */ './pages/FileUploadPage.jsx'));
+const RealtimeFeaturesDemo = lazy(() => import(/* webpackChunkName: "realtime" */ './pages/RealtimeFeaturesDemo.jsx'));
+
+// API Testing Page
+const ApiTestingPage = lazy(() => import(/* webpackChunkName: "admin" */ './pages/admin/ApiTestingPage.jsx'));
+
 // مكونات الحماية والتحميل
 // مكون الحماية للمسارات التي تتطلب تسجيل الدخول
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token'); // أو استخدم سياق المصادقة الخاص بك
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isLoading, user: user?.email });
+
+  // Additional fallback check for localStorage token
+  const hasToken = localStorage.getItem('token');
+  console.log('🔑 localStorage token check:', !!hasToken);
+
+  if (isLoading) {
+    console.log('⏳ ProtectedRoute: Still loading...');
+    return <PageLoader />;
+  }
+
+  // Check both AuthContext and localStorage token
+  if (!isAuthenticated && !hasToken) {
+    console.log('❌ ProtectedRoute: Not authenticated (no user and no token), redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+
+  // If we have a token but no user context, try to restore session
+  if (!isAuthenticated && hasToken) {
+    console.log('⚠️ ProtectedRoute: Token exists but no user context, attempting session restore');
+    console.log('🔄 Waiting for AuthContext to restore session...');
+    console.log('🕐 Current state - isAuthenticated:', isAuthenticated, 'hasToken:', hasToken, 'user:', user);
+
+    // Give AuthContext a moment to restore session
+    setTimeout(() => {
+      if (!user) {
+        console.log('⚠️ Session restore failed after 3 seconds, clearing invalid token');
+        localStorage.removeItem('token');
+        console.log('🔄 Forcing page reload to restart authentication flow');
+        // Force page reload to restart authentication flow
+        window.location.reload();
+      } else {
+        console.log('✅ Session restored successfully');
+      }
+    }, 3000); // Increased timeout for better reliability
+
+    return <PageLoader />;
+  }
+
+  console.log('✅ ProtectedRoute: Authenticated, rendering children');
+  return children;
 };
 
-// Loading component with skeleton
-const PageLoader = () => (
-  <div className="min-h-screen bg-gray-50 p-4">
-    <div className="max-w-7xl mx-auto">
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-        <div className="space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-full"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+// Import optimized loader
+import { PageLoader } from './components/common/OptimizedLoader';
 
 // مكون التحميل مع الهيكل العظمي
 const SuspenseWrapper = ({ children }) => {
@@ -124,16 +173,21 @@ const prefetchComponent = (importFn) => {
 
 // Route wrapper with providers
 const RouteWrapper = ({ children }) => (
-  <AuthProvider>
-    <DashboardProvider>
-      <PaymentProvider>
-        <NotificationProvider>
-          {children}
-          <NotificationSystem />
-        </NotificationProvider>
-      </PaymentProvider>
-    </DashboardProvider>
-  </AuthProvider>
+  <SecurityProvider>
+    <AuthProvider>
+      <DashboardProvider>
+        <PaymentProvider>
+          <NotificationProvider>
+            <RealtimeProvider>
+              {children}
+              <NotificationSystem />
+              <SessionWarning />
+            </RealtimeProvider>
+          </NotificationProvider>
+        </PaymentProvider>
+      </DashboardProvider>
+    </AuthProvider>
+  </SecurityProvider>
 );
 
 // تعريف الراوتر الرئيسي الموحد
@@ -158,6 +212,21 @@ const router = createBrowserRouter([
         loader: () => prefetchComponent(() => import(/* webpackChunkName: "auth" */ './pages/auth/RegisterPage')).preload()
       },
       {
+        path: "test-registration",
+        element: <Suspense fallback={<PageLoader />}><RegistrationTest /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "test" */ './pages/RegistrationTest')).preload()
+      },
+      {
+        path: "simple-test",
+        element: <Suspense fallback={<PageLoader />}><SimpleRegistrationTest /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "test" */ './pages/SimpleRegistrationTest')).preload()
+      },
+      {
+        path: "storage-test",
+        element: <Suspense fallback={<PageLoader />}><UserStorageTest /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "test" */ './pages/UserStorageTest')).preload()
+      },
+      {
         path: "profile",
         element: <Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>,
         loader: () => prefetchComponent(() => import(/* webpackChunkName: "profile" */ './pages/profile/ProfilePage')).preload()
@@ -169,8 +238,18 @@ const router = createBrowserRouter([
       },
       {
         path: "news",
-        element: <Suspense fallback={<PageLoader />}><NewsPage /></Suspense>,
-        loader: () => prefetchComponent(() => import(/* webpackChunkName: "news" */ './pages/news/NewsPage')).preload()
+        children: [
+          {
+            index: true,
+            element: <Suspense fallback={<PageLoader />}><NewsPage /></Suspense>,
+            loader: () => prefetchComponent(() => import(/* webpackChunkName: "news" */ './pages/news/NewsPage')).preload()
+          },
+          {
+            path: ":id",
+            element: <Suspense fallback={<PageLoader />}><NewsDetailsPage /></Suspense>,
+            loader: () => prefetchComponent(() => import(/* webpackChunkName: "news-details" */ './pages/news/NewsDetailsPage')).preload()
+          }
+        ]
       },
       {
         path: "events",
@@ -226,6 +305,11 @@ const router = createBrowserRouter([
         path: "opinions/:id",
         element: <Suspense fallback={<PageLoader />}><OpinionDetailsPage /></Suspense>,
         loader: () => prefetchComponent(() => import(/* webpackChunkName: "opinions" */ './pages/opinions/OpinionDetailsPage')).preload()
+      },
+      {
+        path: "contact",
+        element: <Suspense fallback={<PageLoader />}><ContactPage /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "contact" */ './pages/contact/ContactPage')).preload()
       },
       {
         path: "research/*",
@@ -331,6 +415,27 @@ const router = createBrowserRouter([
             loader: () => prefetchComponent(() => import(/* webpackChunkName: "membership" */ './pages/membership/MembershipRegistration')).preload()
           }
         ]
+      },
+      {
+        path: "notifications",
+        element: <Suspense fallback={<PageLoader />}><NotificationManagementPage /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "notifications" */ './pages/notifications/NotificationManagementPage')).preload()
+      },
+      // Phase 3 - Advanced Features Routes
+      {
+        path: "file-upload",
+        element: <Suspense fallback={<PageLoader />}><FileUploadPage /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "file-upload" */ './pages/FileUploadPage')).preload()
+      },
+      {
+        path: "realtime-demo",
+        element: <Suspense fallback={<PageLoader />}><RealtimeFeaturesDemo /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "realtime" */ './pages/RealtimeFeaturesDemo')).preload()
+      },
+      {
+        path: "admin/api-testing",
+        element: <Suspense fallback={<PageLoader />}><ApiTestingPage /></Suspense>,
+        loader: () => prefetchComponent(() => import(/* webpackChunkName: "admin" */ './pages/admin/ApiTestingPage')).preload()
       }
     ]
   },
@@ -380,6 +485,14 @@ const router = createBrowserRouter([
         element: <Suspense fallback={<PageLoader />}><AdsManagement /></Suspense>
       },
       {
+        path: "migration/*",
+        element: <Suspense fallback={<PageLoader />}><MigrationPage /></Suspense>
+      },
+      {
+        path: "layout-test",
+        element: <Suspense fallback={<PageLoader />}><LayoutTest /></Suspense>
+      },
+      {
         path: "*",
         element: <Navigate to="/dashboard/admin" replace />
       }
@@ -404,4 +517,5 @@ const router = createBrowserRouter([
   }
 ]);
 
+// Export default for better compatibility
 export default router;

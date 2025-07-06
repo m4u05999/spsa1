@@ -1,5 +1,6 @@
 // src/pages/about/components/AboutIntro.jsx
 import React from 'react';
+import ImageComponent from '../../../components/ImageComponent';
 
 const AboutIntro = () => {
   return (
@@ -15,7 +16,7 @@ const AboutIntro = () => {
           </p>
         </div>
         <div className="flex-1">
-          <img 
+          <ImageComponent 
             src="/assets/images/association-building.jpg" 
             alt="مقر الجمعية" 
             className="rounded-lg shadow-md w-full h-auto"

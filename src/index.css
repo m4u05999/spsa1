@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import dashboard layout fixes */
+@import './styles/dashboard-layout.css';
+
 @layer base {
   html {
     direction: rtl;
@@ -32,8 +35,26 @@
   .rtl {
     direction: rtl;
   }
-  
+
   .ltr {
     direction: ltr;
+  }
+
+  /* Dashboard Layout Utilities */
+  .dashboard-main {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .dashboard-sidebar {
+    @apply fixed h-full shadow-xl transform transition-transform duration-300 ease-in-out;
+  }
+
+  .dashboard-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 transition-opacity backdrop-blur-sm;
+  }
+
+  /* Prevent content shift when sidebar opens/closes */
+  .no-scroll {
+    @apply overflow-hidden;
   }
 }

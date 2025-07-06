@@ -39,11 +39,14 @@ const DashboardHeader = ({
   ];
   
   const handleLogout = async () => {
+    console.log('🚪 DashboardHeader: Logout button clicked');
     try {
+      console.log('🔄 DashboardHeader: Starting logout process...');
       await logout();
+      console.log('✅ DashboardHeader: Logout completed successfully');
       // Redirect will be handled by the auth context
     } catch (error) {
-      console.error("Error logging out:", error);
+      console.error('❌ DashboardHeader: Error during logout:', error);
     }
   };
 
@@ -94,7 +97,12 @@ const DashboardHeader = ({
   };
 
   return (
-    <header className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} shadow-sm transition-all duration-300`} dir="rtl">
+    <header className={`
+      fixed top-0 left-0 right-0 z-50
+      ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}
+      shadow-sm transition-all duration-300
+      h-16
+    `} dir="rtl">
       <div className="flex justify-between items-center px-4 py-3">
         {/* Mobile menu button */}
         <div className="lg:hidden">

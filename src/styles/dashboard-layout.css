@@ -1,0 +1,148 @@
+/* Dashboard Layout Fixes - SPSA Project */
+
+/* Ensure proper z-index hierarchy */
+.dashboard-header {
+  z-index: 50;
+}
+
+.dashboard-sidebar {
+  z-index: 40;
+}
+
+.dashboard-overlay {
+  z-index: 30;
+}
+
+.dashboard-main-content {
+  z-index: 10;
+}
+
+/* Fix sidebar positioning issues */
+.sidebar-fixed {
+  position: fixed;
+  top: 4rem; /* 64px header height */
+  right: 0;
+  height: calc(100vh - 4rem);
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-mobile {
+  top: 0;
+  height: 100vh;
+}
+
+/* Main content spacing */
+.main-content-with-sidebar {
+  margin-right: 280px;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+.main-content-with-sidebar.collapsed {
+  margin-right: 80px;
+}
+
+.main-content-mobile {
+  margin-right: 0;
+}
+
+/* Prevent content overflow when sidebar is open on mobile */
+.mobile-sidebar-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1023px) {
+  .main-content-with-sidebar {
+    margin-right: 0;
+  }
+  
+  .sidebar-fixed {
+    transform: translateX(100%);
+  }
+  
+  .sidebar-fixed.open {
+    transform: translateX(0);
+  }
+}
+
+/* Dark mode adjustments */
+.dark .dashboard-sidebar {
+  background-color: #1f2937;
+  color: white;
+}
+
+.dark .dashboard-header {
+  background-color: #1f2937;
+  color: white;
+}
+
+/* Animation improvements */
+.sidebar-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-transition {
+  transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fix for RTL layout */
+[dir="rtl"] .main-content-with-sidebar {
+  margin-right: 280px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .main-content-with-sidebar.collapsed {
+  margin-right: 80px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .sidebar-fixed {
+  right: 0;
+  left: auto;
+}
+
+/* Ensure proper stacking context */
+.dashboard-container {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Fix for mobile menu button */
+.mobile-menu-button {
+  z-index: 51;
+  position: relative;
+}
+
+/* Backdrop blur effect */
+.sidebar-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Smooth scrolling for main content */
+.main-content-scroll {
+  overflow-y: auto;
+  height: calc(100vh - 4rem);
+}
+
+/* Fix for content jumping */
+.no-content-shift {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Loading state */
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Error boundary styling */
+.dashboard-error {
+  padding: 2rem;
+  text-align: center;
+  color: #ef4444;
+}

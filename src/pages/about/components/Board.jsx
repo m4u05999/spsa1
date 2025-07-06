@@ -1,5 +1,6 @@
 // src/pages/about/components/Board.jsx
 import React from 'react';
+import ImageComponent from '../../../components/ImageComponent';
 
 const Board = () => {
   const boardMembers = [
@@ -49,13 +50,11 @@ const Board = () => {
         {boardMembers.map((member) => (
           <div key={member.id} className="bg-gray-50 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:shadow-lg hover:scale-105">
             <div className="relative pt-[100%] overflow-hidden bg-blue-50">
-              <img 
+              <ImageComponent 
                 src={member.image} 
                 alt={member.name}
                 className="absolute inset-0 w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.src = '/assets/images/default-avatar.jpg';
-                }}
+                fallbackSrc="/assets/images/default-avatar.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-blue-900 to-transparent opacity-60"></div>
             </div>

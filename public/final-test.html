@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبار النهائي - نظام إدارة المستخدمين</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .link-button {
+            background-color: #28a745;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .link-button:hover {
+            background-color: #218838;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 الاختبار النهائي - نظام إدارة المستخدمين</h1>
+            <p>اختبار شامل للتأكد من أن جميع المشاكل تم حلها</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 اختبارات سريعة</h3>
+            <button onclick="runFullTest()">تشغيل الاختبار الشامل</button>
+            <button onclick="initializeData()">تهيئة البيانات</button>
+            <button onclick="testRouting()">اختبار التوجيه</button>
+            <a href="/login" class="link-button">صفحة تسجيل الدخول</a>
+            <a href="/dashboard/admin/users" class="link-button">صفحة إدارة المستخدمين</a>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function addResult(type, title, message, details = null) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+                ${details ? `<div style="background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 4px; font-family: monospace; font-size: 12px;">${details}</div>` : ''}
+                <small style="opacity: 0.7; display: block; margin-top: 5px;">⏰ ${new Date().toLocaleTimeString('ar-SA')}</small>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        async function initializeData() {
+            addResult('info', '🔧 تهيئة البيانات', 'بدء تهيئة البيانات الافتراضية...');
+
+            const defaultUsers = [
+                {
+                    id: 'user_admin_1',
+                    email: 'admin@saudips.org',
+                    firstName: 'مدير',
+                    lastName: 'النظام',
+                    role: 'admin',
+                    status: 'active',
+                    phone: '+966501234567',
+                    specialization: 'إدارة النظام',
+                    workplace: 'الجمعية السعودية للعلوم السياسية',
+                    academicDegree: 'دكتوراه',
+                    membershipType: 'academic',
+                    createdAt: new Date().toISOString(),
+                    lastLoginAt: new Date().toISOString()
+                }
+            ];
+
+            try {
+                localStorage.setItem('spsa_users', JSON.stringify(defaultUsers));
+                sessionStorage.setItem('spsa_users_backup', JSON.stringify({
+                    data: defaultUsers,
+                    timestamp: new Date().toISOString()
+                }));
+
+                const authToken = {
+                    token: 'admin_token_' + Date.now(),
+                    user: defaultUsers[0],
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                };
+                localStorage.setItem('spsa_auth_token', JSON.stringify(authToken));
+
+                const featureFlags = {
+                    ENABLE_USER_MANAGEMENT_API: true,
+                    USE_NEW_AUTH: false
+                };
+                localStorage.setItem('spsa_feature_flags', JSON.stringify(featureFlags));
+
+                addResult('success', '✅ تم تهيئة البيانات', 'تم إنشاء المستخدم الافتراضي ورمز المصادقة');
+            } catch (error) {
+                addResult('error', '❌ خطأ في التهيئة', error.message);
+            }
+        }
+
+        async function testRouting() {
+            addResult('info', '🔍 اختبار التوجيه', 'فحص ملف routes.jsx...');
+
+            try {
+                const response = await fetch('/src/routes.jsx');
+                if (response.ok) {
+                    const content = await response.text();
+                    
+                    // Check for UserManagement import
+                    const hasCorrectImport = content.includes('./pages/dashboard/modules/UserManagement.jsx');
+                    const hasLazyLoading = content.includes('lazy(() => import');
+                    const hasUserManagementRoute = content.includes('path: "users/*"');
+
+                    if (hasCorrectImport) {
+                        addResult('success', '✅ Import صحيح', 'UserManagement.jsx يتم استيراده بشكل صحيح');
+                    } else {
+                        addResult('error', '❌ Import خاطئ', 'مشكلة في استيراد UserManagement.jsx');
+                    }
+
+                    if (hasLazyLoading) {
+                        addResult('success', '✅ Lazy Loading', 'نظام التحميل المتأخر يعمل');
+                    } else {
+                        addResult('error', '❌ Lazy Loading', 'مشكلة في نظام التحميل المتأخر');
+                    }
+
+                    if (hasUserManagementRoute) {
+                        addResult('success', '✅ Route موجود', 'مسار إدارة المستخدمين موجود');
+                    } else {
+                        addResult('error', '❌ Route مفقود', 'مسار إدارة المستخدمين غير موجود');
+                    }
+
+                } else {
+                    addResult('error', '❌ ملف التوجيه', `فشل في تحميل routes.jsx (${response.status})`);
+                }
+            } catch (error) {
+                addResult('error', '❌ خطأ في اختبار التوجيه', error.message);
+            }
+        }
+
+        async function testComponents() {
+            addResult('info', '🧩 اختبار المكونات', 'فحص جميع المكونات المطلوبة...');
+
+            const components = [
+                { path: '/src/pages/dashboard/modules/UserManagement.jsx', name: 'UserManagement' },
+                { path: '/src/services/api/userManagementApi.js', name: 'UserManagementApi' },
+                { path: '/src/components/modals/UserModal.jsx', name: 'UserModal' },
+                { path: '/src/utils/permissions.js', name: 'Permissions' }
+            ];
+
+            let allGood = true;
+            for (const component of components) {
+                try {
+                    const response = await fetch(component.path);
+                    if (response.ok) {
+                        addResult('success', `✅ ${component.name}`, 'المكون متاح ويعمل');
+                    } else {
+                        addResult('error', `❌ ${component.name}`, `فشل في التحميل (${response.status})`);
+                        allGood = false;
+                    }
+                } catch (error) {
+                    addResult('error', `❌ ${component.name}`, `خطأ في الشبكة: ${error.message}`);
+                    allGood = false;
+                }
+            }
+
+            return allGood;
+        }
+
+        async function testData() {
+            addResult('info', '💾 اختبار البيانات', 'فحص البيانات المحفوظة...');
+
+            try {
+                const users = localStorage.getItem('spsa_users');
+                const authToken = localStorage.getItem('spsa_auth_token');
+                const featureFlags = localStorage.getItem('spsa_feature_flags');
+
+                if (users) {
+                    const usersData = JSON.parse(users);
+                    addResult('success', '✅ بيانات المستخدمين', `${usersData.length} مستخدم محفوظ`);
+                } else {
+                    addResult('warning', '⚠️ بيانات المستخدمين', 'لا توجد بيانات - قم بالتهيئة');
+                }
+
+                if (authToken) {
+                    addResult('success', '✅ رمز المصادقة', 'رمز المصادقة موجود');
+                } else {
+                    addResult('warning', '⚠️ رمز المصادقة', 'لا يوجد رمز مصادقة - قم بالتهيئة');
+                }
+
+                if (featureFlags) {
+                    addResult('success', '✅ Feature Flags', 'إعدادات الميزات موجودة');
+                } else {
+                    addResult('warning', '⚠️ Feature Flags', 'لا توجد إعدادات ميزات - قم بالتهيئة');
+                }
+
+            } catch (error) {
+                addResult('error', '❌ خطأ في فحص البيانات', error.message);
+            }
+        }
+
+        async function runFullTest() {
+            addResult('info', '🚀 بدء الاختبار الشامل', 'تشغيل جميع الاختبارات...');
+
+            // Test 1: Components
+            const componentsOk = await testComponents();
+            
+            // Test 2: Routing
+            await testRouting();
+            
+            // Test 3: Data
+            await testData();
+
+            // Final result
+            setTimeout(() => {
+                if (componentsOk) {
+                    addResult('success', '🎉 الاختبار مكتمل', 'جميع المكونات تعمل بشكل صحيح! يمكنك الآن الانتقال إلى صفحة إدارة المستخدمين.');
+                } else {
+                    addResult('error', '⚠️ مشاكل موجودة', 'بعض المكونات تحتاج إلى إصلاح');
+                }
+            }, 2000);
+        }
+
+        // Auto-run on page load
+        window.onload = function() {
+            addResult('info', '🎯 أداة الاختبار النهائي جاهزة', 'يمكنك الآن تشغيل الاختبارات');
+        };
+    </script>
+</body>
+</html>

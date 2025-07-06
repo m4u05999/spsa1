@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تهيئة بيانات النظام - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #bee5eb;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .status.success { background: #28a745; color: white; }
+        .status.error { background: #dc3545; color: white; }
+        .status.pending { background: #ffc107; color: black; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 تهيئة بيانات النظام</h1>
+            <p>أداة شاملة لتهيئة جميع البيانات الافتراضية لنظام SPSA</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h3>📊 حالة النظام الحالية</h3>
+                <div id="systemStatus">
+                    <p>جاري فحص حالة النظام...</p>
+                </div>
+                <button onclick="checkSystemStatus()">🔍 فحص حالة النظام</button>
+            </div>
+
+            <div class="section">
+                <h3>👥 تهيئة المستخدمين</h3>
+                <div id="usersStatus"></div>
+                <button onclick="initializeUsers()">👤 تهيئة المستخدمين الافتراضيين</button>
+                <button onclick="clearUsers()">🗑️ مسح جميع المستخدمين</button>
+            </div>
+
+            <div class="section">
+                <h3>🚩 تهيئة Feature Flags</h3>
+                <div id="flagsStatus"></div>
+                <button onclick="initializeFeatureFlags()">⚙️ تهيئة إعدادات الميزات</button>
+                <button onclick="clearFeatureFlags()">🗑️ مسح إعدادات الميزات</button>
+            </div>
+
+            <div class="section">
+                <h3>🔐 تهيئة رموز المصادقة</h3>
+                <div id="authStatus"></div>
+                <button onclick="initializeAuthTokens()">🔑 تهيئة رموز المصادقة</button>
+                <button onclick="clearAuthTokens()">🗑️ مسح رموز المصادقة</button>
+            </div>
+
+            <div class="section">
+                <h3>🔄 عمليات شاملة</h3>
+                <button onclick="initializeAll()" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                    ✨ تهيئة شاملة للنظام
+                </button>
+                <button onclick="resetAll()" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    🔄 إعادة تعيين كامل
+                </button>
+            </div>
+
+            <div class="section">
+                <h3>📋 سجل العمليات</h3>
+                <div id="operationLog"></div>
+                <button onclick="clearLog()">🧹 مسح السجل</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let operationLog = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleString('ar-SA');
+            operationLog.push({ timestamp, message, type });
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const logDiv = document.getElementById('operationLog');
+            const recentLogs = operationLog.slice(-10);
+            logDiv.innerHTML = recentLogs.map(entry => 
+                `<div class="${entry.type}"><strong>${entry.timestamp}:</strong> ${entry.message}</div>`
+            ).join('');
+        }
+
+        function clearLog() {
+            operationLog = [];
+            updateLogDisplay();
+        }
+
+        async function checkSystemStatus() {
+            log('بدء فحص حالة النظام...', 'info');
+            
+            try {
+                // Check users
+                const users = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                const usersStatus = users.length > 0 ? 
+                    `<span class="status success">✅ ${users.length} مستخدم</span>` : 
+                    `<span class="status error">❌ لا توجد مستخدمين</span>`;
+
+                // Check feature flags
+                const flags = JSON.parse(localStorage.getItem('spsa_feature_flags') || '{}');
+                const flagsCount = Object.keys(flags).length;
+                const flagsStatus = flagsCount > 0 ? 
+                    `<span class="status success">✅ ${flagsCount} إعداد</span>` : 
+                    `<span class="status error">❌ لا توجد إعدادات</span>`;
+
+                // Check auth tokens
+                const authToken = localStorage.getItem('spsa_auth_token');
+                const authStatus = authToken ? 
+                    `<span class="status success">✅ رمز مصادقة موجود</span>` : 
+                    `<span class="status error">❌ لا يوجد رمز مصادقة</span>`;
+
+                document.getElementById('systemStatus').innerHTML = `
+                    <div><strong>المستخدمون:</strong> ${usersStatus}</div>
+                    <div><strong>إعدادات الميزات:</strong> ${flagsStatus}</div>
+                    <div><strong>رموز المصادقة:</strong> ${authStatus}</div>
+                `;
+
+                log('تم فحص حالة النظام بنجاح', 'success');
+            } catch (error) {
+                log(`خطأ في فحص حالة النظام: ${error.message}`, 'error');
+            }
+        }
+
+        async function initializeUsers() {
+            log('بدء تهيئة المستخدمين...', 'info');
+            
+            try {
+                const defaultUsers = [
+                    {
+                        id: 'user_admin_1',
+                        email: 'admin@saudips.org',
+                        firstName: 'مدير',
+                        lastName: 'النظام',
+                        role: 'ADMIN',
+                        status: 'ACTIVE',
+                        membershipType: 'ACADEMIC',
+                        phone: '+966501234567',
+                        specialization: 'إدارة النظام',
+                        workplace: 'الجمعية السعودية للعلوم السياسية',
+                        academicDegree: 'دكتوراه',
+                        permissions: ['users.manage', 'content.manage', 'events.manage', 'settings.manage'],
+                        isActive: true,
+                        isVerified: true,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        lastLoginAt: new Date().toISOString(),
+                        profilePicture: null
+                    },
+                    {
+                        id: 'user_staff_1',
+                        email: 'staff@saudips.org',
+                        firstName: 'موظف',
+                        lastName: 'النظام',
+                        role: 'MODERATOR',
+                        status: 'ACTIVE',
+                        membershipType: 'ACADEMIC',
+                        phone: '+966507654321',
+                        specialization: 'العلوم السياسية',
+                        workplace: 'الجمعية السعودية للعلوم السياسية',
+                        academicDegree: 'ماجستير',
+                        permissions: ['users.view', 'content.create', 'content.edit', 'events.view'],
+                        isActive: true,
+                        isVerified: true,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        lastLoginAt: null,
+                        profilePicture: null
+                    }
+                ];
+
+                localStorage.setItem('spsa_users', JSON.stringify(defaultUsers));
+                
+                document.getElementById('usersStatus').innerHTML = 
+                    `<div class="success">✅ تم تهيئة ${defaultUsers.length} مستخدم بنجاح</div>`;
+                
+                log(`تم تهيئة ${defaultUsers.length} مستخدم افتراضي`, 'success');
+                checkSystemStatus();
+            } catch (error) {
+                log(`خطأ في تهيئة المستخدمين: ${error.message}`, 'error');
+            }
+        }
+
+        async function initializeFeatureFlags() {
+            log('بدء تهيئة إعدادات الميزات...', 'info');
+            
+            try {
+                const featureFlags = {
+                    ENABLE_USER_MANAGEMENT_API: true,
+                    USE_NEW_AUTH: false,
+                    ENABLE_REAL_TIME_FEATURES: true,
+                    ENABLE_NOTIFICATIONS: true,
+                    ENABLE_FILE_UPLOAD: true,
+                    ENABLE_CONTENT_MANAGEMENT: true,
+                    ENABLE_ANALYTICS: true,
+                    PDPL_COMPLIANCE_MODE: true,
+                    DEBUG_MODE: true
+                };
+
+                localStorage.setItem('spsa_feature_flags', JSON.stringify(featureFlags));
+                
+                document.getElementById('flagsStatus').innerHTML = 
+                    `<div class="success">✅ تم تهيئة ${Object.keys(featureFlags).length} إعداد بنجاح</div>`;
+                
+                log(`تم تهيئة ${Object.keys(featureFlags).length} إعداد ميزة`, 'success');
+                checkSystemStatus();
+            } catch (error) {
+                log(`خطأ في تهيئة إعدادات الميزات: ${error.message}`, 'error');
+            }
+        }
+
+        async function initializeAuthTokens() {
+            log('بدء تهيئة رموز المصادقة...', 'info');
+            
+            try {
+                const users = JSON.parse(localStorage.getItem('spsa_users') || '[]');
+                const adminUser = users.find(u => u.role === 'ADMIN');
+                
+                if (!adminUser) {
+                    throw new Error('لا يوجد مستخدم مدير لتهيئة رمز المصادقة');
+                }
+
+                const authToken = {
+                    token: 'spsa_token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    user: adminUser,
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    createdAt: new Date().toISOString(),
+                    type: 'bearer'
+                };
+
+                localStorage.setItem('spsa_auth_token', JSON.stringify(authToken));
+                
+                document.getElementById('authStatus').innerHTML = 
+                    `<div class="success">✅ تم تهيئة رمز المصادقة للمستخدم: ${adminUser.email}</div>`;
+                
+                log(`تم تهيئة رمز المصادقة للمستخدم: ${adminUser.email}`, 'success');
+                checkSystemStatus();
+            } catch (error) {
+                log(`خطأ في تهيئة رموز المصادقة: ${error.message}`, 'error');
+            }
+        }
+
+        async function initializeAll() {
+            log('بدء التهيئة الشاملة للنظام...', 'info');
+            
+            try {
+                await initializeUsers();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await initializeFeatureFlags();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await initializeAuthTokens();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                log('تمت التهيئة الشاملة للنظام بنجاح! 🎉', 'success');
+                checkSystemStatus();
+            } catch (error) {
+                log(`خطأ في التهيئة الشاملة: ${error.message}`, 'error');
+            }
+        }
+
+        function clearUsers() {
+            localStorage.removeItem('spsa_users');
+            localStorage.removeItem('spsa_users_backup');
+            document.getElementById('usersStatus').innerHTML = 
+                `<div class="info">تم مسح جميع المستخدمين</div>`;
+            log('تم مسح جميع المستخدمين', 'info');
+            checkSystemStatus();
+        }
+
+        function clearFeatureFlags() {
+            localStorage.removeItem('spsa_feature_flags');
+            document.getElementById('flagsStatus').innerHTML = 
+                `<div class="info">تم مسح جميع إعدادات الميزات</div>`;
+            log('تم مسح جميع إعدادات الميزات', 'info');
+            checkSystemStatus();
+        }
+
+        function clearAuthTokens() {
+            localStorage.removeItem('spsa_auth_token');
+            document.getElementById('authStatus').innerHTML = 
+                `<div class="info">تم مسح جميع رموز المصادقة</div>`;
+            log('تم مسح جميع رموز المصادقة', 'info');
+            checkSystemStatus();
+        }
+
+        function resetAll() {
+            if (confirm('هل أنت متأكد من إعادة تعيين جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                clearUsers();
+                clearFeatureFlags();
+                clearAuthTokens();
+                log('تم إعادة تعيين جميع بيانات النظام', 'info');
+            }
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            checkSystemStatus();
+            log('تم تحميل أداة تهيئة النظام', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { checkPermission } from '../../../utils/permissions';
 import UserModal from '../../../components/modals/UserModal';
+import userManagementApi from '../../../services/api/userManagementApi';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -16,90 +17,60 @@ const UserManagement = () => {
   const [modalMode, setModalMode] = useState('create');
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Mock users data for development
-  const mockUsers = [
-    {
-      id: '1',
-      name: 'محمد العتيبي',
-      email: 'mohammad@example.com',
-      role: 'admin',
-      status: 'active',
-      joinDate: '2023-01-15',
-      lastActive: '2023-05-20',
-      avatar: null,
-    },
-    {
-      id: '2',
-      name: 'سارة الدوسري',
-      email: 'sara@example.com',
-      role: 'staff',
-      status: 'active',
-      joinDate: '2023-02-10',
-      lastActive: '2023-05-19',
-      avatar: null,
-    },
-    {
-      id: '3',
-      name: 'عبدالله الشهري',
-      email: 'abdullah@example.com',
-      role: 'member',
-      status: 'active',
-      joinDate: '2023-03-05',
-      lastActive: '2023-05-15',
-      avatar: null,
-    },
-    {
-      id: '4',
-      name: 'نوف القحطاني',
-      email: 'nouf@example.com',
-      role: 'member',
-      status: 'suspended',
-      joinDate: '2023-01-20',
-      lastActive: '2023-04-10',
-      avatar: null,
-    },
-    {
-      id: '5',
-      name: 'خالد الغامدي',
-      email: 'khalid@example.com',
-      role: 'member',
-      status: 'inactive',
-      joinDate: '2023-02-25',
-      lastActive: '2023-03-15',
-      avatar: null,
-    }
-  ];
-
   // Load users on component mount
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setUsers(mockUsers);
-      setFilteredUsers(mockUsers);
-      setIsLoading(false);
-    }, 1000);
+    loadUsers();
   }, []);
+
+  // Load users from API
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await userManagementApi.getUsers({
+        page: 1,
+        limit: 100, // Load all users for now
+        search: searchTerm,
+        role: selectedRole !== 'all' ? selectedRole : '',
+        status: selectedStatus !== 'all' ? selectedStatus : ''
+      });
+
+      if (response.success) {
+        setUsers(response.data);
+        setFilteredUsers(response.data);
+      } else {
+        console.error('Failed to load users:', response.error);
+        // Keep existing users if API fails
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      // Keep existing users if API fails
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Filter users when search or filters change
   useEffect(() => {
     let result = [...users];
-    
+
     if (searchTerm) {
       result = result.filter(
-        user => 
-          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        user => {
+          const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+          return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                 user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        }
       );
     }
-    
+
     if (selectedRole !== 'all') {
       result = result.filter(user => user.role === selectedRole);
     }
-    
+
     if (selectedStatus !== 'all') {
       result = result.filter(user => user.status === selectedStatus);
     }
-    
+
     setFilteredUsers(result);
   }, [searchTerm, selectedRole, selectedStatus, users]);
 
@@ -114,16 +85,28 @@ const UserManagement = () => {
   };
 
   // Toggle user status
-  const toggleUserStatus = (userId) => {
-    setUsers(prevUsers =>
-      prevUsers.map(user => {
-        if (user.id === userId) {
-          const newStatus = user.status === 'active' ? 'suspended' : 'active';
-          return { ...user, status: newStatus };
-        }
-        return user;
-      })
-    );
+  const toggleUserStatus = async (userId) => {
+    try {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const newStatus = user.status === 'active' ? 'suspended' : 'active';
+
+      const response = await userManagementApi.updateUserStatus(userId, newStatus);
+
+      if (response.success) {
+        // Update local state
+        setUsers(prevUsers =>
+          prevUsers.map(u =>
+            u.id === userId ? { ...u, status: newStatus } : u
+          )
+        );
+      } else {
+        console.error('Failed to update user status:', response.error);
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
   // Handle modal actions
@@ -139,23 +122,48 @@ const UserManagement = () => {
     setModalMode('create');
   };
 
-  const handleModalSubmit = (formData) => {
-    if (modalMode === 'create') {
-      const newUser = {
-        id: String(users.length + 1),
-        ...formData,
-        status: 'active',
-        joinDate: new Date().toISOString().split('T')[0],
-        lastActive: new Date().toISOString().split('T')[0],
-        avatar: null
-      };
-      setUsers(prev => [...prev, newUser]);
-    } else if (modalMode === 'edit') {
-      setUsers(prev => prev.map(user => 
-        user.id === selectedUser.id ? { ...user, ...formData } : user
-      ));
+  const handleModalSubmit = async (formData) => {
+    try {
+      let response;
+
+      if (modalMode === 'create') {
+        response = await userManagementApi.createUser(formData);
+      } else if (modalMode === 'edit') {
+        response = await userManagementApi.updateUser(selectedUser.id, formData);
+      }
+
+      if (response.success) {
+        // Reload users to get updated data
+        await loadUsers();
+        closeModal();
+      } else {
+        console.error('Failed to save user:', response.error);
+        alert('فشل في حفظ المستخدم');
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
+      alert('حدث خطأ أثناء حفظ المستخدم');
     }
-    closeModal();
+  };
+
+  // Handle user deletion
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
+      try {
+        const response = await userManagementApi.deleteUser(userId);
+
+        if (response.success) {
+          // Remove user from local state
+          setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+        } else {
+          console.error('Failed to delete user:', response.error);
+          alert('فشل في حذف المستخدم');
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('حدث خطأ أثناء حذف المستخدم');
+      }
+    }
   };
 
   // User role badge color
@@ -327,18 +335,20 @@ const UserManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            {user.avatar ? (
-                              <img className="h-10 w-10 rounded-full" src={user.avatar} alt={user.name} />
+                            {user.profilePicture ? (
+                              <img className="h-10 w-10 rounded-full" src={user.profilePicture} alt={`${user.firstName} ${user.lastName}`} />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                                 <span className="text-blue-600 font-medium text-lg">
-                                  {user.name.charAt(0)}
+                                  {(user.firstName || user.email).charAt(0)}
                                 </span>
                               </div>
                             )}
                           </div>
                           <div className="mr-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email}
+                            </div>
                             <div className="text-sm text-gray-500">{user.email}</div>
                           </div>
                         </div>
@@ -354,10 +364,10 @@ const UserManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(user.joinDate)}
+                        {formatDate(user.createdAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(user.lastActive)}
+                        {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'لم يسجل دخول'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-3 space-x-reverse">
@@ -376,12 +386,20 @@ const UserManagement = () => {
                                 تعديل
                               </button>
                               {user.role !== 'admin' && (
-                                <button
-                                  className={user.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
-                                  onClick={() => toggleUserStatus(user.id)}
-                                >
-                                  {user.status === 'active' ? 'تعليق' : 'تفعيل'}
-                                </button>
+                                <>
+                                  <button
+                                    className={user.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                                    onClick={() => toggleUserStatus(user.id)}
+                                  >
+                                    {user.status === 'active' ? 'تعليق' : 'تفعيل'}
+                                  </button>
+                                  <button
+                                    className="text-red-600 hover:text-red-900"
+                                    onClick={() => handleDeleteUser(user.id)}
+                                  >
+                                    حذف
+                                  </button>
+                                </>
                               )}
                             </>
                           )}

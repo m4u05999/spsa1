@@ -1,0 +1,533 @@
+/**
+ * Notification Preferences Component Styles
+ * أنماط مكون تفضيلات الإشعارات
+ */
+
+.notification-preferences {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.preferences-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.preferences-header h2 {
+  font-size: 1.8rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.preferences-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #dc2626;
+  margin-top: 16px;
+}
+
+.error-message button {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Preference Sections */
+.preference-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.preference-section h3 {
+  font-size: 1.3rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.preference-section > p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* Preference Grid */
+.preference-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.preference-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preference-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preference-control input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.preference-control input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preference-control label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.preference-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.permission-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.permission-status.granted {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.permission-status.denied {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.permission-status.default {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.permission-button {
+  padding: 6px 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  align-self: flex-start;
+}
+
+.permission-button:hover {
+  background: #2563eb;
+}
+
+.permission-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Quiet Hours */
+.quiet-hours-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quiet-hours-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quiet-hours-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.quiet-hours-toggle label {
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.quiet-hours-time {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.time-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-input label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.time-input input[type="number"] {
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.time-input input[type="number"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.time-input input[type="number"]:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* General Settings */
+.preference-item label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.preference-item select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+
+.preference-item select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.preference-item select:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Actions */
+.preferences-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.save-button,
+.reset-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.save-button {
+  background: #3b82f6;
+  color: white;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.save-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reset-button {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.reset-button:hover:not(:disabled) {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.reset-button:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Changes Indicator */
+.changes-indicator {
+  text-align: center;
+  margin-top: 16px;
+  padding: 12px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  color: #d97706;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .notification-preferences {
+    padding: 16px;
+  }
+  
+  .preference-section {
+    padding: 20px;
+  }
+  
+  .preference-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quiet-hours-time {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .time-input {
+    align-items: center;
+  }
+  
+  .time-input input[type="number"] {
+    width: 100px;
+  }
+  
+  .preferences-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .save-button,
+  .reset-button {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-preferences {
+    padding: 12px;
+  }
+  
+  .preferences-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .preference-section {
+    padding: 16px;
+  }
+  
+  .preference-section h3 {
+    font-size: 1.2rem;
+  }
+  
+  .preference-control {
+    gap: 8px;
+  }
+  
+  .preference-label {
+    font-size: 0.9rem;
+  }
+  
+  .permission-status {
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .notification-preferences {
+    background: #111827;
+    color: #f9fafb;
+  }
+  
+  .preferences-header h2 {
+    color: #f9fafb;
+  }
+  
+  .preferences-header p {
+    color: #d1d5db;
+  }
+  
+  .preference-section {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .preference-section h3 {
+    color: #f9fafb;
+  }
+  
+  .preference-section > p {
+    color: #d1d5db;
+  }
+  
+  .preference-label {
+    color: #f3f4f6;
+  }
+  
+  .quiet-hours-toggle label {
+    color: #f3f4f6;
+  }
+  
+  .quiet-hours-time {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .time-input label {
+    color: #d1d5db;
+  }
+  
+  .time-input input[type="number"],
+  .preference-item select {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .time-input input[type="number"]:disabled,
+  .preference-item select:disabled {
+    background: #4b5563;
+    color: #9ca3af;
+  }
+  
+  .reset-button {
+    background: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  
+  .reset-button:hover:not(:disabled) {
+    background: #4b5563;
+  }
+  
+  .preferences-actions {
+    border-color: #374151;
+  }
+  
+  .changes-indicator {
+    background: #451a03;
+    border-color: #d97706;
+    color: #fbbf24;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .preference-section {
+    border-width: 2px;
+  }
+  
+  .save-button:focus,
+  .reset-button:focus,
+  .permission-button:focus {
+    outline: 3px solid #000;
+    outline-offset: 2px;
+  }
+  
+  .time-input input[type="number"]:focus,
+  .preference-item select:focus {
+    box-shadow: 0 0 0 3px #000;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .save-button,
+  .reset-button,
+  .permission-button {
+    transition: none;
+  }
+  
+  .save-button:hover:not(:disabled),
+  .reset-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .notification-preferences {
+    background: white !important;
+    color: black !important;
+    box-shadow: none;
+  }
+  
+  .preferences-actions {
+    display: none;
+  }
+  
+  .permission-button {
+    display: none;
+  }
+  
+  .changes-indicator {
+    display: none;
+  }
+}

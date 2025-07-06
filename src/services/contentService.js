@@ -105,6 +105,19 @@ const contentService = {
     initializeStorage();
     return Promise.resolve(localStorageService.getItem(CONTENT_STORAGE_KEY));
   },
+
+  // Alias for getAll to maintain compatibility with enhancedContentService
+  getContents: async (params = {}) => {
+    initializeStorage();
+    const contents = localStorageService.getItem(CONTENT_STORAGE_KEY);
+
+    // Add metadata to indicate legacy service was used
+    return Promise.resolve({
+      data: contents,
+      metadata: { service: 'legacy' },
+      success: true
+    });
+  },
   
   // Get content by ID
   getById: async (id) => {
