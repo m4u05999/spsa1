@@ -332,3 +332,37 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_tag_usage_count_trigger
     AFTER INSERT OR DELETE ON content_tags
     FOR EACH ROW EXECUTE FUNCTION update_tag_usage_count();
+
+-- =====================================================
+-- User Consents Table - PDPL Compliance
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS user_consents (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    consent_type VARCHAR(100) NOT NULL CHECK (consent_type IN (
+        'personalDataProcessing',
+        'membershipManagement', 
+        'profileVisibility',
+        'marketingCommunications',
+        'activityTracking'
+    )),
+    consent_given BOOLEAN NOT NULL DEFAULT FALSE,
+    consent_version VARCHAR(10) DEFAULT '1.0',
+    given_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    withdrawn_at TIMESTAMP WITH TIME ZONE,
+    ip_address INET,
+    user_agent TEXT,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for user_consents table
+CREATE INDEX IF NOT EXISTS idx_user_consents_user_id ON user_consents(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_consents_type ON user_consents(consent_type);
+CREATE INDEX IF NOT EXISTS idx_user_consents_given_at ON user_consents(given_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_consents_active ON user_consents(user_id, consent_type, consent_given) WHERE consent_given = true AND withdrawn_at IS NULL;
+
+-- Trigger for user_consents updated_at
+CREATE TRIGGER update_user_consents_updated_at BEFORE UPDATE ON user_consents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

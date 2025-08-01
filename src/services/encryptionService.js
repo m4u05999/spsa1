@@ -17,10 +17,10 @@ class EncryptionService {
   }
 
   /**
-   * Generate encryption key from password/secret
-   * إنشاء مفتاح التشفير من كلمة المرور/السر
+   * ✅ Generate encryption key from password/secret with random salt
+   * إنشاء مفتاح التشفير من كلمة المرور/السر مع ملح عشوائي
    */
-  async generateKey(secret) {
+  async generateKey(secret, salt = null) {
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       this.encoder.encode(secret),
@@ -29,23 +29,31 @@ class EncryptionService {
       ['deriveBits', 'deriveKey']
     );
 
-    return crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: this.encoder.encode('spsa-salt-2024'),
-        iterations: 100000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
+    // ✅ استخدام salt عشوائي لكل عملية تشفير - أمان أقوى
+    if (!salt) {
+      salt = crypto.getRandomValues(new Uint8Array(16));
+    }
+
+    return {
+      key: await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      ),
+      salt: salt // إرجاع salt للاستخدام في فك التشفير
+    };
   }
 
   /**
-   * Encrypt data
-   * تشفير البيانات
+   * ✅ Encrypt data with random salt and IV
+   * تشفير البيانات مع ملح و IV عشوائي
    */
   async encrypt(data, secret = ENV.SECURITY.ENCRYPTION_KEY) {
     try {
@@ -53,7 +61,8 @@ class EncryptionService {
         throw new Error('Encryption key not provided');
       }
 
-      const key = await this.generateKey(secret);
+      // ✅ إنشاء salt عشوائي لكل تشفير
+      const { key, salt } = await this.generateKey(secret);
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const encodedData = this.encoder.encode(JSON.stringify(data));
 
@@ -63,21 +72,22 @@ class EncryptionService {
         encodedData
       );
 
-      // Combine IV and encrypted data
-      const combined = new Uint8Array(iv.length + encrypted.byteLength);
-      combined.set(iv);
-      combined.set(new Uint8Array(encrypted), iv.length);
+      // ✅ دمج Salt, IV والبيانات المشفرة
+      const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+      combined.set(salt);                              // أول 16 بايت: salt
+      combined.set(iv, salt.length);                   // التالي 12 بايت: IV
+      combined.set(new Uint8Array(encrypted), salt.length + iv.length); // الباقي: البيانات المشفرة
 
       return btoa(String.fromCharCode(...combined));
     } catch (error) {
-      console.error('Encryption failed:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل التشفير
       throw new Error('Failed to encrypt data');
     }
   }
 
   /**
-   * Decrypt data
-   * فك تشفير البيانات
+   * ✅ Decrypt data with salt extraction
+   * فك تشفير البيانات مع استخراج الملح
    */
   async decrypt(encryptedData, secret = ENV.SECURITY.ENCRYPTION_KEY) {
     try {
@@ -85,13 +95,17 @@ class EncryptionService {
         throw new Error('Encryption key not provided');
       }
 
-      const key = await this.generateKey(secret);
       const combined = new Uint8Array(
         atob(encryptedData).split('').map(char => char.charCodeAt(0))
       );
 
-      const iv = combined.slice(0, 12);
-      const encrypted = combined.slice(12);
+      // ✅ استخراج Salt, IV والبيانات المشفرة
+      const salt = combined.slice(0, 16);        // أول 16 بايت: salt
+      const iv = combined.slice(16, 28);         // التالي 12 بايت: IV
+      const encrypted = combined.slice(28);      // الباقي: البيانات المشفرة
+
+      // ✅ إعادة بناء المفتاح باستخدام salt المحفوظ
+      const { key } = await this.generateKey(secret, salt);
 
       const decrypted = await crypto.subtle.decrypt(
         { name: 'AES-GCM', iv },
@@ -102,7 +116,7 @@ class EncryptionService {
       const decodedData = this.decoder.decode(decrypted);
       return JSON.parse(decodedData);
     } catch (error) {
-      console.error('Decryption failed:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل فك التشفير
       throw new Error('Failed to decrypt data');
     }
   }
@@ -143,7 +157,7 @@ class EncryptionService {
 
       return btoa(String.fromCharCode(...combined));
     } catch (error) {
-      console.error('Password hashing failed:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل تشفير كلمات المرور
       throw new Error('Failed to hash password');
     }
   }
@@ -195,7 +209,7 @@ class EncryptionService {
 
       return true;
     } catch (error) {
-      console.error('Password verification failed:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل التحقق من كلمات المرور
       return false;
     }
   }
@@ -245,7 +259,7 @@ class SecureStorageService {
       storage.setItem(key, encryptedData);
       return true;
     } catch (error) {
-      console.error('Failed to store secure item:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل التخزين الآمن
       return false;
     }
   }
@@ -265,7 +279,7 @@ class SecureStorageService {
 
       return await this.encryption.decrypt(encryptedData);
     } catch (error) {
-      console.error('Failed to retrieve secure item:', error);
+      // ❌ REMOVED: console.error - لا نكشف تفاصيل فشل استرجاع البيانات الآمنة
       // Remove corrupted data
       this.removeSecureItem(key, useSessionStorage);
       return null;
@@ -286,14 +300,13 @@ class SecureStorageService {
    * مسح جميع التخزين الآمن
    */
   clearSecureStorage() {
-    console.log('🧹 SecureStorage: Starting clearSecureStorage...');
+    // ❌ REMOVED: console.log - لا نكشف عمليات مسح التخزين الآمن في الإنتاج
     // Clear only our app's keys
     Object.values(SECURE_CONFIG.STORAGE_KEYS).forEach(key => {
-      console.log(`🗑️ SecureStorage: Removing key: ${key}`);
       localStorage.removeItem(key);
       sessionStorage.removeItem(key);
     });
-    console.log('✅ SecureStorage: All secure storage cleared');
+    // ✅ SecureStorage: All secure storage cleared
   }
 }
 

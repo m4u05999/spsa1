@@ -226,6 +226,9 @@ export const auditMiddleware = (req, res, next) => {
     const success = res.statusCode < 400;
     
     try {
+      // ✅ فحص موافقة المستخدم على تتبع النشاط قبل تسجيل IP وuser agent
+      const hasTrackingConsent = await checkUserConsent(req.user?.id, 'activityTracking');
+      
       // Prepare audit entry
       const auditEntry = new AuditEntry({
         userId: req.user?.id || null,
@@ -235,8 +238,11 @@ export const auditMiddleware = (req, res, next) => {
         resourceId,
         oldValues: null, // Will be populated for updates
         newValues: sanitizeData(originalBody),
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
+        
+        // ✅ تسجيل IP وuser agent فقط في حالة الموافقة أو الضرورة الأمنية
+        ipAddress: hasTrackingConsent || isSecuritySensitiveAction(action) ? req.ip : null,
+        userAgent: hasTrackingConsent || isSecuritySensitiveAction(action) ? req.get('User-Agent') : null,
+        
         success,
         errorMessage: success ? null : (responseData?.error || 'Unknown error'),
         metadata: {
@@ -245,8 +251,9 @@ export const auditMiddleware = (req, res, next) => {
           statusCode: res.statusCode,
           duration,
           contentLength: res.get('Content-Length'),
-          referer: req.get('Referer'),
-          origin: req.get('Origin')
+          // ✅ معلومات أقل تطفلاً
+          hasTrackingConsent,
+          consentChecked: true
         }
       });
       
@@ -404,10 +411,85 @@ export const cleanupAuditLogs = async () => {
   }
 };
 
+/**
+ * ✅ فحص موافقة المستخدم على نوع معين من معالجة البيانات
+ */
+const checkUserConsent = async (userId, consentType) => {
+  if (!userId) return false; // مستخدم غير مسجل = عدم موافقة
+  
+  try {
+    const result = await query(`
+      SELECT consent_given, withdrawn_at 
+      FROM user_consents 
+      WHERE user_id = $1 AND consent_type = $2 
+      ORDER BY given_at DESC 
+      LIMIT 1
+    `, [userId, consentType]);
+    
+    if (result.rows.length === 0) return false; // لا توجد موافقة
+    
+    const consent = result.rows[0];
+    return consent.consent_given && !consent.withdrawn_at; // موافقة نشطة وغير مسحوبة
+    
+  } catch (error) {
+    logger.error('Failed to check user consent:', error);
+    return false; // في حالة الخطأ، نفترض عدم الموافقة
+  }
+};
+
+/**
+ * ✅ فحص إذا كان الإجراء يتطلب تسجيل IP لأغراض أمنية
+ */
+const isSecuritySensitiveAction = (action) => {
+  const securitySensitiveActions = [
+    'login',
+    'logout', 
+    'register',
+    'password_change',
+    'delete', // حذف البيانات
+    'admin'   // العمليات الإدارية
+  ];
+  
+  return securitySensitiveActions.includes(action);
+};
+
+/**
+ * ✅ تسجيل أحداث الأمان الحرجة (مع IP حتى بدون موافقة)
+ */
+export const logSecurityEvent = async (eventData) => {
+  const auditEntry = new AuditEntry({
+    ...eventData,
+    // ✅ الأحداث الأمنية تتطلب IP وuser agent لحماية النظام
+    ipAddress: eventData.ipAddress,
+    userAgent: eventData.userAgent,
+    metadata: {
+      ...eventData.metadata,
+      securityEvent: true,
+      legalBasis: 'legitimate_interest' // المصلحة المشروعة للأمان
+    }
+  });
+  
+  await saveAuditEntry(auditEntry);
+  
+  auditLogger.dataProcessing(
+    eventData.userId,
+    eventData.resourceType || 'security',
+    eventData.action,
+    'legitimate_interest', // أساس قانوني: المصلحة المشروعة
+    { 
+      ...eventData.metadata,
+      securityEvent: true 
+    }
+  );
+};
+
 export default {
   auditMiddleware,
   logAuditEvent,
+  logSecurityEvent,     // ✅ إضافة وظيفة الأحداث الأمنية
   buildAuditQuery,
   cleanupAuditLogs,
-  AuditEntry
+  AuditEntry,
+  checkUserConsent,     // ✅ إضافة وظيفة فحص الموافقة
+  isSecuritySensitiveAction // ✅ إضافة وظيفة فحص الحساسية الأمنية
 };

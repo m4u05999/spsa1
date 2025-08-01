@@ -1,38 +1,93 @@
 // src/services/localStorageService.js
 /**
  * خدمة للتعامل مع التخزين المحلي (localStorage)
+ * ✅ محدثة لامتثال قانون PDPL مع تشفير البيانات الحساسة
  * توفر وظائف لحفظ واسترجاع وحذف البيانات في متصفح المستخدم
  */
+
+// ✅ استيراد خدمة التشفير
+import EncryptionService from './encryptionService.js';
+
+// ✅ البيانات الحساسة التي تحتاج تشفير
+const SENSITIVE_KEYS = [
+  'user',           // بيانات المستخدم الشخصية
+  'authToken',      // رمز المصادقة
+  'spsa_users',     // قائمة المستخدمين
+  'personal_',      // أي مفتاح يبدأ بـ personal_
+  'financial_',     // أي مفتاح يبدأ بـ financial_
+  'payment_',       // أي مفتاح يبدأ بـ payment_
+];
+
+// ✅ فحص إذا كان المفتاح حساساً ويحتاج تشفير
+const isSensitiveKey = (key) => {
+  return SENSITIVE_KEYS.some(sensitiveKey => 
+    key === sensitiveKey || key.startsWith(sensitiveKey)
+  );
+};
+
+// ✅ إنشاء مثيل خدمة التشفير
+const encryptionService = new EncryptionService();
 const localStorageService = {
   /**
-   * حفظ بيانات في التخزين المحلي
+   * ✅ حفظ بيانات في التخزين المحلي مع تشفير البيانات الحساسة
    * @param {string} key - المفتاح الذي سيتم استخدامه للوصول للبيانات لاحقًا
    * @param {any} value - البيانات التي سيتم تخزينها
    */
-  setItem: (key, value) => {
+  setItem: async (key, value) => {
     try {
-      const serializedValue = JSON.stringify(value);
-      localStorage.setItem(key, serializedValue);
+      let dataToStore = JSON.stringify(value);
+      
+      // ✅ تشفير البيانات الحساسة
+      if (isSensitiveKey(key)) {
+        // ❌ REMOVED: console.log - لا نكشف معلومات التشفير في الإنتاج
+        dataToStore = await encryptionService.encrypt(dataToStore);
+        
+        // ✅ إضافة علامة للدلالة على أن البيانات مشفرة
+        dataToStore = 'ENCRYPTED:' + dataToStore;
+      }
+      
+      localStorage.setItem(key, dataToStore);
     } catch (error) {
       console.error('خطأ في حفظ البيانات في التخزين المحلي:', error);
     }
   },
 
   /**
-   * استرجاع بيانات من التخزين المحلي
+   * ✅ استرجاع بيانات من التخزين المحلي مع فك تشفير البيانات الحساسة
    * @param {string} key - المفتاح المستخدم للوصول للبيانات
    * @param {any} defaultValue - القيمة الافتراضية التي سيتم إرجاعها إذا لم يتم العثور على البيانات
    * @returns {any} - البيانات المخزنة أو القيمة الافتراضية
    */
-  getItem: (key, defaultValue = null) => {
+  getItem: async (key, defaultValue = null) => {
     try {
-      const serializedValue = localStorage.getItem(key);
-      if (serializedValue === null) {
+      const storedValue = localStorage.getItem(key);
+      if (storedValue === null) {
         return defaultValue;
       }
-      return JSON.parse(serializedValue);
+      
+      let dataToReturn = storedValue;
+      
+      // ✅ فك تشفير البيانات المشفرة
+      if (storedValue.startsWith('ENCRYPTED:')) {
+        // ❌ REMOVED: console.log - لا نكشف معلومات فك التشفير في الإنتاج
+        const encryptedData = storedValue.replace('ENCRYPTED:', '');
+        dataToReturn = await encryptionService.decrypt(encryptedData);
+      }
+      
+      return JSON.parse(dataToReturn);
     } catch (error) {
       console.error('خطأ في استرجاع البيانات من التخزين المحلي:', error);
+      
+      // ✅ في حالة فشل فك التشفير، نحاول قراءة البيانات العادية
+      try {
+        const fallbackValue = localStorage.getItem(key);
+        if (fallbackValue && !fallbackValue.startsWith('ENCRYPTED:')) {
+          return JSON.parse(fallbackValue);
+        }
+      } catch (fallbackError) {
+        console.error('فشل في قراءة البيانات حتى بدون تشفير:', fallbackError);
+      }
+      
       return defaultValue;
     }
   },
@@ -75,43 +130,77 @@ const localStorageService = {
   },
 
   /**
-   * حفظ بيانات المستخدم في التخزين المحلي
+   * ✅ حفظ بيانات المستخدم في التخزين المحلي (مشفرة)
    * @param {Object} userData - بيانات المستخدم التي سيتم تخزينها
    */
-  saveUserData: (userData) => {
-    localStorageService.setItem('user', userData);
+  saveUserData: async (userData) => {
+    await localStorageService.setItem('user', userData);
   },
 
   /**
-   * استرجاع بيانات المستخدم من التخزين المحلي
+   * ✅ استرجاع بيانات المستخدم من التخزين المحلي (مع فك التشفير)
    * @returns {Object|null} - بيانات المستخدم أو null إذا لم يكن هناك مستخدم
    */
-  getUserData: () => {
-    return localStorageService.getItem('user');
+  getUserData: async () => {
+    return await localStorageService.getItem('user');
   },
 
   /**
-   * حفظ توكن المصادقة في التخزين المحلي
+   * ✅ حفظ توكن المصادقة في التخزين المحلي (مشفر)
    * @param {string} token - توكن المصادقة
    */
-  saveAuthToken: (token) => {
-    localStorageService.setItem('authToken', token);
+  saveAuthToken: async (token) => {
+    await localStorageService.setItem('authToken', token);
   },
 
   /**
-   * استرجاع توكن المصادقة من التخزين المحلي
+   * ✅ استرجاع توكن المصادقة من التخزين المحلي (مع فك التشفير)
    * @returns {string|null} - توكن المصادقة أو null إذا لم يكن موجودًا
    */
-  getAuthToken: () => {
-    return localStorageService.getItem('authToken');
+  getAuthToken: async () => {
+    return await localStorageService.getItem('authToken');
   },
 
   /**
-   * تسجيل خروج المستخدم بحذف بياناته وتوكن المصادقة
+   * ✅ تسجيل خروج المستخدم بحذف بياناته وتوكن المصادقة بأمان
    */
   logout: () => {
-    localStorageService.removeItem('user');
-    localStorageService.removeItem('authToken');
+    // ✅ حذف البيانات الحساسة بأمان
+    localStorageService.secureRemove('user');
+    localStorageService.secureRemove('authToken');
+    
+    // ✅ حذف أي بيانات حساسة أخرى
+    const allKeys = localStorageService.getAllKeys();
+    allKeys.forEach(key => {
+      if (isSensitiveKey(key)) {
+        localStorageService.secureRemove(key);
+      }
+    });
+    
+    console.log('✅ تم تسجيل الخروج وحذف البيانات الحساسة بأمان');
+  },
+
+  /**
+   * ✅ حذف آمن للبيانات الحساسة مع الكتابة فوقها
+   * @param {string} key - المفتاح المراد حذفه
+   */
+  secureRemove: (key) => {
+    try {
+      // ✅ إذا كانت البيانات حساسة، اكتب فوقها أولاً
+      if (isSensitiveKey(key)) {
+        const randomData = Array(1000).fill(0).map(() => 
+          Math.random().toString(36)
+        ).join('');
+        localStorage.setItem(key, randomData);
+      }
+      
+      // ✅ ثم احذفها
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error('خطأ في الحذف الآمن:', error);
+      // تراجع للحذف العادي
+      localStorage.removeItem(key);
+    }
   },
 
   /**

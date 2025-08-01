@@ -1,6 +1,6 @@
 // src/components/forms/RegisterForm.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/index.jsx';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +11,19 @@ const RegisterForm = () => {
     specialty: '',
     organization: '',
   });
+  
+  // ✅ نظام موافقة حقيقي وفقاً لقانون PDPL
+  const [consents, setConsents] = useState({
+    // موافقات مطلوبة (لا يمكن التسجيل بدونها)
+    personalDataProcessing: false,    // معالجة البيانات الشخصية
+    membershipManagement: false,      // إدارة العضوية
+    
+    // موافقات اختيارية
+    profileVisibility: false,         // نشر الملف الشخصي
+    marketingCommunications: false,   // التسويق والإشعارات
+    activityTracking: false,         // تتبع النشاط
+  });
+  
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -20,14 +33,22 @@ const RegisterForm = () => {
     setError('');
     setIsLoading(true);
 
+    // ✅ التحقق من كلمات المرور
     if (formData.password !== formData.confirmPassword) {
       setError('كلمات المرور غير متطابقة');
       setIsLoading(false);
       return;
     }
 
+    // ✅ التحقق من الموافقات الأساسية المطلوبة
+    if (!consents.personalDataProcessing || !consents.membershipManagement) {
+      setError('يجب الموافقة على معالجة البيانات الشخصية وإدارة العضوية للمتابعة');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      console.log('🚀 RegisterForm: Starting registration...');
+      // ❌ REMOVED: console.log - لا نكشف بداية عملية التسجيل في الإنتاج
 
       const registrationData = {
         name: formData.name,
@@ -36,20 +57,50 @@ const RegisterForm = () => {
         confirmPassword: formData.confirmPassword,
         specialization: formData.specialty,
         organization: formData.organization,
-        agreeTerms: true // Assume user agreed to terms
+        
+        // ✅ موافقات حقيقية بدلاً من الافتراض الوهمي
+        consents: {
+          personalDataProcessing: {
+            granted: consents.personalDataProcessing,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          },
+          membershipManagement: {
+            granted: consents.membershipManagement,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          },
+          profileVisibility: {
+            granted: consents.profileVisibility,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          },
+          marketingCommunications: {
+            granted: consents.marketingCommunications,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          },
+          activityTracking: {
+            granted: consents.activityTracking,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+          }
+        }
+        // ❌ REMOVED: agreeTerms: true - لا مزيد من الافتراضات الوهمية
       };
 
       const result = await register(registrationData);
 
       if (result.success) {
-        console.log('✅ RegisterForm: Registration successful');
+        // ❌ REMOVED: console.log - لا نكشف نجاح التسجيل في الإنتاج
         // Redirect to dashboard or success page
         window.location.href = '/dashboard';
       } else {
         throw new Error(result.message || 'فشل في إنشاء الحساب');
       }
     } catch (err) {
-      console.error('❌ RegisterForm: Registration error:', err);
+      // ✅ نحتفظ بتسجيل الأخطاء لكن بدون تفاصيل حساسة
+      console.error('خطأ في التسجيل - راجع السجلات الداخلية');
       setError(err.message || 'خطأ في إنشاء الحساب. الرجاء المحاولة مرة أخرى.');
     } finally {
       setIsLoading(false);
@@ -153,6 +204,98 @@ const RegisterForm = () => {
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
           />
+        </div>
+      </div>
+
+      {/* ✅ قسم الموافقات الأساسية - مطلوبة */}
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+        <h3 className="text-sm font-medium text-blue-800 mb-3">الموافقات المطلوبة *</h3>
+        
+        <div className="space-y-3">
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={consents.personalDataProcessing}
+              onChange={(e) => setConsents({
+                ...consents,
+                personalDataProcessing: e.target.checked
+              })}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              required
+            />
+            <span className="mr-2 text-sm text-gray-700">
+              أوافق على <strong>جمع ومعالجة بياناتي الشخصية</strong> (الاسم، البريد الإلكتروني، التخصص، المؤسسة) 
+              لغرض إدارة عضويتي في الجمعية السعودية للعلوم السياسية وتقديم الخدمات المطلوبة.
+            </span>
+          </label>
+
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={consents.membershipManagement}
+              onChange={(e) => setConsents({
+                ...consents,
+                membershipManagement: e.target.checked
+              })}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              required
+            />
+            <span className="mr-2 text-sm text-gray-700">
+              أوافق على <strong>إدارة عضويتي</strong> وحفظ سجلات العضوية والنشاطات المتعلقة بالجمعية.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      {/* ✅ قسم الموافقات الاختيارية */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h3 className="text-sm font-medium text-gray-800 mb-3">الموافقات الاختيارية</h3>
+        
+        <div className="space-y-3">
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={consents.profileVisibility}
+              onChange={(e) => setConsents({
+                ...consents,
+                profileVisibility: e.target.checked
+              })}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="mr-2 text-sm text-gray-600">
+              أوافق على <strong>نشر ملفي الشخصي</strong> (الاسم، التخصص، المؤسسة) على الموقع العام للجمعية.
+            </span>
+          </label>
+
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={consents.marketingCommunications}
+              onChange={(e) => setConsents({
+                ...consents,
+                marketingCommunications: e.target.checked
+              })}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="mr-2 text-sm text-gray-600">
+              أوافق على تلقي <strong>الإشعارات والرسائل التسويقية</strong> حول أنشطة الجمعية وأحداثها.
+            </span>
+          </label>
+
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={consents.activityTracking}
+              onChange={(e) => setConsents({
+                ...consents,
+                activityTracking: e.target.checked
+              })}
+              className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="mr-2 text-sm text-gray-600">
+              أوافق على <strong>تتبع نشاطي</strong> على الموقع لأغراض تحسين الخدمة والأمان.
+            </span>
+          </label>
         </div>
       </div>
 
