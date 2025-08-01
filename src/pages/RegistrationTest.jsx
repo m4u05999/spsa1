@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 import { getFeatureFlag } from '../config/featureFlags';
 import { debugRegistrationFlow } from '../utils/registrationDebugger';
 

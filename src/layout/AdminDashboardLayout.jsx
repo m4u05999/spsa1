@@ -1,7 +1,7 @@
 // src/layout/AdminDashboardLayout.jsx
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/index.jsx';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -18,6 +18,16 @@ const AdminDashboardLayout = () => {
 
   // Check if user is authorized to access admin dashboard
   const isAuthorized = user && (user.role === 'admin');
+
+  // Debug logging for admin access
+  useEffect(() => {
+    console.log('🔐 AdminDashboardLayout - Auth Status:', {
+      isAuthenticated,
+      isLoading,
+      user: user ? { id: user.id, email: user.email, role: user.role } : null,
+      isAuthorized
+    });
+  }, [isAuthenticated, isLoading, user, isAuthorized]);
 
   // Get current admin route
   const location = useLocation();
@@ -117,6 +127,24 @@ const AdminDashboardLayout = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Authorization check - redirect if not admin
+  if (!isAuthenticated || !isAuthorized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">غير مصرح بالوصول</h2>
+          <p className="text-gray-600 mb-4">ليس لديك صلاحية للوصول إلى لوحة التحكم الإدارية</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            العودة للصفحة الرئيسية
+          </button>
+        </div>
       </div>
     );
   }

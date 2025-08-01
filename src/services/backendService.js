@@ -4,7 +4,7 @@
  */
 
 import supabaseService from './supabaseService.js';
-import { contentService } from './contentService.js';
+import { MasterDataService } from './MasterDataService.js';
 import * as authService from './authService.js';
 import { ENV } from '../config/environment.js';
 
@@ -219,7 +219,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.getAll();
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.getContent();
     });
   },
 
@@ -239,7 +240,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.getById(id);
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.getContentById(id);
     });
   },
 
@@ -269,7 +271,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.search(params);
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.searchContent(params.query || '', params);
     });
   },
 
@@ -287,7 +290,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.create(contentData);
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.createContent(contentData);
     });
   },
 
@@ -309,7 +313,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.update(id, contentData);
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.updateContent(id, contentData);
     });
   },
 
@@ -329,7 +334,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.delete(id);
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.deleteContent(id);
     });
   },
 
@@ -347,7 +353,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.getCategories();
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.getCategories();
     });
   },
 
@@ -365,7 +372,8 @@ export const backendContent = {
       }
 
       // Fallback to local content
-      return await contentService.getTags();
+      const masterDataService = MasterDataService.getInstance();
+      return await masterDataService.getTags();
     });
   }
 };

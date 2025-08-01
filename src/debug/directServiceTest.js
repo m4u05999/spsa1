@@ -83,7 +83,7 @@ export const testAuthContext = async () => {
   console.log('🔍 Testing AuthContext...');
   
   try {
-    const authModule = await import('../context/AuthContext.jsx');
+    const authModule = await import('../contexts/index.jsx.jsx');
     console.log('✅ AuthContext module:', authModule);
     console.log('AuthContext:', authModule.AuthContext);
     console.log('useAuth:', authModule.useAuth);

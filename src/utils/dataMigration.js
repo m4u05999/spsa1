@@ -3,8 +3,9 @@
  * أداة ترحيل البيانات من التخزين المحلي إلى Supabase
  */
 
-import { contentService } from '../services/contentService.js';
+import { unifiedContentService } from '../services/unifiedContentService.js';
 import supabaseService from '../services/supabaseService.js';
+import { localStorageService } from './localStorage.js';
 import { ENV } from '../config/environment.js';
 
 /**
@@ -69,7 +70,7 @@ const migrateCategories = async () => {
   try {
     updateProgress('ترحيل الفئات', 10);
     
-    const localCategories = await contentService.getCategories();
+    const localCategories = await unifiedContentService.getCategories() || [];
     migrationStatus.results.categories.total = localCategories.length;
     
     for (let i = 0; i < localCategories.length; i++) {
@@ -124,7 +125,7 @@ const migrateTags = async () => {
   try {
     updateProgress('ترحيل العلامات', 30);
     
-    const localTags = await contentService.getTags();
+    const localTags = await unifiedContentService.getTags() || [];
     migrationStatus.results.tags.total = localTags.length;
     
     for (let i = 0; i < localTags.length; i++) {
@@ -175,7 +176,7 @@ const migrateContent = async () => {
   try {
     updateProgress('ترحيل المحتوى', 50);
     
-    const localContent = await contentService.getAll();
+    const localContent = await unifiedContentService.getAll() || [];
     migrationStatus.results.content.total = localContent.length;
     
     for (let i = 0; i < localContent.length; i++) {

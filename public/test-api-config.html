@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Configuration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            direction: rtl;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; direction: ltr; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 اختبار تكوين خدمة API الموحدة</h1>
+    
+    <div id="config-status" class="status info">
+        جاري تحميل تكوين الخدمة...
+    </div>
+    
+    <button onclick="testApiConfig()">🔄 اختبار التكوين</button>
+    <button onclick="testFeatureFlags()">🚩 اختبار علامات الميزات</button>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        // Import required modules
+        import { getFeatureFlag } from '/src/config/featureFlags.js';
+        
+        // Make functions available globally
+        window.getFeatureFlag = getFeatureFlag;
+        
+        function displayResults(title, data, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultHtml = `
+                <div class="status ${type}">
+                    <h3>${title}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+            resultsDiv.innerHTML += resultHtml;
+        }
+        
+        window.testApiConfig = async () => {
+            try {
+                // Test environment variables
+                const envData = {
+                    VITE_API_URL: import.meta.env.VITE_API_URL,
+                    VITE_APP_ENV: import.meta.env.VITE_APP_ENV,
+                    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+                    DEV_MODE: import.meta.env.DEV,
+                    MODE: import.meta.env.MODE
+                };
+                
+                displayResults('🌍 متغيرات البيئة', envData, 'info');
+                
+                // Test feature flags
+                const featureFlags = {
+                    SUPABASE_ENABLED: window.getFeatureFlag('ENABLE_SUPABASE_FALLBACK', false),
+                    NEW_BACKEND_ENABLED: window.getFeatureFlag('ENABLE_NEW_BACKEND', false),
+                    REAL_TIME_ENABLED: window.getFeatureFlag('ENABLE_REAL_TIME', false)
+                };
+                
+                displayResults('🚩 علامات الميزات', featureFlags, 'success');
+                
+                document.getElementById('config-status').innerHTML = '✅ تم تحميل التكوين بنجاح';
+                document.getElementById('config-status').className = 'status success';
+                
+            } catch (error) {
+                displayResults('❌ خطأ في التكوين', {
+                    error: error.message,
+                    stack: error.stack
+                }, 'error');
+                
+                document.getElementById('config-status').innerHTML = '❌ فشل في تحميل التكوين';
+                document.getElementById('config-status').className = 'status error';
+            }
+        };
+        
+        window.testFeatureFlags = () => {
+            const flags = [
+                'ENABLE_SUPABASE_FALLBACK',
+                'ENABLE_NEW_BACKEND',
+                'ENABLE_REAL_TIME',
+                'ENABLE_USER_MANAGEMENT_API',
+                'ENABLE_CONTENT_MANAGEMENT',
+                'ENABLE_DEBUG_MODE',
+                'ENABLE_PERFORMANCE_MONITORING'
+            ];
+            
+            const flagResults = {};
+            flags.forEach(flag => {
+                flagResults[flag] = window.getFeatureFlag(flag, false);
+            });
+            
+            displayResults('🚩 جميع علامات الميزات المهمة', flagResults, 'info');
+        };
+        
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testApiConfig, 1000);
+        });
+    </script>
+</body>
+</html>

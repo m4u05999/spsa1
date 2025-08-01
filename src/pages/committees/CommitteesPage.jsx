@@ -1,9 +1,42 @@
 // src/pages/committees/CommitteesPage.jsx
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import CommitteeCard from '../../components/committees/CommitteeCard';
 import CommitteeNav from '../../components/committees/CommitteeNav';
+import ScientificCommittee from './ScientificCommittee';
+import MediaCommittee from './MediaCommittee';
+import LegalCommittee from './LegalCommittee';
+import CorporateCommittee from './CorporateCommittee';
+import FinanceCommittee from './FinanceCommittee';
 
 const CommitteesPage = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // تحديد المكون المناسب حسب المسار
+  const renderCommitteeContent = () => {
+    switch (currentPath) {
+      case '/committees/scientific':
+        return <ScientificCommittee />;
+      case '/committees/media':
+        return <MediaCommittee />;
+      case '/committees/legal':
+        return <LegalCommittee />;
+      case '/committees/corporate':
+        return <CorporateCommittee />;
+      case '/committees/finance':
+        return <FinanceCommittee />;
+      default:
+        // الصفحة الرئيسية للجان
+        return <CommitteesMainPage />;
+    }
+  };
+
+  return renderCommitteeContent();
+};
+
+// مكون الصفحة الرئيسية للجان
+const CommitteesMainPage = () => {
   const committees = [
     {
       title: 'اللجنة العلمية والاستشارية',

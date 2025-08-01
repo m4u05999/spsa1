@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ImageComponent from '../../components/ImageComponent';
-import { useContent } from '../../contexts/ContentContext.jsx';
+import { useUnifiedContent } from '../../hooks/useUnifiedContent.js';
 import { CONTENT_TYPES, CONTENT_STATUS } from '../../schemas/contentManagementSchema.js';
 
 const formatDate = (dateString) => {
@@ -87,13 +87,19 @@ const NewsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 6;
 
-  // Use Content Context for real data
+  // Use Unified Content Hook for real data
   const {
     content: allContent,
     loading,
     error,
-    loadContent
-  } = useContent();
+    loadContent,
+    hasMore,
+    loadMore
+  } = useUnifiedContent({
+    type: CONTENT_TYPES.NEWS,
+    status: CONTENT_STATUS.PUBLISHED,
+    autoLoad: true
+  });
 
   // Filter news from content
   const [allNews, setAllNews] = useState([]);

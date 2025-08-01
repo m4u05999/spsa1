@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ENV } from '../config/environment.js';
 import supabaseService from '../services/supabaseService.js';
-import contentService from '../services/contentService.js';
+import { MasterDataService } from '../services/MasterDataService.js';
 import backendService from '../services/backendService.js';
 import dataMigration from '../utils/dataMigration.js';
 import databaseChecker from '../utils/databaseChecker.js';
@@ -71,9 +71,10 @@ describe('System Integration Tests', () => {
 
   describe('Service Initialization', () => {
     it('should initialize all services correctly', async () => {
+      const masterDataService = MasterDataService.getInstance();
       const services = {
         supabase: supabaseService.isAvailable(),
-        content: contentService !== undefined,
+        content: masterDataService !== undefined,
         backend: backendService !== undefined
       };
 
@@ -160,9 +161,11 @@ describe('System Integration Tests', () => {
   describe('Content Management Integration', () => {
     it('should handle content operations', async () => {
       try {
+        const masterDataService = MasterDataService.getInstance();
+
         // اختبار الحصول على المحتوى
-        const content = await contentService.getAll();
-        
+        const content = await masterDataService.getContent();
+
         systemStatus.content = {
           available: true,
           count: content.length,
@@ -171,13 +174,13 @@ describe('System Integration Tests', () => {
 
         expect(Array.isArray(content)).toBe(true);
         expect(content.length).toBeGreaterThan(0);
-        
+
         // اختبار الحصول على الفئات
-        const categories = await contentService.getCategories();
+        const categories = await masterDataService.getCategories();
         expect(Array.isArray(categories)).toBe(true);
-        
+
         // اختبار الحصول على العلامات
-        const tags = await contentService.getTags();
+        const tags = await masterDataService.getTags();
         expect(Array.isArray(tags)).toBe(true);
         
       } catch (error) {
@@ -192,8 +195,9 @@ describe('System Integration Tests', () => {
 
     it('should handle search functionality', async () => {
       try {
-        const searchResults = await contentService.search('السياسة');
-        
+        const masterDataService = MasterDataService.getInstance();
+        const searchResults = await masterDataService.searchContent('السياسة');
+
         expect(Array.isArray(searchResults)).toBe(true);
         
         systemStatus.search = {
@@ -255,26 +259,13 @@ describe('System Integration Tests', () => {
 
   describe('Performance and Reliability', () => {
     it('should handle concurrent operations', async () => {
-      // Check if contentService methods exist before calling them
+      const masterDataService = MasterDataService.getInstance();
       const operations = [];
 
-      if (contentService && typeof contentService.getAll === 'function') {
-        operations.push(contentService.getAll());
-      } else {
-        operations.push(Promise.resolve([]));
-      }
-
-      if (contentService && typeof contentService.getCategories === 'function') {
-        operations.push(contentService.getCategories());
-      } else {
-        operations.push(Promise.resolve([]));
-      }
-
-      if (contentService && typeof contentService.getTags === 'function') {
-        operations.push(contentService.getTags());
-      } else {
-        operations.push(Promise.resolve([]));
-      }
+      // Use MasterDataService methods
+      operations.push(masterDataService.getContent());
+      operations.push(masterDataService.getCategories());
+      operations.push(masterDataService.getTags());
 
       const startTime = Date.now();
 
@@ -313,7 +304,8 @@ describe('System Integration Tests', () => {
 
       // اختبار معالجة الأخطاء في خدمة المحتوى
       try {
-        await contentService.getById('non-existent-id');
+        const masterDataService = MasterDataService.getInstance();
+        await masterDataService.getContentById('non-existent-id');
       } catch (error) {
         errorScenarios.push({
           scenario: 'content-not-found',
@@ -348,9 +340,11 @@ describe('System Integration Tests', () => {
   describe('Data Consistency', () => {
     it('should maintain data consistency across services', async () => {
       try {
+        const masterDataService = MasterDataService.getInstance();
+
         // الحصول على البيانات من خدمات مختلفة
-        const contentFromService = await contentService.getAll();
-        const categoriesFromService = await contentService.getCategories();
+        const contentFromService = await masterDataService.getContent();
+        const categoriesFromService = await masterDataService.getCategories();
         
         // التحقق من الاتساق
         const categoryIds = categoriesFromService.map(cat => cat.id);

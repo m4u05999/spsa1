@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار روابط الهيكل التنظيمي - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-link {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .test-link:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 اختبار روابط الهيكل التنظيمي</h1>
+        
+        <div class="test-section">
+            <h2>📋 روابط اللجان للاختبار:</h2>
+            <a href="http://localhost:5174/committees" class="test-link" target="testFrame">لجان الجمعية</a>
+            <a href="http://localhost:5174/committees/scientific" class="test-link" target="testFrame">اللجنة العلمية والاستشارية</a>
+            <a href="http://localhost:5174/committees/media" class="test-link" target="testFrame">اللجنة الإعلامية</a>
+            <a href="http://localhost:5174/committees/legal" class="test-link" target="testFrame">اللجنة القانونية</a>
+            <a href="http://localhost:5174/committees/corporate" class="test-link" target="testFrame">الاتصال المؤسسي</a>
+            <a href="http://localhost:5174/committees/finance" class="test-link" target="testFrame">اللجنة المالية</a>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 تعليمات الاختبار:</h2>
+            <ol>
+                <li>انقر على كل رابط أعلاه لاختبار الصفحة</li>
+                <li>تحقق من أن الصفحة تحمل بدون أخطاء</li>
+                <li>تأكد من عرض المحتوى المناسب لكل لجنة</li>
+                <li>اختبر التنقل بين الصفحات</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 معاينة مباشرة:</h2>
+            <iframe name="testFrame" src="http://localhost:5174/committees"></iframe>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ نتائج الاختبار:</h2>
+            <div id="testResults" class="status info">
+                جاري تحميل الاختبارات...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // اختبار تلقائي للروابط
+        async function testLinks() {
+            const links = [
+                '/committees',
+                '/committees/scientific', 
+                '/committees/media',
+                '/committees/legal',
+                '/committees/corporate',
+                '/committees/finance'
+            ];
+            
+            const results = [];
+            
+            for (const link of links) {
+                try {
+                    const response = await fetch(`http://localhost:5174${link}`);
+                    if (response.ok) {
+                        results.push(`✅ ${link} - يعمل بشكل صحيح`);
+                    } else {
+                        results.push(`❌ ${link} - خطأ ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${link} - خطأ في الاتصال`);
+                }
+            }
+            
+            document.getElementById('testResults').innerHTML = results.join('<br>');
+            document.getElementById('testResults').className = 'status success';
+        }
+        
+        // تشغيل الاختبار عند تحميل الصفحة
+        window.onload = () => {
+            setTimeout(testLinks, 1000);
+        };
+    </script>
+</body>
+</html>

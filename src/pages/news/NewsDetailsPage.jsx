@@ -2,68 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ImageComponent from '../../components/ImageComponent';
+import { useMasterData } from '../../hooks/useMasterData';
 
-// قائمة بيانات مؤقتة (ستُستبدل بالبيانات من قاعدة البيانات لاحقًا)
-const mockNews = [
-  {
-    id: 1,
-    title: 'المؤتمر السنوي للعلوم السياسية 2025',
-    date: '2025-01-15',
-    description: 'يسر جمعية العلوم السياسية أن تعلن عن انطلاق فعاليات المؤتمر السنوي للعام 2025 تحت عنوان "التحولات السياسية في العالم العربي".',
-    content: `<p>يسر جمعية العلوم السياسية أن تعلن عن انطلاق فعاليات المؤتمر السنوي للعام 2025 تحت عنوان "التحولات السياسية في العالم العربي". وسيتضمن المؤتمر العديد من الجلسات وورش العمل وحلقات النقاش حول مختلف القضايا السياسية المعاصرة في المنطقة العربية.</p>
-    <p>من أهم محاور المؤتمر:</p>
-    <ul>
-      <li>التحول الديمقراطي في دول الربيع العربي</li>
-      <li>أثر التقنيات الحديثة على التحولات السياسية</li>
-      <li>دور الشباب في التغيير السياسي</li>
-      <li>مستقبل النظام الإقليمي العربي في ظل المتغيرات الدولية</li>
-    </ul>
-    <p>سيشارك في المؤتمر نخبة من الباحثين والأكاديميين والخبراء من مختلف الدول العربية والأجنبية. وستُنشر أوراق العمل المقدمة في المؤتمر في عدد خاص من المجلة العلمية للجمعية.</p>
-    <p>يُقام المؤتمر خلال الفترة من 15 إلى 17 يناير 2025 في مقر الجمعية بمدينة الرياض. ويمكن للراغبين في المشاركة التسجيل عبر الموقع الإلكتروني للجمعية.</p>`,
-    image: '/assets/images/conference.jpg',
-    author: 'إدارة الأخبار والفعاليات',
-    relatedNews: [2, 3]
-  },
-  {
-    id: 2,
-    title: 'دورة تدريبية في التحليل السياسي',
-    date: '2025-02-01',
-    description: 'تنظم الجمعية دورة تدريبية متخصصة في مجال التحليل السياسي للباحثين والمهتمين في المجال السياسي.',
-    content: `<p>تنظم الجمعية دورة تدريبية متخصصة في مجال التحليل السياسي للباحثين والمهتمين في المجال السياسي. تهدف الدورة إلى تطوير مهارات المشاركين في تحليل الأحداث والظواهر السياسية باستخدام المناهج العلمية الحديثة.</p>
-    <p>تتناول الدورة الموضوعات التالية:</p>
-    <ul>
-      <li>أسس ومناهج التحليل السياسي</li>
-      <li>تحليل الخطاب السياسي</li>
-      <li>دراسة الرأي العام وقياسه</li>
-      <li>التحليل الإحصائي للبيانات السياسية</li>
-      <li>كتابة التقارير والدراسات السياسية</li>
-    </ul>
-    <p>يقدم الدورة نخبة من الأكاديميين والخبراء المتخصصين في مجال العلوم السياسية. وستُقام على مدى أسبوعين بواقع 4 ساعات يومياً.</p>
-    <p>تبدأ الدورة في 1 فبراير 2025 وتنتهي في 14 فبراير 2025. وسيحصل المشاركون على شهادات معتمدة من الجمعية.</p>`,
-    image: '/assets/images/training.jpg',
-    author: 'وحدة التدريب والتطوير',
-    relatedNews: [1, 3]
-  },
-  {
-    id: 3,
-    title: 'إصدار العدد الجديد من المجلة العلمية',
-    date: '2025-03-10',
-    description: 'صدر العدد الجديد من المجلة العلمية للجمعية متضمناً مجموعة من البحوث والدراسات المتميزة.',
-    content: `<p>صدر العدد الجديد من المجلة العلمية للجمعية متضمناً مجموعة من البحوث والدراسات المتميزة في مجال العلوم السياسية والعلاقات الدولية. يأتي هذا العدد ضمن سلسلة الإصدارات العلمية التي تحرص الجمعية على نشرها بشكل دوري لإثراء المكتبة العربية في مجال التخصص.</p>
-    <p>من أبرز البحوث المنشورة في العدد الجديد:</p>
-    <ul>
-      <li>التحولات في النظام الدولي ما بعد جائحة كورونا</li>
-      <li>البعد السياسي للأمن السيبراني في الدول العربية</li>
-      <li>دور المنظمات الدولية في حل النزاعات الإقليمية</li>
-      <li>مستقبل العلاقات الخليجية-الأمريكية في ضوء المتغيرات الإقليمية</li>
-      <li>التحديات السياسية للانتقال إلى الطاقة المستدامة في المنطقة العربية</li>
-    </ul>
-    <p>المجلة متاحة للقراءة والتحميل عبر الموقع الإلكتروني للجمعية. كما يمكن للباحثين الراغبين في النشر في الأعداد القادمة الاطلاع على شروط وقواعد النشر على الموقع.</p>`,
-    image: '/assets/images/journal.jpg',
-    author: 'هيئة تحرير المجلة العلمية',
-    relatedNews: [1, 2]
-  }
-];
+
 
 const formatDate = (dateString) => {
   const options = { 
@@ -76,43 +17,50 @@ const formatDate = (dateString) => {
 
 const NewsDetailsPage = () => {
   const { id } = useParams();
+
+  // استخدام MasterDataService للحصول على البيانات
+  const {
+    data: allNews,
+    loading,
+    error,
+    getContentById,
+    searchContent
+  } = useMasterData('news');
+
   const [news, setNews] = useState(null);
   const [relatedNews, setRelatedNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // محاكاة الحصول على بيانات الخبر من API
+  // جلب بيانات الخبر المحدد والأخبار ذات الصلة
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // محاكاة تأخير الشبكة
-      const timer = setTimeout(() => {
-        const newsItem = mockNews.find(n => n.id === parseInt(id, 10));
-        
-        if (newsItem) {
-          setNews(newsItem);
-          
-          // جلب الأخبار ذات الصلة
-          if (newsItem.relatedNews && newsItem.relatedNews.length > 0) {
-            const related = mockNews.filter(n => newsItem.relatedNews.includes(n.id));
-            setRelatedNews(related);
+    const fetchNewsData = async () => {
+      if (id) {
+        try {
+          // جلب الخبر المحدد
+          const newsItem = await getContentById(id);
+
+          if (newsItem) {
+            setNews(newsItem);
+
+            // جلب الأخبار ذات الصلة (نفس الفئة أو الكلمات المفتاحية)
+            if (newsItem.category || newsItem.tags) {
+              const relatedResults = await searchContent('', {
+                contentType: 'news',
+                category: newsItem.category,
+                tags: newsItem.tags,
+                limit: 3,
+                excludeId: id
+              });
+              setRelatedNews(relatedResults || []);
+            }
           }
-          
-          setLoading(false);
-        } else {
-          setError('الخبر غير موجود');
-          setLoading(false);
+        } catch (err) {
+          console.error('خطأ في جلب بيانات الخبر:', err);
         }
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    } catch (err) {
-      setError('حدث خطأ أثناء تحميل البيانات');
-      setLoading(false);
-    }
-  }, [id]);
+      }
+    };
+
+    fetchNewsData();
+  }, [id, getContentById, searchContent]);
 
   if (loading) {
     return (

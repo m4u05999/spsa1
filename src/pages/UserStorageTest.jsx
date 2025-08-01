@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/index.jsx';
 import { inspectLocalStorage, syncUserData, testRegistrationFlow } from '../debug/localStorageInspector';
 import { runComprehensiveTest, quickTest, testAdminPanel } from '../debug/comprehensiveTest';
 

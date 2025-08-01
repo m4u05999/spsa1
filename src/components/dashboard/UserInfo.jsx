@@ -1,9 +1,113 @@
 // src/components/dashboard/UserInfo.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useMasterData } from '../../hooks/useMasterData';
 
-const UserInfo = ({ user }) => {
+const UserInfo = ({ user: propUser }) => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const {
+    data: allContent,
+    loading,
+    error,
+    getContent,
+    updateContent
+  } = useMasterData();
+
+  // State for enhanced user data
+  const [user, setUser] = useState(propUser || {});
+  const [userStats, setUserStats] = useState({
+    totalPosts: 0,
+    totalComments: 0,
+    membershipDuration: 0,
+    lastActivity: null
+  });
+
+  // Fetch enhanced user data from MasterDataService
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!propUser?.id) {
+        setUser(propUser || {});
+        return;
+      }
+
+      try {
+        // Fetch complete user profile
+        const userProfile = await getContent({
+          contentType: 'user-profiles',
+          filters: { userId: propUser.id }
+        });
+
+        // Fetch user activity stats
+        const userPosts = await getContent({
+          contentType: 'posts',
+          filters: { authorId: propUser.id }
+        });
+
+        const userComments = await getContent({
+          contentType: 'comments',
+          filters: { userId: propUser.id }
+        });
+
+        // Fetch membership history
+        const membershipHistory = await getContent({
+          contentType: 'membership-history',
+          filters: { userId: propUser.id },
+          sortBy: 'created_at',
+          sortOrder: 'asc'
+        });
+
+        // Calculate enhanced user data
+        const enhancedUser = {
+          ...propUser,
+          ...(userProfile?.[0] || {}),
+          bio: userProfile?.[0]?.bio || propUser.bio || 'لا توجد معلومات إضافية',
+          specialization: userProfile?.[0]?.specialization || propUser.specialization || 'غير محدد',
+          joinDate: membershipHistory?.[0]?.created_at || propUser.joinDate || new Date().toISOString()
+        };
+
+        // Calculate user statistics
+        const stats = {
+          totalPosts: userPosts?.length || 0,
+          totalComments: userComments?.length || 0,
+          membershipDuration: membershipHistory?.length || 0,
+          lastActivity: userPosts?.[0]?.created_at || userComments?.[0]?.created_at || null
+        };
+
+        setUser(enhancedUser);
+        setUserStats(stats);
+
+      } catch (err) {
+        console.error('خطأ في جلب بيانات المستخدم المحسنة:', err);
+        // Use fallback data on error
+        setUser(propUser || {});
+        setUserStats({
+          totalPosts: 0,
+          totalComments: 0,
+          membershipDuration: 0,
+          lastActivity: null
+        });
+      }
+    };
+
+    fetchUserData();
+  }, [propUser, getContent]);
+
+  // Loading state
+  if (loading && !user.name) {
+    return (
+      <div className="bg-white shadow rounded-lg p-6 col-span-3">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow rounded-lg p-6 col-span-3">
@@ -54,11 +158,30 @@ const UserInfo = ({ user }) => {
               <div>
                 <dt className="text-sm font-medium text-gray-500">تاريخ الانضمام</dt>
                 <dd className="mt-1 text-gray-900">
-                  {user.joinDate 
-                    ? new Date(user.joinDate).toLocaleDateString('ar-SA') 
+                  {user.joinDate
+                    ? new Date(user.joinDate).toLocaleDateString('ar-SA')
                     : new Date().toLocaleDateString('ar-SA')}
                 </dd>
               </div>
+
+              <div>
+                <dt className="text-sm font-medium text-gray-500">إجمالي المنشورات</dt>
+                <dd className="mt-1 text-gray-900">{userStats.totalPosts} منشور</dd>
+              </div>
+
+              <div>
+                <dt className="text-sm font-medium text-gray-500">إجمالي التعليقات</dt>
+                <dd className="mt-1 text-gray-900">{userStats.totalComments} تعليق</dd>
+              </div>
+
+              {userStats.lastActivity && (
+                <div className="col-span-1 md:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">آخر نشاط</dt>
+                  <dd className="mt-1 text-gray-900">
+                    {new Date(userStats.lastActivity).toLocaleDateString('ar-SA')}
+                  </dd>
+                </div>
+              )}
             </>
           )}
         </dl>

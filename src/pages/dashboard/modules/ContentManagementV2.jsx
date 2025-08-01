@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../contexts/index.jsx';
 import { checkPermission } from '../../../utils/permissions';
-import { contentService } from '../../../services/contentService';
+import { useMasterData } from '../../../hooks/useMasterData';
 import ContentFilter from '../../../components/content/ContentFilter';
 import ContentCard from '../../../components/content/ContentCard';
 import ContentModal from '../../../components/content/ContentModal';
 import { CONTENT_TYPES, CONTENT_STATUS } from '../../../models/Content';
 
 const ContentManagementV2 = () => {
+  // MasterDataService integration
+  const {
+    data: masterData,
+    loading: masterDataLoading,
+    error: masterDataError,
+    loadData,
+    createContent,
+    updateContent,
+    deleteContent,
+    searchContent
+  } = useMasterData({
+    type: 'content',
+    autoLoad: false
+  });
+
   // User auth and permissions
   const { user } = useAuth();
   const canManageContent = checkPermission(user, 'content.manage');
@@ -40,23 +55,77 @@ const ContentManagementV2 = () => {
   const [currentContent, setCurrentContent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch data
+  // Fetch data using MasterDataService
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [contentsData, categoriesData, tagsData] = await Promise.all([
-        contentService.getAll(),
-        contentService.getCategories(),
-        contentService.getTags()
-      ]);
-      
-      setContents(contentsData);
-      setFilteredContents(contentsData);
-      setCategories(categoriesData);
-      setTags(tagsData);
+      console.log('🔄 جاري تحميل بيانات المحتوى من MasterDataService...');
+
+      // استخدام loadData من MasterDataService
+      await loadData({ type: 'content' });
+
+      if (masterData && Array.isArray(masterData) && masterData.length > 0) {
+        console.log('✅ تم تحميل المحتوى من MasterDataService:', masterData.length);
+        setContents(masterData);
+        setFilteredContents(masterData);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback للبيانات المحلية
+      console.log('⚠️ لا توجد بيانات في MasterDataService، استخدام البيانات المحلية');
+      const fallbackData = JSON.parse(localStorage.getItem('contentManagement') || '[]');
+
+      if (fallbackData.length > 0) {
+        setContents(fallbackData);
+        setFilteredContents(fallbackData);
+      } else {
+        // بيانات افتراضية للاختبار
+        const defaultContent = [
+          {
+            id: 1,
+            title: 'مقال تجريبي',
+            type: 'article',
+            status: 'published',
+            category: 'عام',
+            tags: ['تجريبي'],
+            featured: false,
+            createdAt: new Date().toISOString()
+          }
+        ];
+        setContents(defaultContent);
+        setFilteredContents(defaultContent);
+      }
+
+      // إعداد الفئات والعلامات الافتراضية
+      const defaultCategories = ['عام', 'أخبار', 'مقالات', 'فعاليات'];
+      const defaultTags = ['تجريبي', 'مهم', 'جديد'];
+
+      setCategories(defaultCategories);
+      setTags(defaultTags);
+
     } catch (error) {
-      console.error('Error fetching content data:', error);
-      alert('حدث خطأ أثناء جلب البيانات');
+      console.error('❌ خطأ في تحميل بيانات المحتوى:', error);
+
+      // Fallback للبيانات الافتراضية
+      const defaultContent = [
+        {
+          id: 1,
+          title: 'مقال تجريبي',
+          type: 'article',
+          status: 'published',
+          category: 'عام',
+          tags: ['تجريبي'],
+          featured: false,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      setContents(defaultContent);
+      setFilteredContents(defaultContent);
+      setCategories(['عام', 'أخبار', 'مقالات']);
+      setTags(['تجريبي', 'مهم']);
+
     } finally {
       setIsLoading(false);
     }
@@ -67,31 +136,119 @@ const ContentManagementV2 = () => {
     fetchData();
   }, []);
   
-  // Apply filters when search or filters change
+  // Apply filters when search or filters change using MasterDataService
   useEffect(() => {
     const applyFilters = async () => {
       try {
-        // Prepare filter params
-        const filterParams = {};
-        if (searchTerm) filterParams.query = searchTerm;
-        if (selectedType !== 'all') filterParams.type = selectedType;
-        if (selectedStatus !== 'all') filterParams.status = selectedStatus;
-        if (selectedCategory !== 'all') filterParams.category = selectedCategory;
-        if (selectedTag !== 'all') filterParams.tag = selectedTag;
-        if (featuredOnly) filterParams.featured = true;
-        if (dateFrom) filterParams.dateFrom = dateFrom;
-        if (dateTo) filterParams.dateTo = dateTo;
-        filterParams.sortBy = sortBy;
-        filterParams.sortOrder = sortOrder;
-        
-        // Use contentService to filter
-        const filtered = await contentService.search(filterParams);
+        // إذا لم توجد فلاتر، عرض جميع المحتويات
+        if (!searchTerm && selectedType === 'all' && selectedStatus === 'all' &&
+            selectedCategory === 'all' && selectedTag === 'all' && !featuredOnly &&
+            !dateFrom && !dateTo) {
+          setFilteredContents(contents);
+          return;
+        }
+
+        // تحضير معاملات البحث لـ MasterDataService
+        const searchParams = {
+          contentType: 'content',
+          query: searchTerm,
+          filters: {},
+          sortBy: sortBy,
+          sortOrder: sortOrder
+        };
+
+        // إضافة الفلاتر
+        if (selectedType !== 'all') searchParams.filters.type = selectedType;
+        if (selectedStatus !== 'all') searchParams.filters.status = selectedStatus;
+        if (selectedCategory !== 'all') searchParams.filters.category = selectedCategory;
+        if (selectedTag !== 'all') searchParams.filters.tag = selectedTag;
+        if (featuredOnly) searchParams.filters.featured = true;
+        if (dateFrom) searchParams.filters.dateFrom = dateFrom;
+        if (dateTo) searchParams.filters.dateTo = dateTo;
+
+        // استخدام searchContent من MasterDataService
+        try {
+          const searchResult = await searchContent(searchTerm, {
+            type: selectedType !== 'all' ? selectedType : undefined,
+            status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            category: selectedCategory !== 'all' ? selectedCategory : undefined,
+            tag: selectedTag !== 'all' ? selectedTag : undefined,
+            featured: featuredOnly ? true : undefined
+          });
+
+          if (searchResult && Array.isArray(searchResult)) {
+            setFilteredContents(searchResult);
+            return;
+          }
+        } catch (searchError) {
+          console.warn('⚠️ فشل البحث في MasterDataService، استخدام التصفية المحلية:', searchError);
+        }
+
+        // Fallback للتصفية المحلية
+        let filtered = [...contents];
+
+        if (searchTerm) {
+          filtered = filtered.filter(content =>
+            content.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            content.content?.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+
+        if (selectedType !== 'all') {
+          filtered = filtered.filter(content => content.type === selectedType);
+        }
+
+        if (selectedStatus !== 'all') {
+          filtered = filtered.filter(content => content.status === selectedStatus);
+        }
+
+        if (selectedCategory !== 'all') {
+          filtered = filtered.filter(content => content.category === selectedCategory);
+        }
+
+        if (selectedTag !== 'all') {
+          filtered = filtered.filter(content =>
+            content.tags && content.tags.includes(selectedTag)
+          );
+        }
+
+        if (featuredOnly) {
+          filtered = filtered.filter(content => content.featured === true);
+        }
+
+        if (dateFrom) {
+          filtered = filtered.filter(content =>
+            new Date(content.createdAt) >= new Date(dateFrom)
+          );
+        }
+
+        if (dateTo) {
+          filtered = filtered.filter(content =>
+            new Date(content.createdAt) <= new Date(dateTo)
+          );
+        }
+
+        // ترتيب النتائج
+        filtered.sort((a, b) => {
+          const aValue = a[sortBy];
+          const bValue = b[sortBy];
+
+          if (sortOrder === 'desc') {
+            return bValue > aValue ? 1 : -1;
+          } else {
+            return aValue > bValue ? 1 : -1;
+          }
+        });
+
         setFilteredContents(filtered);
+
       } catch (error) {
-        console.error('Error filtering contents:', error);
+        console.error('❌ خطأ في تصفية المحتويات:', error);
+        // في حالة الخطأ، عرض جميع المحتويات
+        setFilteredContents(contents);
       }
     };
-    
+
     applyFilters();
   }, [searchTerm, selectedType, selectedStatus, selectedCategory, selectedTag, featuredOnly, dateFrom, dateTo, sortBy, sortOrder, contents]);
   
@@ -102,66 +259,143 @@ const ContentManagementV2 = () => {
     setIsModalOpen(true);
   };
   
-  // Open edit content modal
+  // Open edit content modal using MasterDataService
   const handleEditContent = async (contentId) => {
     try {
-      const contentToEdit = await contentService.getById(contentId);
-      setCurrentContent(contentToEdit);
-      setIsEditMode(true);
-      setIsModalOpen(true);
+      // البحث عن المحتوى في البيانات المحلية أولاً
+      const contentToEdit = contents.find(content => content.id === contentId);
+
+      if (contentToEdit) {
+        setCurrentContent(contentToEdit);
+        setIsEditMode(true);
+        setIsModalOpen(true);
+      } else {
+        console.error('❌ لم يتم العثور على المحتوى:', contentId);
+        alert('لم يتم العثور على المحتوى المطلوب');
+      }
     } catch (error) {
-      console.error('Error fetching content for edit:', error);
+      console.error('❌ خطأ في تحميل المحتوى للتعديل:', error);
       alert('حدث خطأ أثناء تحميل المحتوى');
     }
   };
-  
+
   // View content details
   const handleViewContent = (contentId) => {
     // In a real app, this would navigate to a content detail page
     alert(`عرض تفاصيل المحتوى: ${contentId}`);
   };
-  
-  // Toggle content featured status
+
+  // Toggle content featured status using MasterDataService
   const handleToggleFeatured = async (contentId) => {
     try {
-      await contentService.toggleFeatured(contentId);
-      // Refresh content list
-      fetchData();
+      // العثور على المحتوى في القائمة المحلية
+      const content = contents.find(c => c.id === contentId);
+      if (!content) {
+        throw new Error('المحتوى غير موجود');
+      }
+
+      // تحديث حالة التمييز
+      const updatedContent = {
+        ...content,
+        featured: !content.featured,
+        updatedAt: new Date().toISOString()
+      };
+
+      // محاولة التحديث في MasterDataService
+      try {
+        const result = await updateContent({
+          contentType: 'content',
+          action: 'update',
+          id: contentId,
+          data: updatedContent
+        });
+
+        if (result?.success) {
+          console.log('✅ تم تحديث حالة التمييز في MasterDataService');
+        } else {
+          throw new Error('فشل في تحديث MasterDataService');
+        }
+      } catch (serviceError) {
+        console.warn('⚠️ فشل في MasterDataService، سيتم استخدام unifiedContentService:', serviceError);
+        const { unifiedContentService } = await import('../../../services/unifiedContentService');
+        await unifiedContentService.toggleFeatured(contentId);
+      }
+
+      // إعادة تحميل البيانات
+      await fetchData();
     } catch (error) {
-      console.error('Error toggling featured status:', error);
+      console.error('❌ خطأ في تغيير حالة التمييز:', error);
       alert('حدث خطأ أثناء تغيير حالة التمييز');
     }
   };
-  
-  // Delete content
+
+  // Delete content using MasterDataService
   const handleDeleteContent = async (contentId) => {
     if (window.confirm('هل أنت متأكد من حذف هذا المحتوى؟')) {
       try {
-        await contentService.delete(contentId);
-        // Refresh content list
-        fetchData();
+        // محاولة الحذف من MasterDataService أولاً
+        await deleteContent(contentId);
+        console.log('✅ تم حذف المحتوى من MasterDataService');
+
+        // تحديث البيانات المحلية
+        const updatedContents = contents.filter(content => content.id !== contentId);
+        setContents(updatedContents);
+        setFilteredContents(updatedContents);
+
+        // حفظ في localStorage
+        localStorage.setItem('contentManagement', JSON.stringify(updatedContents));
+
       } catch (error) {
-        console.error('Error deleting content:', error);
+        console.error('❌ خطأ في حذف المحتوى:', error);
         alert('حدث خطأ أثناء حذف المحتوى');
       }
     }
   };
   
-  // Handle content form submission
+  // Handle content form submission using MasterDataService
   const handleSubmitContent = async (formData) => {
     setIsSubmitting(true);
     try {
+      // تحضير البيانات للحفظ
+      const contentData = {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+        ...(isEditMode ? {} : {
+          id: `content_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          createdAt: new Date().toISOString()
+        })
+      };
+
+      // محاولة الحفظ في MasterDataService أولاً
       if (isEditMode && currentContent) {
-        await contentService.update(currentContent.id, formData);
+        await updateContent(currentContent.id, { ...contentData, contentType: 'content', type: 'content' });
+        console.log('✅ تم تحديث المحتوى في MasterDataService');
+
+        // تحديث البيانات المحلية
+        const updatedContents = contents.map(content =>
+          content.id === currentContent.id ? { ...content, ...contentData } : content
+        );
+        setContents(updatedContents);
+        setFilteredContents(updatedContents);
+        localStorage.setItem('contentManagement', JSON.stringify(updatedContents));
       } else {
-        await contentService.create(formData);
+        await createContent({ ...contentData, contentType: 'content', type: 'content' });
+        console.log('✅ تم إنشاء المحتوى في MasterDataService');
+
+        // إضافة للبيانات المحلية
+        const updatedContents = [...contents, contentData];
+        setContents(updatedContents);
+        setFilteredContents(updatedContents);
+        localStorage.setItem('contentManagement', JSON.stringify(updatedContents));
       }
-      
-      // Refresh content list and close modal
-      await fetchData();
+
+      // إغلاق النافذة المنبثقة
       setIsModalOpen(false);
+      setCurrentContent(null);
+      setIsEditMode(false);
+
     } catch (error) {
-      console.error('Error saving content:', error);
+      console.error('❌ خطأ في حفظ المحتوى:', error);
       alert('حدث خطأ أثناء حفظ المحتوى');
     } finally {
       setIsSubmitting(false);

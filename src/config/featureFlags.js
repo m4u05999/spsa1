@@ -25,13 +25,14 @@ const DEFAULT_FLAGS = {
   USE_NEW_PAYMENTS: false,
   USE_NEW_PUBLIC: false,
 
-  // Service Integration Flags - SUPABASE ENABLED, REAL-TIME DISABLED
+  // Service Integration Flags - SUPABASE DISABLED, REAL-TIME DISABLED
   ENABLE_HYPERPAY: false,
-  ENABLE_SUPABASE_FALLBACK: true,
+  ENABLE_SUPABASE_FALLBACK: false,
   ENABLE_NEW_BACKEND: false,
   ENABLE_REAL_TIME: false,
   ENABLE_NOTIFICATIONS: false,
   ENABLE_USER_MANAGEMENT_API: true,
+  ENABLE_CONTENT_MANAGEMENT: true,
   
   // Security and Compliance Flags
   ENABLE_AUDIT_LOGGING: true,
@@ -39,6 +40,10 @@ const DEFAULT_FLAGS = {
   ENABLE_RATE_LIMITING: true,
   ENABLE_CSRF_PROTECTION: true,
   ENABLE_PDPL_MODE: true,
+  ENABLE_2FA: true,
+  ENABLE_2FA_SYSTEM: true,
+  ENABLE_2FA_SMS: true,
+  ENABLE_2FA_BACKUP_CODES: true,
   
   // Performance Flags
   ENABLE_CACHING: true,

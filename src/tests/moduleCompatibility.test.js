@@ -130,7 +130,7 @@ vi.mock('../config/environment.js', () => {
         REMEMBER_ME_DURATION: 30 * 24 * 60 * 60 * 1000,
       },
       SUPABASE: {
-        URL: 'https://dufvobubfjicrkygwyll.supabase.co',
+        URL: 'https://example.supabase.co', // Mock URL for testing
         ANON_KEY: 'test-key',
         ENABLE_FALLBACK: true,
       },

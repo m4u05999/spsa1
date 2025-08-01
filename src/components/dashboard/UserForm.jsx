@@ -1,6 +1,6 @@
 // src/components/dashboard/UserForm.jsx
 import React, { useState } from 'react';
-import { useDashboard } from '../../context/DashboardContext';
+import { useDashboard } from '../../contexts/index.jsx';
 
 const UserForm = ({ user, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({

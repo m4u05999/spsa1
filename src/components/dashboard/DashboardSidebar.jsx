@@ -1,7 +1,7 @@
 // src/components/dashboard/DashboardSidebar.jsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/index.jsx';
 import { checkPermission, hasAnyPermission } from '../../utils/permissions';
 
 const DashboardSidebar = ({ isOpen, onClose, isMobile, isCollapsed = false, isDarkMode = false }) => {

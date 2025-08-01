@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار لوحة التحكم الإدارية - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .test-steps {
+            list-style: none;
+            padding: 0;
+        }
+        .test-steps li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9fafb;
+            border-radius: 5px;
+            border-right: 4px solid #3b82f6;
+        }
+        .credentials {
+            background-color: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success {
+            color: #059669;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .warning {
+            color: #d97706;
+            font-weight: bold;
+        }
+        .button {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+        .status.warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 اختبار لوحة التحكم الإدارية</h1>
+        
+        <div class="test-section">
+            <div class="test-title">📋 خطوات الاختبار</div>
+            
+            <div class="credentials">
+                <strong>بيانات تسجيل الدخول للمدير:</strong><br>
+                البريد الإلكتروني: <code>admin@saudips.org</code><br>
+                كلمة المرور: <code>Admin@123</code>
+            </div>
+            
+            <ol class="test-steps">
+                <li>انتقل إلى الصفحة الرئيسية للموقع</li>
+                <li>اضغط على "تسجيل الدخول" في الشريط العلوي</li>
+                <li>أدخل بيانات المدير المذكورة أعلاه</li>
+                <li>اضغط على "تسجيل الدخول"</li>
+                <li>تحقق من ظهور رابط "لوحة تحكم الإدارة" في الشريط العلوي</li>
+                <li>اضغط على "لوحة تحكم الإدارة"</li>
+                <li>تحقق من عرض لوحة التحكم الإدارية بشكل صحيح</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">✅ النتائج المتوقعة</div>
+            <ul class="test-steps">
+                <li>تسجيل دخول ناجح للمدير</li>
+                <li>ظهور رابط "لوحة تحكم الإدارة" في الشريط العلوي</li>
+                <li>التوجيه إلى <code>/dashboard/admin</code> عند النقر على الرابط</li>
+                <li>عرض لوحة التحكم الإدارية مع الأقسام التالية:
+                    <ul style="margin-top: 10px;">
+                        <li>إحصائيات سريعة (عدد المستخدمين، المحتوى، الفعاليات)</li>
+                        <li>روابط الوصول السريع (إدارة المحتوى، الفعاليات، المستخدمين، الوسائط)</li>
+                        <li>شريط جانبي للتنقل</li>
+                        <li>شريط علوي مع معلومات المستخدم</li>
+                    </ul>
+                </li>
+                <li>عدم ظهور أخطاء في وحدة تحكم المتصفح</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔍 الإصلاحات المطبقة</div>
+            <ul class="test-steps">
+                <li><span class="success">✓</span> إصلاح تضارب مسارات التوجيه (/admin → /dashboard/admin)</li>
+                <li><span class="success">✓</span> تحسين ProtectedRoute للتحقق من صلاحيات المدير</li>
+                <li><span class="success">✓</span> إصلاح مشكلة circuit breaker في UnifiedApiService</li>
+                <li><span class="success">✓</span> تحسين آلية المصادقة في AuthContext</li>
+                <li><span class="success">✓</span> إضافة التحقق من الصلاحيات في AdminDashboardLayout</li>
+                <li><span class="success">✓</span> إضافة آلية إعادة تعيين circuit breaker للمدير</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🚀 روابط سريعة للاختبار</div>
+            <a href="/" class="button">الصفحة الرئيسية</a>
+            <a href="/login" class="button">تسجيل الدخول</a>
+            <a href="/dashboard/admin" class="button">لوحة التحكم الإدارية</a>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📊 حالة النظام</div>
+            <div id="system-status">
+                <div class="status warning">
+                    <strong>⏳ جاري فحص حالة النظام...</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // فحص حالة النظام
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            
+            // فحص localStorage للتحقق من حالة circuit breaker
+            try {
+                const circuitBreakerState = localStorage.getItem('unifiedApiService_circuitBreaker');
+                let statusHTML = '';
+                
+                if (circuitBreakerState) {
+                    const state = JSON.parse(circuitBreakerState);
+                    const newBackendFailures = state.circuitBreaker?.newBackend?.failures || 0;
+                    
+                    if (newBackendFailures === 0) {
+                        statusHTML += '<div class="status success"><strong>✅ Circuit Breaker: نظيف</strong></div>';
+                    } else if (newBackendFailures < 3) {
+                        statusHTML += '<div class="status warning"><strong>⚠️ Circuit Breaker: ' + newBackendFailures + ' إخفاقات</strong></div>';
+                    } else {
+                        statusHTML += '<div class="status error"><strong>❌ Circuit Breaker: مفتوح (' + newBackendFailures + ' إخفاقات)</strong></div>';
+                    }
+                } else {
+                    statusHTML += '<div class="status success"><strong>✅ Circuit Breaker: غير مُهيأ (حالة نظيفة)</strong></div>';
+                }
+                
+                // فحص token المصادقة
+                const token = localStorage.getItem('token');
+                if (token) {
+                    statusHTML += '<div class="status success"><strong>✅ المصادقة: مُسجل دخول</strong></div>';
+                } else {
+                    statusHTML += '<div class="status warning"><strong>⚠️ المصادقة: غير مُسجل دخول</strong></div>';
+                }
+                
+                statusDiv.innerHTML = statusHTML;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error"><strong>❌ خطأ في فحص حالة النظام</strong></div>';
+            }
+        }
+        
+        // تشغيل فحص الحالة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', checkSystemStatus);
+        
+        // تحديث الحالة كل 5 ثوانٍ
+        setInterval(checkSystemStatus, 5000);
+    </script>
+</body>
+</html>

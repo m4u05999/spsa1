@@ -1,197 +1,361 @@
 // src/pages/dashboard/modules/InquiryManagement.jsx
 import React, { useState, useEffect } from 'react';
+import { useMasterData } from '../../../hooks/useMasterData';
+import { useAuth } from '../../../contexts/index.jsx';
+import { checkPermission } from '../../../utils/permissions';
 
 const InquiryManagement = () => {
+  // MasterDataService integration
+  const {
+    data: masterData,
+    loading: masterDataLoading,
+    error: masterDataError,
+    loadData,
+    updateContent,
+    createContent,
+    deleteContent,
+    searchContent
+  } = useMasterData({
+    type: 'inquiries',
+    autoLoad: false
+  });
+
+  // Authentication and permissions
+  const { user } = useAuth();
+  const canManageInquiries = checkPermission(user, 'content.write');
+  const canReplyToInquiries = checkPermission(user, 'content.write');
+
+  // Local state management
   const [inquiries, setInquiries] = useState([]);
   const [filteredInquiries, setFilteredInquiries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [reply, setReply] = useState('');
 
-  useEffect(() => {
-    // Simulate API call to fetch inquiries
-    const fetchInquiries = async () => {
-      try {
-        setLoading(true);
-        
-        // This would be a real API call in production
-        // Mock data for development
-        const mockInquiries = [
-          {
-            id: 1,
-            name: 'أحمد محمد',
-            email: 'ahmed.m@example.com',
-            subject: 'استفسار عن العضوية',
-            message: 'أرغب في الاستفسار عن شروط وإجراءات الانضمام للجمعية وماهي المستندات المطلوبة للتقديم.',
-            status: 'pending',
-            date: '2023-11-15',
-            priority: 'medium',
-            category: 'membership',
-            replies: []
-          },
-          {
-            id: 2,
-            name: 'سارة الأحمدي',
-            email: 'sara.a@example.com',
-            subject: 'مشكلة في التسجيل',
-            message: 'واجهت بعض المشكلات التقنية أثناء محاولة التسجيل في موقع الجمعية. يرجى المساعدة في حل هذه المشكلة.',
-            status: 'resolved',
-            date: '2023-11-10',
-            priority: 'high',
-            category: 'technical',
-            replies: [
-              {
-                id: 1,
-                responder: 'مدير النظام',
-                message: 'شكراً للتواصل معنا. يرجى تجربة استخدام متصفح آخر، أو محاولة مسح ذاكرة التخزين المؤقتة ثم إعادة المحاولة.',
-                date: '2023-11-11'
-              }
-            ]
-          },
-          {
-            id: 3,
-            name: 'خالد العتيبي',
-            email: 'khalid.o@example.com',
-            subject: 'استفسار عن المؤتمر السنوي',
-            message: 'متى سيقام المؤتمر السنوي لهذا العام، وهل يمكن المشاركة فيه كباحث؟ أرغب في تقديم ورقة بحثية.',
-            status: 'in-progress',
-            date: '2023-11-12',
-            priority: 'medium',
-            category: 'events',
-            replies: [
-              {
-                id: 1,
-                responder: 'منسق الفعاليات',
-                message: 'شكراً لاهتمامك بالمشاركة في المؤتمر. سيقام المؤتمر في مارس 2024، وسيتم فتح باب تقديم الأوراق البحثية قريباً.',
-                date: '2023-11-13'
-              }
-            ]
-          },
-          {
-            id: 4,
-            name: 'نورة السالم',
-            email: 'noura.s@example.com',
-            subject: 'طلب تعاون أكاديمي',
-            message: 'أمثل جامعة الملك سعود ونرغب في عقد شراكة مع الجمعية لإقامة ندوات مشتركة. كيف يمكننا التنسيق لذلك؟',
-            status: 'pending',
-            date: '2023-11-14',
-            priority: 'high',
-            category: 'partnership',
-            replies: []
-          },
-          {
-            id: 5,
-            name: 'فهد القحطاني',
-            email: 'fahad.q@example.com',
-            subject: 'اقتراح تطوير الموقع',
-            message: 'أقترح إضافة خاصية للبحث في الأوراق البحثية والمنشورات حسب الكلمات المفتاحية لتسهيل الوصول للمحتوى.',
-            status: 'pending',
-            date: '2023-11-13',
-            priority: 'low',
-            category: 'suggestions',
-            replies: []
-          }
-        ];
-        
-        // Simulate network delay
-        setTimeout(() => {
-          setInquiries(mockInquiries);
-          setFilteredInquiries(mockInquiries);
-          setLoading(false);
-        }, 800);
-      } catch (err) {
-        console.error('Error fetching inquiries:', err);
-        setLoading(false);
-      }
-    };
+  // Default inquiries data for fallback
+  const defaultInquiries = [
+    {
+      id: 'inquiry-1',
+      name: 'أحمد محمد',
+      email: 'ahmed.m@example.com',
+      subject: 'استفسار عن العضوية',
+      message: 'أرغب في الاستفسار عن شروط وإجراءات الانضمام للجمعية وماهي المستندات المطلوبة للتقديم.',
+      status: 'pending',
+      date: '2023-11-15',
+      priority: 'medium',
+      category: 'membership',
+      replies: [],
+      contentType: 'inquiries',
+      createdAt: '2023-11-15T00:00:00Z'
+    },
+    {
+      id: 'inquiry-2',
+      name: 'سارة الأحمدي',
+      email: 'sara.a@example.com',
+      subject: 'مشكلة في التسجيل',
+      message: 'واجهت بعض المشكلات التقنية أثناء محاولة التسجيل في موقع الجمعية. يرجى المساعدة في حل هذه المشكلة.',
+      status: 'resolved',
+      date: '2023-11-10',
+      priority: 'high',
+      category: 'technical',
+      replies: [
+        {
+          id: 'reply-1',
+          responder: 'مدير النظام',
+          message: 'شكراً للتواصل معنا. يرجى تجربة استخدام متصفح آخر، أو محاولة مسح ذاكرة التخزين المؤقتة ثم إعادة المحاولة.',
+          date: '2023-11-11'
+        }
+      ],
+      contentType: 'inquiries',
+      createdAt: '2023-11-10T00:00:00Z'
+    },
+    {
+      id: 'inquiry-3',
+      name: 'خالد العتيبي',
+      email: 'khalid.o@example.com',
+      subject: 'استفسار عن المؤتمر السنوي',
+      message: 'متى سيقام المؤتمر السنوي لهذا العام، وهل يمكن المشاركة فيه كباحث؟ أرغب في تقديم ورقة بحثية.',
+      status: 'in-progress',
+      date: '2023-11-12',
+      priority: 'medium',
+      category: 'events',
+      replies: [
+        {
+          id: 'reply-2',
+          responder: 'منسق الفعاليات',
+          message: 'شكراً لاهتمامك بالمشاركة في المؤتمر. سيقام المؤتمر في مارس 2024، وسيتم فتح باب تقديم الأوراق البحثية قريباً.',
+          date: '2023-11-13'
+        }
+      ],
+      contentType: 'inquiries',
+      createdAt: '2023-11-12T00:00:00Z'
+    },
+    {
+      id: 'inquiry-4',
+      name: 'نورة السالم',
+      email: 'noura.s@example.com',
+      subject: 'طلب تعاون أكاديمي',
+      message: 'أمثل جامعة الملك سعود ونرغب في عقد شراكة مع الجمعية لإقامة ندوات مشتركة. كيف يمكننا التنسيق لذلك؟',
+      status: 'pending',
+      date: '2023-11-14',
+      priority: 'high',
+      category: 'partnership',
+      replies: [],
+      contentType: 'inquiries',
+      createdAt: '2023-11-14T00:00:00Z'
+    },
+    {
+      id: 'inquiry-5',
+      name: 'فهد القحطاني',
+      email: 'fahad.q@example.com',
+      subject: 'اقتراح تطوير الموقع',
+      message: 'أقترح إضافة خاصية للبحث في الأوراق البحثية والمنشورات حسب الكلمات المفتاحية لتسهيل الوصول للمحتوى.',
+      status: 'pending',
+      date: '2023-11-13',
+      priority: 'low',
+      category: 'suggestions',
+      replies: [],
+      contentType: 'inquiries',
+      createdAt: '2023-11-13T00:00:00Z'
+    }
+  ];
 
-    fetchInquiries();
+  // Load inquiries from MasterDataService
+  const loadInquiries = async () => {
+    try {
+      setIsLoading(true);
+      console.log('🔄 جاري تحميل بيانات الاستفسارات من MasterDataService...');
+
+      await loadData({
+        type: 'inquiries',
+        limit: 100,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+
+      const loadedInquiries = masterData || [];
+
+      // Use default data if no inquiries found, or fallback to localStorage
+      let finalInquiries = loadedInquiries.length > 0 ? loadedInquiries : [];
+
+      if (finalInquiries.length === 0) {
+        // Try localStorage fallback
+        const localData = localStorage.getItem('inquiryManagement');
+        if (localData) {
+          try {
+            finalInquiries = JSON.parse(localData);
+            console.log('🔄 تم تحميل البيانات من localStorage');
+          } catch (e) {
+            console.warn('❌ خطأ في قراءة localStorage:', e);
+          }
+        }
+
+        // Use default data as final fallback
+        if (finalInquiries.length === 0) {
+          finalInquiries = defaultInquiries;
+          // Save default data to localStorage
+          localStorage.setItem('inquiryManagement', JSON.stringify(defaultInquiries));
+          console.log('🔄 تم استخدام البيانات الافتراضية للاستفسارات');
+        }
+      } else {
+        // Save successful data to localStorage
+        localStorage.setItem('inquiryManagement', JSON.stringify(finalInquiries));
+      }
+
+      setInquiries(finalInquiries);
+      console.log(`✅ تم تحميل الاستفسارات من MasterDataService: ${finalInquiries.length}`);
+    } catch (error) {
+      console.error('❌ خطأ في تحميل الاستفسارات من MasterDataService:', error);
+
+      // Try localStorage fallback
+      let fallbackInquiries = [];
+      const localData = localStorage.getItem('inquiryManagement');
+      if (localData) {
+        try {
+          fallbackInquiries = JSON.parse(localData);
+          console.log('🔄 تم تحميل البيانات من localStorage كبديل');
+        } catch (e) {
+          console.warn('❌ خطأ في قراءة localStorage:', e);
+        }
+      }
+
+      // Use default data as final fallback
+      if (fallbackInquiries.length === 0) {
+        fallbackInquiries = defaultInquiries;
+        localStorage.setItem('inquiryManagement', JSON.stringify(defaultInquiries));
+        console.log('🔄 تم استخدام البيانات الافتراضية للاستفسارات');
+      }
+
+      setInquiries(fallbackInquiries);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInquiries();
   }, []);
 
-  // Filter inquiries based on selected filter and search term
+  // Apply filters using MasterDataService search with local fallback
+  const applyFilters = async () => {
+    try {
+      if (searchTerm || filter !== 'all') {
+        // Use MasterDataService search for advanced filtering
+        const filters = filter !== 'all' ? { status: filter } : {};
+        const searchResult = await searchContent(searchTerm, filters);
+        const searchedInquiries = searchResult || [];
+
+        if (searchedInquiries.length > 0) {
+          setFilteredInquiries(searchedInquiries);
+          return;
+        }
+      }
+
+      // Local fallback filtering
+      let result = [...inquiries];
+
+      // Apply status filter
+      if (filter !== 'all') {
+        result = result.filter(inquiry => inquiry.status === filter);
+      }
+
+      // Apply search filter
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        result = result.filter(inquiry =>
+          inquiry.name.toLowerCase().includes(search) ||
+          inquiry.email.toLowerCase().includes(search) ||
+          inquiry.subject.toLowerCase().includes(search) ||
+          inquiry.message.toLowerCase().includes(search)
+        );
+      }
+
+      setFilteredInquiries(result);
+    } catch (error) {
+      console.error('❌ خطأ في البحث في الاستفسارات:', error);
+      // Fallback to local filtering
+      let result = [...inquiries];
+
+      if (filter !== 'all') {
+        result = result.filter(inquiry => inquiry.status === filter);
+      }
+
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        result = result.filter(inquiry =>
+          inquiry.name.toLowerCase().includes(search) ||
+          inquiry.email.toLowerCase().includes(search) ||
+          inquiry.subject.toLowerCase().includes(search) ||
+          inquiry.message.toLowerCase().includes(search)
+        );
+      }
+
+      setFilteredInquiries(result);
+    }
+  };
+
   useEffect(() => {
-    let result = [...inquiries];
-    
-    // Apply status filter
-    if (filter !== 'all') {
-      result = result.filter(inquiry => inquiry.status === filter);
-    }
-    
-    // Apply search filter
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      result = result.filter(inquiry => 
-        inquiry.name.toLowerCase().includes(search) ||
-        inquiry.email.toLowerCase().includes(search) ||
-        inquiry.subject.toLowerCase().includes(search) ||
-        inquiry.message.toLowerCase().includes(search)
-      );
-    }
-    
-    setFilteredInquiries(result);
+    applyFilters();
   }, [inquiries, filter, searchTerm]);
 
-  // Handle inquiry reply
-  const handleReply = (e) => {
+  // Handle inquiry reply using MasterDataService
+  const handleReply = async (e) => {
     e.preventDefault();
-    
+
     if (!reply.trim()) {
       alert('الرجاء كتابة رد');
       return;
     }
-    
-    // In a real app, this would be an API call
-    const newReply = {
-      id: Date.now(),
-      responder: 'مدير النظام',
-      message: reply,
-      date: new Date().toISOString().split('T')[0]
-    };
-    
-    const updatedInquiries = inquiries.map(inquiry => {
-      if (inquiry.id === selectedInquiry.id) {
-        return {
-          ...inquiry,
-          status: 'in-progress',
-          replies: [...inquiry.replies, newReply]
-        };
-      }
-      return inquiry;
-    });
-    
-    setInquiries(updatedInquiries);
-    setReply('');
-    
-    // Close the modal in a real app
-    // For this mock, we'll just update the selected inquiry
-    setSelectedInquiry(prevState => ({
-      ...prevState,
-      status: 'in-progress',
-      replies: [...prevState.replies, newReply]
-    }));
+
+    try {
+      console.log('🔄 إضافة رد جديد للاستفسار:', selectedInquiry.id);
+
+      const newReply = {
+        id: `reply-${Date.now()}`,
+        responder: user?.name || 'مدير النظام',
+        message: reply,
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      const updatedInquiry = {
+        ...selectedInquiry,
+        status: 'in-progress',
+        replies: [...selectedInquiry.replies, newReply]
+      };
+
+      // Update inquiry using MasterDataService
+      await updateContent(selectedInquiry.id, updatedInquiry);
+
+      // Update local state
+      const updatedInquiries = inquiries.map(inquiry => {
+        if (inquiry.id === selectedInquiry.id) {
+          return updatedInquiry;
+        }
+        return inquiry;
+      });
+
+      setInquiries(updatedInquiries);
+      setReply('');
+      setSelectedInquiry(updatedInquiry);
+
+      // Update localStorage
+      localStorage.setItem('inquiryManagement', JSON.stringify(updatedInquiries));
+
+      console.log('✅ تم إضافة الرد بنجاح');
+
+      // Reload inquiries to ensure consistency
+      await loadInquiries();
+    } catch (error) {
+      console.error('❌ خطأ في إضافة الرد:', error);
+      alert('حدث خطأ في إضافة الرد. يرجى المحاولة مرة أخرى.');
+    }
   };
 
-  // Mark as resolved
-  const markAsResolved = (id) => {
-    const updatedInquiries = inquiries.map(inquiry => {
-      if (inquiry.id === id) {
-        return {
-          ...inquiry,
-          status: 'resolved'
-        };
+  // Mark as resolved using MasterDataService
+  const markAsResolved = async (id) => {
+    try {
+      console.log('🔄 تعيين الاستفسار كمحلول:', id);
+
+      const inquiryToUpdate = inquiries.find(inquiry => inquiry.id === id);
+      if (!inquiryToUpdate) {
+        console.error('❌ لم يتم العثور على الاستفسار');
+        return;
       }
-      return inquiry;
-    });
-    
-    setInquiries(updatedInquiries);
-    
-    if (selectedInquiry && selectedInquiry.id === id) {
-      setSelectedInquiry({
-        ...selectedInquiry,
+
+      const updatedInquiry = {
+        ...inquiryToUpdate,
         status: 'resolved'
+      };
+
+      // Update inquiry using MasterDataService
+      await updateContent(id, updatedInquiry);
+
+      // Update local state
+      const updatedInquiries = inquiries.map(inquiry => {
+        if (inquiry.id === id) {
+          return updatedInquiry;
+        }
+        return inquiry;
       });
+
+      setInquiries(updatedInquiries);
+
+      if (selectedInquiry && selectedInquiry.id === id) {
+        setSelectedInquiry(updatedInquiry);
+      }
+
+      // Update localStorage
+      localStorage.setItem('inquiryManagement', JSON.stringify(updatedInquiries));
+
+      console.log('✅ تم تعيين الاستفسار كمحلول بنجاح');
+
+      // Reload inquiries to ensure consistency
+      await loadInquiries();
+    } catch (error) {
+      console.error('❌ خطأ في تعيين الاستفسار كمحلول:', error);
+      alert('حدث خطأ في تحديث حالة الاستفسار. يرجى المحاولة مرة أخرى.');
     }
   };
 
@@ -295,7 +459,7 @@ const InquiryManagement = () => {
       </div>
 
       {/* Inquiries List */}
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center py-10">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>

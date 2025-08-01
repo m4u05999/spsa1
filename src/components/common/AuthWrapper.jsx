@@ -1,9 +1,7 @@
 // src/components/common/AuthWrapper.jsx
 import React from 'react';
-import { AuthProvider } from '../../context/AuthContext';
-import { DashboardProvider } from '../../context/DashboardContext';
-import { PaymentProvider } from '../../context/PaymentContext';
-import { NotificationProvider } from '../../context/NotificationContext';
+import { AuthProvider, DashboardProvider, PaymentProvider } from '../../contexts/index.jsx';
+import { NotificationProvider } from '../../contexts/index.jsx';
 import NotificationSystem from '../notifications/NotificationSystem';
 
 const AuthWrapper = ({ children }) => {

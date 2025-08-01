@@ -5,7 +5,7 @@ import Header from '../Header'
 
 // Mock useAuth hook
 const mockUseAuth = vi.fn()
-vi.mock('../../context/AuthContext', () => ({
+vi.mock('../../contexts/index.jsx', () => ({
   useAuth: () => mockUseAuth()
 }))
 

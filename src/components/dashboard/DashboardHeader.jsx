@@ -1,7 +1,7 @@
 // src/components/dashboard/DashboardHeader.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/index.jsx';
 
 const DashboardHeader = ({ 
   onMenuClick, 

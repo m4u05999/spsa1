@@ -1,8 +1,70 @@
 // src/components/dashboard/MembershipStatus.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useMasterData } from '../../hooks/useMasterData';
 
-const MembershipStatus = ({ membership }) => {
+const MembershipStatus = ({ membership: propMembership, userId }) => {
+  const {
+    data: allContent,
+    loading,
+    error,
+    getContent,
+    updateContent
+  } = useMasterData();
+
+  // State for enhanced membership data
+  const [membership, setMembership] = useState(propMembership || null);
+  const [membershipHistory, setMembershipHistory] = useState([]);
+  const [membershipBenefits, setMembershipBenefits] = useState([]);
+
+  // Fetch enhanced membership data from MasterDataService
+  useEffect(() => {
+    const fetchMembershipData = async () => {
+      try {
+        // Fetch current membership
+        let currentMembership = propMembership;
+
+        if (!currentMembership && userId) {
+          const membershipData = await getContent({
+            contentType: 'memberships',
+            filters: { userId: userId, status: 'active' },
+            limit: 1,
+            sortBy: 'created_at',
+            sortOrder: 'desc'
+          });
+          currentMembership = membershipData?.[0] || null;
+        }
+
+        // Fetch membership history
+        const historyData = await getContent({
+          contentType: 'membership-history',
+          filters: { userId: userId || currentMembership?.userId },
+          sortBy: 'created_at',
+          sortOrder: 'desc'
+        });
+
+        // Fetch membership benefits based on type
+        const benefitsData = await getContent({
+          contentType: 'membership-benefits',
+          filters: { membershipType: currentMembership?.type || 'basic' }
+        });
+
+        setMembership(currentMembership);
+        setMembershipHistory(historyData || []);
+        setMembershipBenefits(benefitsData || []);
+
+      } catch (err) {
+        console.error('خطأ في جلب بيانات العضوية:', err);
+        // Use fallback data on error
+        setMembership(propMembership || null);
+        setMembershipHistory([]);
+        setMembershipBenefits([]);
+      }
+    };
+
+    fetchMembershipData();
+  }, [propMembership, userId, getContent]);
+
   const isActive = membership && new Date(membership.expiresAt) > new Date();
   
   // تحديد حالة العضوية وأيام الصلاحية المتبقية
@@ -30,6 +92,23 @@ const MembershipStatus = ({ membership }) => {
   };
 
   const membershipStatus = getMembershipStatus();
+
+  // Loading state
+  if (loading && !membership) {
+    return (
+      <div className="bg-white shadow rounded-lg p-6 col-span-3">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow rounded-lg p-6 col-span-3">
@@ -79,6 +158,38 @@ const MembershipStatus = ({ membership }) => {
               <span className="text-lg font-medium">تاريخ الانتهاء:</span>
               <span className="text-lg">{new Date(membership.expiresAt).toLocaleDateString('ar-SA')}</span>
             </div>
+
+            {/* Membership Benefits */}
+            {membershipBenefits.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="text-lg font-medium mb-4">مزايا العضوية</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {membershipBenefits.slice(0, 6).map((benefit, index) => (
+                    <div key={index} className="flex items-center">
+                      <span className="text-green-500 ml-2">✓</span>
+                      <span className="text-sm">{benefit.title || benefit.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Membership History */}
+            {membershipHistory.length > 1 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="text-lg font-medium mb-4">تاريخ العضويات</h4>
+                <div className="space-y-2">
+                  {membershipHistory.slice(0, 3).map((history, index) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span>{history.type || 'عضوية أساسية'}</span>
+                      <span className="text-gray-500">
+                        {new Date(history.created_at).toLocaleDateString('ar-SA')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-8">

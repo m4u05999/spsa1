@@ -1,7 +1,7 @@
 // src/pages/Profile.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 import { getUserData, updateUserProfile } from '../services/userService';
 import useErrorMessages from '../hooks/useErrorMessages';
 import EnhancedMessage, { FieldErrorMessage } from '../components/ui/EnhancedMessage';

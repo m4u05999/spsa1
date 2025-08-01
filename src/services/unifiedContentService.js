@@ -44,6 +44,23 @@ class UnifiedContentService {
   }
 
   /**
+   * Initialize the service
+   * تهيئة الخدمة
+   */
+  async initialize() {
+    if (this.isInitialized) return;
+    
+    try {
+      this.initializeStorage();
+      this.isInitialized = true;
+      console.log('🚀 UnifiedContentService initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize UnifiedContentService:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Initialize local storage with default data
    * تهيئة التخزين المحلي بالبيانات الافتراضية
    */

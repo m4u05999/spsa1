@@ -401,6 +401,46 @@ CREATE TRIGGER update_event_registrations_count_trigger
     FOR EACH ROW EXECUTE FUNCTION update_event_registrations_count();
 
 -- =====================================================
+-- جدول موافقات المستخدمين - User Consents Table
+-- ✅ إضافة لامتثال قانون PDPL
+-- =====================================================
+
+CREATE TABLE public.user_consents (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    consent_type VARCHAR(100) NOT NULL CHECK (consent_type IN (
+        'personalDataProcessing',
+        'membershipManagement', 
+        'profileVisibility',
+        'marketingCommunications',
+        'activityTracking',
+        'financialProcessing',
+        'dataTransferAbroad'
+    )),
+    consent_given BOOLEAN NOT NULL,
+    consent_text TEXT NOT NULL,
+    consent_version VARCHAR(20) DEFAULT '1.0',
+    given_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    withdrawn_at TIMESTAMP WITH TIME ZONE,
+    ip_address INET, -- للأحداث الأمنية فقط
+    user_agent TEXT, -- للأحداث الأمنية فقط
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- فهارس جدول موافقات المستخدمين
+CREATE INDEX idx_user_consents_user_id ON public.user_consents(user_id);
+CREATE INDEX idx_user_consents_type ON public.user_consents(consent_type);
+CREATE INDEX idx_user_consents_given_at ON public.user_consents(given_at DESC);
+CREATE INDEX idx_user_consents_active ON public.user_consents(user_id, consent_type, consent_given) 
+    WHERE consent_given = TRUE AND withdrawn_at IS NULL;
+
+-- إضافة trigger للتحديث التلقائي
+CREATE TRIGGER update_user_consents_updated_at BEFORE UPDATE ON public.user_consents 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
 -- تم إنشاء مخطط قاعدة البيانات بنجاح
 -- Database schema created successfully
 -- =====================================================

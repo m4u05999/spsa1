@@ -1,7 +1,9 @@
 // src/context/DashboardContext.jsx
+// هذا الملف محتفظ به للتوافق مع الكود القديم
+// يُنصح باستخدام UnifiedDashboardContext للتطبيقات الجديدة
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { dashboardStatsService } from '../services/dashboardStatsService';
+import { useUnifiedDashboard } from './UnifiedDashboardContext';
 
 const DashboardContext = createContext(null);
 

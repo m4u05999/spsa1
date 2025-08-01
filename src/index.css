@@ -1,10 +1,10 @@
 /* src/index.css */
+/* Import dashboard layout fixes */
+@import './styles/dashboard-layout.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import dashboard layout fixes */
-@import './styles/dashboard-layout.css';
 
 @layer base {
   html {

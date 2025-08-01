@@ -1,7 +1,23 @@
 // src/pages/dashboard/modules/UserManagementFixed.jsx
 import React, { useState, useEffect } from 'react';
+import { useMasterData } from '../../../hooks/useMasterData';
 
 const UserManagementFixed = () => {
+  // MasterDataService integration
+  const {
+    data: masterData,
+    loading: masterLoading,
+    error: masterDataError,
+    loadData,
+    createContent,
+    updateContent,
+    deleteContent,
+    searchContent
+  } = useMasterData({
+    type: 'users',
+    autoLoad: false
+  });
+
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,24 +37,40 @@ const UserManagementFixed = () => {
 
   // تصفية المستخدمين عند تغيير البحث أو الفلاتر
   useEffect(() => {
-    filterUsers();
+    const applyFilters = async () => {
+      await filterUsers();
+    };
+    applyFilters();
   }, [users, searchTerm, selectedRole, selectedStatus]);
 
   const loadUsers = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      // محاولة تحميل البيانات من localStorage أولاً
+      console.log('🔄 جاري تحميل بيانات المستخدمين من MasterDataService...');
+
+      // استخدام MasterDataService لجلب المستخدمين
+      await loadData({ type: 'users' });
+
+      if (masterData && Array.isArray(masterData) && masterData.length > 0) {
+        console.log('✅ تم تحميل المستخدمين من MasterDataService:', masterData.length);
+        setUsers(masterData);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback: محاولة تحميل البيانات من localStorage
       const storedUsers = localStorage.getItem('spsa_users');
       if (storedUsers) {
         const parsedUsers = JSON.parse(storedUsers);
+        console.log('📦 تم تحميل المستخدمين من localStorage:', parsedUsers.length);
         setUsers(parsedUsers);
         setIsLoading(false);
         return;
       }
 
-      // إذا لم توجد بيانات، إنشاء بيانات تجريبية
+      // إذا لم توجد بيانات، إنشاء بيانات تجريبية وحفظها في MasterDataService
       const defaultUsers = [
         {
           id: '1',
@@ -48,6 +80,10 @@ const UserManagementFixed = () => {
           role: 'ADMIN',
           status: 'ACTIVE',
           membershipType: 'REGULAR',
+          phone: '+966501234567',
+          specialization: 'إدارة النظام',
+          workplace: 'الجمعية السعودية للعلوم السياسية',
+          academicDegree: 'دكتوراه',
           createdAt: new Date().toISOString()
         },
         {
@@ -58,6 +94,10 @@ const UserManagementFixed = () => {
           role: 'MEMBER',
           status: 'ACTIVE',
           membershipType: 'STUDENT',
+          phone: '+966502345678',
+          specialization: 'العلوم السياسية',
+          workplace: 'جامعة الملك سعود',
+          academicDegree: 'ماجستير',
           createdAt: new Date().toISOString()
         },
         {
@@ -68,44 +108,99 @@ const UserManagementFixed = () => {
           role: 'MODERATOR',
           status: 'ACTIVE',
           membershipType: 'ACADEMIC',
+          phone: '+966503456789',
+          specialization: 'العلاقات الدولية',
+          workplace: 'جامعة الملك عبدالعزيز',
+          academicDegree: 'دكتوراه',
           createdAt: new Date().toISOString()
         }
       ];
 
+      // حفظ البيانات التجريبية في MasterDataService
+      try {
+        // إنشاء كل مستخدم بشكل منفصل
+        for (const user of defaultUsers) {
+          await createContent({
+            ...user,
+            contentType: 'users',
+            type: 'users'
+          });
+        }
+        console.log('💾 تم حفظ البيانات التجريبية في MasterDataService');
+      } catch (saveError) {
+        console.warn('⚠️ فشل في حفظ البيانات في MasterDataService، سيتم استخدام localStorage');
+        localStorage.setItem('spsa_users', JSON.stringify(defaultUsers));
+      }
+
       setUsers(defaultUsers);
-      localStorage.setItem('spsa_users', JSON.stringify(defaultUsers));
 
     } catch (err) {
-      console.error('Error loading users:', err);
+      console.error('❌ خطأ في تحميل بيانات المستخدمين:', err);
       setError('فشل في تحميل بيانات المستخدمين');
+
+      // محاولة أخيرة من localStorage
+      try {
+        const storedUsers = localStorage.getItem('spsa_users');
+        if (storedUsers) {
+          const parsedUsers = JSON.parse(storedUsers);
+          setUsers(parsedUsers);
+          console.log('🔄 تم التراجع إلى localStorage');
+        }
+      } catch (localError) {
+        console.error('❌ فشل في تحميل البيانات من localStorage أيضاً:', localError);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // تصفية المستخدمين
-  const filterUsers = () => {
-    let filtered = [...users];
+  // تصفية المستخدمين باستخدام MasterDataService
+  const filterUsers = async () => {
+    try {
+      if (!searchTerm && selectedRole === 'all' && selectedStatus === 'all') {
+        // إذا لم توجد فلاتر، عرض جميع المستخدمين
+        setFilteredUsers(users);
+        return;
+      }
 
-    // البحث بالاسم أو البريد الإلكتروني
-    if (searchTerm) {
-      filtered = filtered.filter(user =>
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      // استخدام searchContent من MasterDataService للبحث المتقدم
+      try {
+        const searchResults = await searchContent(searchTerm, {
+          role: selectedRole !== 'all' ? selectedRole : undefined,
+          status: selectedStatus !== 'all' ? selectedStatus : undefined
+        });
+
+        if (searchResults && Array.isArray(searchResults)) {
+          setFilteredUsers(searchResults);
+          return;
+        }
+      } catch (searchError) {
+        console.warn('⚠️ فشل البحث في MasterDataService، استخدام التصفية المحلية:', searchError);
+      }
+
+      // Fallback للتصفية المحلية
+      let filtered = [...users];
+
+      if (searchTerm) {
+        filtered = filtered.filter(user =>
+          `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (selectedRole !== 'all') {
+        filtered = filtered.filter(user => user.role === selectedRole);
+      }
+
+      if (selectedStatus !== 'all') {
+        filtered = filtered.filter(user => user.status === selectedStatus);
+      }
+
+      setFilteredUsers(filtered);
+    } catch (error) {
+      console.error('❌ خطأ في تصفية المستخدمين:', error);
+      setFilteredUsers(users);
     }
-
-    // تصفية حسب الدور
-    if (selectedRole !== 'all') {
-      filtered = filtered.filter(user => user.role === selectedRole);
-    }
-
-    // تصفية حسب الحالة
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(user => user.status === selectedStatus);
-    }
-
-    setFilteredUsers(filtered);
   };
 
   // فتح نموذج إضافة مستخدم جديد
@@ -129,10 +224,11 @@ const UserManagementFixed = () => {
     setModalMode('create');
   };
 
-  // حفظ المستخدم (إضافة أو تعديل)
-  const saveUser = (userData) => {
+  // حفظ المستخدم (إضافة أو تعديل) باستخدام MasterDataService
+  const saveUser = async (userData) => {
     try {
       let updatedUsers = [...users];
+      let result;
 
       if (modalMode === 'create') {
         // إضافة مستخدم جديد
@@ -141,28 +237,70 @@ const UserManagementFixed = () => {
           id: Date.now().toString(),
           createdAt: new Date().toISOString()
         };
-        updatedUsers.push(newUser);
+
+        // محاولة الحفظ في MasterDataService أولاً
+        try {
+          result = await createContent({
+            ...newUser,
+            contentType: 'users',
+            type: 'users'
+          });
+
+          if (result?.success) {
+            console.log('✅ تم إنشاء المستخدم في MasterDataService');
+            updatedUsers.push(newUser);
+          } else {
+            throw new Error('فشل في إنشاء المستخدم في MasterDataService');
+          }
+        } catch (serviceError) {
+          console.warn('⚠️ فشل في MasterDataService، سيتم الحفظ محلياً:', serviceError);
+          updatedUsers.push(newUser);
+          localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
+        }
+
       } else {
         // تعديل مستخدم موجود
         const index = updatedUsers.findIndex(u => u.id === selectedUser.id);
         if (index !== -1) {
-          updatedUsers[index] = {
+          const updatedUser = {
             ...updatedUsers[index],
             ...userData,
             updatedAt: new Date().toISOString()
           };
+
+          // محاولة التحديث في MasterDataService أولاً
+          try {
+            result = await updateContent(selectedUser.id, {
+              ...updatedUser,
+              contentType: 'users',
+              type: 'users'
+            });
+
+            if (result?.success) {
+              console.log('✅ تم تحديث المستخدم في MasterDataService');
+              updatedUsers[index] = updatedUser;
+            } else {
+              throw new Error('فشل في تحديث المستخدم في MasterDataService');
+            }
+          } catch (serviceError) {
+            console.warn('⚠️ فشل في MasterDataService، سيتم التحديث محلياً:', serviceError);
+            updatedUsers[index] = updatedUser;
+            localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
+          }
         }
       }
 
       setUsers(updatedUsers);
-      localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
       closeModal();
 
       // رسالة نجاح
       alert(modalMode === 'create' ? 'تم إضافة المستخدم بنجاح' : 'تم تحديث المستخدم بنجاح');
 
+      // إعادة تحميل البيانات لضمان التزامن
+      await loadUsers();
+
     } catch (err) {
-      console.error('Error saving user:', err);
+      console.error('❌ خطأ في حفظ المستخدم:', err);
       alert('فشل في حفظ المستخدم');
     }
   };
@@ -173,39 +311,87 @@ const UserManagementFixed = () => {
     setShowDeleteConfirm(true);
   };
 
-  // حذف المستخدم
-  const deleteUser = () => {
+  // حذف المستخدم باستخدام MasterDataService
+  const deleteUser = async () => {
     try {
+      // محاولة الحذف من MasterDataService أولاً
+      try {
+        const result = await deleteContent(userToDelete.id);
+
+        if (result?.success) {
+          console.log('✅ تم حذف المستخدم من MasterDataService');
+        } else {
+          throw new Error('فشل في حذف المستخدم من MasterDataService');
+        }
+      } catch (serviceError) {
+        console.warn('⚠️ فشل في MasterDataService، سيتم الحذف محلياً:', serviceError);
+        // Fallback للحذف المحلي
+        const updatedUsers = users.filter(u => u.id !== userToDelete.id);
+        localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
+      }
+
+      // تحديث الحالة المحلية
       const updatedUsers = users.filter(u => u.id !== userToDelete.id);
       setUsers(updatedUsers);
-      localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
       setShowDeleteConfirm(false);
       setUserToDelete(null);
       alert('تم حذف المستخدم بنجاح');
+
+      // إعادة تحميل البيانات لضمان التزامن
+      await loadUsers();
+
     } catch (err) {
-      console.error('Error deleting user:', err);
+      console.error('❌ خطأ في حذف المستخدم:', err);
       alert('فشل في حذف المستخدم');
     }
   };
 
-  // تغيير حالة المستخدم (تعليق/إلغاء تعليق)
-  const toggleUserStatus = (user) => {
+  // تغيير حالة المستخدم (تعليق/إلغاء تعليق) باستخدام MasterDataService
+  const toggleUserStatus = async (user) => {
     try {
       const newStatus = user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-      const updatedUsers = users.map(u =>
-        u.id === user.id
-          ? { ...u, status: newStatus, updatedAt: new Date().toISOString() }
-          : u
-      );
+      const updatedUser = {
+        ...user,
+        status: newStatus,
+        updatedAt: new Date().toISOString()
+      };
 
+      // محاولة التحديث في MasterDataService أولاً
+      try {
+        const result = await updateContent(user.id, {
+          ...updatedUser,
+          contentType: 'users',
+          type: 'users'
+        });
+
+        if (result?.success) {
+          console.log('✅ تم تحديث حالة المستخدم في MasterDataService');
+        } else {
+          throw new Error('فشل في تحديث حالة المستخدم في MasterDataService');
+        }
+      } catch (serviceError) {
+        console.warn('⚠️ فشل في MasterDataService، سيتم التحديث محلياً:', serviceError);
+        // Fallback للتحديث المحلي
+        const updatedUsers = users.map(u =>
+          u.id === user.id ? updatedUser : u
+        );
+        localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
+      }
+
+      // تحديث الحالة المحلية
+      const updatedUsers = users.map(u =>
+        u.id === user.id ? updatedUser : u
+      );
       setUsers(updatedUsers);
-      localStorage.setItem('spsa_users', JSON.stringify(updatedUsers));
 
       const action = newStatus === 'SUSPENDED' ? 'تعليق' : 'إلغاء تعليق';
       alert(`تم ${action} المستخدم بنجاح`);
 
+      // إعادة تحميل البيانات لضمان التزامن
+      await loadUsers();
+
     } catch (err) {
-      console.error('Error updating user status:', err);
+      console.error('❌ خطأ في تحديث حالة المستخدم:', err);
       alert('فشل في تحديث حالة المستخدم');
     }
   };

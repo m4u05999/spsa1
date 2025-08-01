@@ -3,7 +3,7 @@ import React, { useState, useContext } from 'react';
 import { validateAmount } from '../../utils/validators';
 import { processDonation } from '../../services/paymentService';
 import { addNewDonation } from '../../services/userService';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../../contexts/index.jsx';
 
 const DonationForm = ({ onSuccess }) => {
   const { currentUser } = useContext(AuthContext);

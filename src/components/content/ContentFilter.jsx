@@ -97,7 +97,7 @@ const ContentFilter = ({
           >
             <option value="all">جميع الأنواع</option>
             {Object.entries(CONTENT_TYPES).map(([key, value]) => (
-              <option key={key} value={value}>
+              <option key={`type-${key}`} value={value}>
                 {translateContentType(value)}
               </option>
             ))}
@@ -115,7 +115,7 @@ const ContentFilter = ({
           >
             <option value="all">جميع الحالات</option>
             {Object.entries(CONTENT_STATUS).map(([key, value]) => (
-              <option key={key} value={value}>
+              <option key={`status-${key}`} value={value}>
                 {translateContentStatus(value)}
               </option>
             ))}
@@ -132,9 +132,9 @@ const ContentFilter = ({
             onChange={(e) => onCategoryChange(e.target.value)}
           >
             <option value="all">جميع التصنيفات</option>
-            {availableCategories.map(category => (
-              <option key={category.id} value={category.name}>
-                {category.name}
+            {availableCategories.map((category, index) => (
+              <option key={category?.id || `category-${index}`} value={category?.name || category}>
+                {category?.name || category}
               </option>
             ))}
           </select>
@@ -151,8 +151,8 @@ const ContentFilter = ({
               onChange={(e) => onTagChange(e.target.value)}
             >
               <option value="all">جميع الوسوم</option>
-              {availableTags.map(tag => (
-                <option key={tag.id} value={tag.name}>
+              {availableTags.map((tag, index) => (
+                <option key={tag.id || `tag-${index}`} value={tag.name}>
                   {tag.name}
                 </option>
               ))}
@@ -252,9 +252,9 @@ const ContentFilter = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">بحث متعدد الوسوم</label>
               <div className="border border-gray-300 rounded-md p-3">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {availableTags.slice(0, 10).map(tag => (
+                  {availableTags.slice(0, 10).map((tag, index) => (
                     <span 
-                      key={tag.id} 
+                      key={tag.id || `multi-tag-${index}`} 
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer
                         ${selectedTag === tag.name || selectedTag.includes(tag.name) ? 
                           'bg-blue-100 text-blue-800 hover:bg-blue-200' : 

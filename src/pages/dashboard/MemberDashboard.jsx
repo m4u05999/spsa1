@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNotification } from '../../context/NotificationContext';
+import { useNotification } from '../../contexts/index.jsx';
 import { buttonStyles, inputStyles } from '../../utils/theme';
 
 const MemberDashboard = () => {

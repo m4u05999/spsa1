@@ -1,6 +1,16 @@
 // src/pages/dashboard/modules/UserManagement.jsx
+// إدارة المستخدمين مع تحسينات الأداء والتخزين المؤقت
+//
+// التحسينات المضافة:
+// - التصفح التدريجي مع زر "تحميل المزيد"
+// - التخزين المؤقت للبيانات لمدة 5 دقائق
+// - البحث المتأخر (debounced) لتقليل الطلبات
+// - التصفية المحلية للاستجابة الفورية
+// - منع تكرار البيانات وإدارة الذاكرة
+// - رسائل خطأ باللغة العربية
+
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../contexts/index.jsx';
 import { checkPermission } from '../../../utils/permissions';
 import UserModal from '../../../components/modals/UserModal';
 import userManagementApi from '../../../services/api/userManagementApi';
@@ -16,43 +26,150 @@ const UserManagement = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalMode, setModalMode] = useState('create');
   const [selectedUser, setSelectedUser] = useState(null);
+  
+  // إضافة حالات للتحميل التدريجي والتخزين المؤقت
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0
+  });
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(null);
+  const [cachedUsers, setCachedUsers] = useState(new Map());
+  
+  // مهلة للبحث المتأخر (debounce)
+  const [searchDebounce, setSearchDebounce] = useState(null);
 
   // Load users on component mount
   useEffect(() => {
     loadUsers();
   }, []);
 
-  // Load users from API
-  const loadUsers = async () => {
-    setIsLoading(true);
+  // Load users from API with caching and pagination
+  const loadUsers = async (page = 1, append = false) => {
+    // التحقق من التخزين المؤقت
+    const cacheKey = `${page}-${searchTerm}-${selectedRole}-${selectedStatus}`;
+    const cachedData = cachedUsers.get(cacheKey);
+    const now = Date.now();
+    
+    // استخدام البيانات المخزنة مؤقتاً إذا كانت حديثة (5 دقائق)
+    if (cachedData && (now - cachedData.timestamp) < 5 * 60 * 1000) {
+      if (append) {
+        setUsers(prev => [...prev, ...cachedData.data]);
+        setFilteredUsers(prev => [...prev, ...cachedData.data]);
+      } else {
+        setUsers(cachedData.data);
+        setFilteredUsers(cachedData.data);
+      }
+      setPagination(cachedData.pagination);
+      setHasMoreData(cachedData.pagination.page < cachedData.pagination.totalPages);
+      return;
+    }
+
+    // عرض حالة التحميل المناسبة
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+
     try {
       const response = await userManagementApi.getUsers({
-        page: 1,
-        limit: 100, // Load all users for now
+        page,
+        limit: pagination.limit,
         search: searchTerm,
         role: selectedRole !== 'all' ? selectedRole : '',
         status: selectedStatus !== 'all' ? selectedStatus : ''
       });
 
       if (response.success) {
-        setUsers(response.data);
-        setFilteredUsers(response.data);
+        const newData = response.data || [];
+        const newPagination = response.pagination || {
+          page,
+          limit: pagination.limit,
+          total: newData.length,
+          totalPages: Math.ceil(newData.length / pagination.limit)
+        };
+
+        // تحديث البيانات
+        if (append && page > 1) {
+          setUsers(prev => {
+            // منع تكرار البيانات
+            const existingIds = new Set(prev.map(u => u.id));
+            const uniqueNewData = newData.filter(u => !existingIds.has(u.id));
+            return [...prev, ...uniqueNewData];
+          });
+          setFilteredUsers(prev => {
+            const existingIds = new Set(prev.map(u => u.id));
+            const uniqueNewData = newData.filter(u => !existingIds.has(u.id));
+            return [...prev, ...uniqueNewData];
+          });
+        } else {
+          setUsers(newData);
+          setFilteredUsers(newData);
+        }
+
+        setPagination(newPagination);
+        setHasMoreData(newPagination.page < newPagination.totalPages);
+        setLastFetchTime(now);
+
+        // حفظ في التخزين المؤقت
+        setCachedUsers(prev => {
+          const updated = new Map(prev);
+          updated.set(cacheKey, {
+            data: newData,
+            pagination: newPagination,
+            timestamp: now
+          });
+          
+          // تنظيف التخزين المؤقت من البيانات القديمة (الاحتفاظ بـ 10 عناصر فقط)
+          if (updated.size > 10) {
+            const oldestKey = updated.keys().next().value;
+            updated.delete(oldestKey);
+          }
+          
+          return updated;
+        });
+
       } else {
-        console.error('Failed to load users:', response.error);
-        // Keep existing users if API fails
+        console.error('فشل في تحميل المستخدمين:', response.error);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
-      // Keep existing users if API fails
+      console.error('خطأ في تحميل المستخدمين:', error);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
-  // Filter users when search or filters change
+  // إعداد البحث المتأخر (debounced search)
+  useEffect(() => {
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+
+    const timeoutId = setTimeout(() => {
+      // إدارة البحث والفلاتر من جانب الخادم بدلاً من العميل للأداء الأفضل
+      loadUsers(1, false);
+    }, 500); // تأخير 500ms
+
+    setSearchDebounce(timeoutId);
+
+    // تنظيف عند إلغاء المكون
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [searchTerm, selectedRole, selectedStatus]);
+
+  // Filter users locally (for immediate response while waiting for server)
   useEffect(() => {
     let result = [...users];
 
+    // فلترة محلية سريعة للاستجابة الفورية
     if (searchTerm) {
       result = result.filter(
         user => {
@@ -72,7 +189,14 @@ const UserManagement = () => {
     }
 
     setFilteredUsers(result);
-  }, [searchTerm, selectedRole, selectedStatus, users]);
+  }, [users, searchTerm, selectedRole, selectedStatus]);
+
+  // دالة تحميل المزيد من البيانات
+  const loadMoreUsers = () => {
+    if (hasMoreData && !isLoadingMore) {
+      loadUsers(pagination.page + 1, true);
+    }
+  };
 
   // Format date to Arabic format
   const formatDate = (dateStr) => {
@@ -102,10 +226,10 @@ const UserManagement = () => {
           )
         );
       } else {
-        console.error('Failed to update user status:', response.error);
+        console.error('فشل في تحديث حالة المستخدم:', response.error);
       }
     } catch (error) {
-      console.error('Error updating user status:', error);
+      console.error('خطأ في تحديث حالة المستخدم:', error);
     }
   };
 
@@ -137,11 +261,11 @@ const UserManagement = () => {
         await loadUsers();
         closeModal();
       } else {
-        console.error('Failed to save user:', response.error);
+        console.error('فشل في حفظ المستخدم:', response.error);
         alert('فشل في حفظ المستخدم');
       }
     } catch (error) {
-      console.error('Error saving user:', error);
+      console.error('خطأ في حفظ المستخدم:', error);
       alert('حدث خطأ أثناء حفظ المستخدم');
     }
   };
@@ -156,11 +280,11 @@ const UserManagement = () => {
           // Remove user from local state
           setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
         } else {
-          console.error('Failed to delete user:', response.error);
+          console.error('فشل في حذف المستخدم:', response.error);
           alert('فشل في حذف المستخدم');
         }
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error('خطأ في حذف المستخدم:', error);
         alert('حدث خطأ أثناء حذف المستخدم');
       }
     }
@@ -416,6 +540,46 @@ const UserManagement = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* معلومات الصفحات وزر تحميل المزيد */}
+        {!isLoading && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                عرض {filteredUsers.length} من أصل {pagination.total} مستخدماً
+                {pagination.totalPages > 1 && (
+                  <span className="mr-2">
+                    (الصفحة {pagination.page} من {pagination.totalPages})
+                  </span>
+                )}
+              </div>
+              
+              {hasMoreData && (
+                <button
+                  onClick={loadMoreUsers}
+                  disabled={isLoadingMore}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full ml-2"></div>
+                      جاري التحميل...
+                    </>
+                  ) : (
+                    'تحميل المزيد'
+                  )}
+                </button>
+              )}
+            </div>
+            
+            {/* عرض وقت آخر تحديث */}
+            {lastFetchTime && (
+              <div className="mt-2 text-xs text-gray-500">
+                آخر تحديث: {new Date(lastFetchTime).toLocaleTimeString('ar-SA')}
+              </div>
+            )}
           </div>
         )}
       </div>

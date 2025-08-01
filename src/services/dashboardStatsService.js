@@ -5,14 +5,15 @@
  * Provides real statistics from existing content services and local data
  */
 
-import { contentService } from './contentService';
+import { MasterDataService } from './MasterDataService';
 import { unifiedContentService } from './unifiedContentService';
 
 // Enhanced local data based on actual frontend content
 const getEnhancedLocalData = async () => {
   try {
-    // Get content from existing services
-    const contentData = await contentService.getAll();
+    // Get content from MasterDataService
+    const masterDataService = MasterDataService.getInstance();
+    const contentData = await masterDataService.getContent();
     const unifiedContent = unifiedContentService.getDefaultContent();
 
     // Combine all content sources
@@ -20,12 +21,12 @@ const getEnhancedLocalData = async () => {
 
     return {
     users: [
-      { id: '1', role: 'admin', membership_type: 'platinum', created_at: '2024-01-15', name: 'مدير النظام' },
-      { id: '2', role: 'member', membership_type: 'gold', created_at: '2024-06-20', name: 'د. محمد العتيبي' },
-      { id: '3', role: 'member', membership_type: 'silver', created_at: '2024-07-01', name: 'د. أحمد المحمد' },
-      { id: '4', role: 'member', membership_type: 'bronze', created_at: '2024-07-02', name: 'د. سارة الأحمد' },
-      { id: '5', role: 'member', membership_type: 'gold', created_at: '2024-06-15', name: 'د. خالد الزهراني' },
-      { id: '6', role: 'member', membership_type: 'silver', created_at: '2024-05-10', name: 'د. فاطمة النجار' }
+      { id: '1', role: 'admin', membership_type: 'platinum', created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), name: 'مدير النظام' },
+      { id: '2', role: 'member', membership_type: 'gold', created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(), name: 'د. محمد العتيبي' },
+      { id: '3', role: 'member', membership_type: 'silver', created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), name: 'د. أحمد المحمد' },
+      { id: '4', role: 'member', membership_type: 'bronze', created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), name: 'د. سارة الأحمد' },
+      { id: '5', role: 'member', membership_type: 'gold', created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), name: 'د. خالد الزهراني' },
+      { id: '6', role: 'member', membership_type: 'silver', created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), name: 'د. فاطمة النجار' }
     ],
     content: allContent.map(item => ({
       id: item.id,
@@ -38,35 +39,37 @@ const getEnhancedLocalData = async () => {
       author: item.author || item.authorName || 'مؤلف غير محدد'
     })),
     events: [
-      { id: '1', title: 'المؤتمر السنوي للعلوم السياسية 2025', start_date: '2025-01-15', status: 'upcoming', participants_count: 150 },
-      { id: '2', title: 'ورشة عمل: مناهج البحث في العلوم السياسية', start_date: '2024-12-20', status: 'published', participants_count: 50 },
-      { id: '3', title: 'ندوة: التحولات السياسية في الشرق الأوسط', start_date: '2024-11-10', status: 'completed', participants_count: 75 },
-      { id: '4', title: 'محاضرة: مستقبل العلاقات الدولية', start_date: '2024-10-05', status: 'completed', participants_count: 120 }
+      { id: '1', title: 'المؤتمر السنوي للعلوم السياسية 2025', start_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), status: 'upcoming', participants_count: 150 },
+      { id: '2', title: 'ورشة عمل: مناهج البحث في العلوم السياسية', start_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'published', participants_count: 50 },
+      { id: '3', title: 'ندوة: التحولات السياسية في الشرق الأوسط', start_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), status: 'completed', participants_count: 75 },
+      { id: '4', title: 'محاضرة: مستقبل العلاقات الدولية', start_date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(), status: 'completed', participants_count: 120 },
+      { id: '5', title: 'ندوة: الذكاء الاصطناعي في الأبحاث السياسية', start_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), status: 'upcoming', participants_count: 80 }
     ],
     membership_applications: [
-      { id: '1', applicant_name: 'أحمد محمد', status: 'pending', created_at: '2024-07-01', membership_type: 'bronze' },
-      { id: '2', applicant_name: 'سارة أحمد', status: 'approved', created_at: '2024-06-25', membership_type: 'silver' },
-      { id: '3', applicant_name: 'محمد علي', status: 'rejected', created_at: '2024-06-20', membership_type: 'bronze' },
-      { id: '4', applicant_name: 'فاطمة خالد', status: 'pending', created_at: '2024-07-02', membership_type: 'gold' },
-      { id: '5', applicant_name: 'عبدالله سعد', status: 'approved', created_at: '2024-06-30', membership_type: 'silver' }
+      { id: '1', applicant_name: 'أحمد محمد', status: 'pending', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'bronze' },
+      { id: '2', applicant_name: 'سارة أحمد', status: 'approved', created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'silver' },
+      { id: '3', applicant_name: 'محمد علي', status: 'rejected', created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'bronze' },
+      { id: '4', applicant_name: 'فاطمة خالد', status: 'pending', created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'gold' },
+      { id: '5', applicant_name: 'عبدالله سعد', status: 'approved', created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'silver' },
+      { id: '6', applicant_name: 'نور الدين', status: 'pending', created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'gold' }
     ]
     };
   } catch (error) {
-    console.error('Error loading content data:', error);
+    console.error('خطأ في تحميل بيانات المحتوى:', error);
     // Return minimal fallback data
     return {
       users: [
-        { id: '1', role: 'admin', membership_type: 'platinum', created_at: '2024-01-15', name: 'مدير النظام' },
-        { id: '2', role: 'member', membership_type: 'gold', created_at: '2024-06-20', name: 'عضو تجريبي' }
+        { id: '1', role: 'admin', membership_type: 'platinum', created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), name: 'مدير النظام' },
+        { id: '2', role: 'member', membership_type: 'gold', created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), name: 'عضو تجريبي' }
       ],
       content: [
-        { id: '1', type: 'article', status: 'published', views_count: 100, likes_count: 10, title: 'مقال تجريبي' }
+        { id: '1', type: 'article', status: 'published', views_count: 100, likes_count: 10, title: 'مقال تجريبي', created_at: new Date().toISOString() }
       ],
       events: [
-        { id: '1', title: 'فعالية تجريبية', start_date: '2024-12-15', status: 'upcoming', participants_count: 50 }
+        { id: '1', title: 'فعالية تجريبية', start_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'upcoming', participants_count: 50 }
       ],
       membership_applications: [
-        { id: '1', applicant_name: 'طالب عضوية', status: 'pending', created_at: '2024-07-01', membership_type: 'bronze' }
+        { id: '1', applicant_name: 'طالب عضوية', status: 'pending', created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), membership_type: 'bronze' }
       ]
     };
   }
@@ -92,7 +95,7 @@ class DashboardStatsService {
 
       return this.fetchFromLocalData();
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
+      console.error('خطأ في جلب إحصائيات لوحة التحكم:', error);
       return this.getEmptyStats();
     }
   }
@@ -234,7 +237,7 @@ class DashboardStatsService {
         isUsingFallback: this.useLocalFallback
       };
     } catch (error) {
-      console.error('Error fetching detailed stats:', error);
+      console.error('خطأ في جلب الإحصائيات التفصيلية:', error);
       // Return empty stats structure
       return {
         users: { total: 0, active: 0, new: 0, growthRate: 0 },

@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import UserInfo from '../components/dashboard/UserInfo';
 import MembershipStatus from '../components/dashboard/MembershipStatus';

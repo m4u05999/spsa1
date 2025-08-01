@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { AuthProvider } from '../../context/AuthContext';
+import { AuthProvider } from '../../contexts/index.jsx';
 import { vi } from 'vitest';
 
 // Mock user data for tests

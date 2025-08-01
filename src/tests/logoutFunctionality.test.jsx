@@ -85,7 +85,7 @@ vi.mock('../config/environment', () => ({
 }));
 
 // Mock AuthContext directly
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../contexts/index.jsx', () => ({
   useAuth: () => ({
     user: { id: '1', name: 'مدير النظام', email: 'admin@saudips.org', role: 'admin' },
     logout: vi.fn().mockResolvedValue({ success: true }),

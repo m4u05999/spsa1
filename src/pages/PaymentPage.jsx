@@ -1,7 +1,7 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 import { validateCreditCard, validateExpiryDate, validateCVV } from '../utils/validators';
 import { processPayment } from '../services/paymentService';
 

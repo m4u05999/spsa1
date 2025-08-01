@@ -1,6 +1,6 @@
 // src/pages/dashboard/StaffDashboard.jsx
 import React from 'react';
-import { useDashboard } from '../../context/DashboardContext';
+import { useDashboard } from '../../contexts/index.jsx';
 import StatsCard from '../../components/dashboard/StatsCard';
 import TaskList from '../../components/dashboard/TaskList';
 

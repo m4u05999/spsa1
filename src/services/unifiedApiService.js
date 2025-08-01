@@ -19,7 +19,7 @@ import { recordServiceInit, recordApiCall } from '../utils/developmentPerformanc
 /**
  * Service configuration and endpoints
  */
-// Get API URL with proper fallback logic - FIXED TO PREVENT CONNECTION ERRORS
+// Get API URL with proper fallback logic - UPDATED TO RESPECT FEATURE FLAGS
 const getApiUrl = () => {
   // Direct check of Vite environment variables
   const viteApiUrl = import.meta.env.VITE_API_URL;
@@ -27,15 +27,28 @@ const getApiUrl = () => {
   const isDev = import.meta.env.DEV;
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
+  // Check if Supabase is enabled via feature flags
+  const isSupabaseEnabled = getFeatureFlag('ENABLE_SUPABASE_FALLBACK', false);
+
   // For test environment, always use localhost:3001 as expected by tests
   if (viteAppEnv === 'test' || import.meta.env.MODE === 'test') {
     return viteApiUrl || 'http://localhost:3001/api';
   }
 
-  // For development, use Supabase instead of localhost to prevent connection errors
+  // For development, only use Supabase if enabled and URL is valid
   if (isDev || viteAppEnv === 'development') {
-    // Use Supabase REST API instead of localhost
-    return supabaseUrl ? `${supabaseUrl}/rest/v1` : 'https://dufvobubfjicrkygwyll.supabase.co/rest/v1';
+    // If Supabase is enabled and URL is available, use it
+    if (isSupabaseEnabled && supabaseUrl) {
+      try {
+        new URL(supabaseUrl); // Validate URL format
+        return `${supabaseUrl}/rest/v1`;
+      } catch {
+        console.warn('⚠️ Invalid Supabase URL, falling back to local backend');
+      }
+    }
+    
+    // Otherwise use local API URL
+    return viteApiUrl || 'http://localhost:3001/api';
   }
 
   // For production, use ENV.API_URL or fallback
@@ -66,13 +79,19 @@ const SERVICE_CONFIG = {
 
 // Debug logging for service configuration
 if (import.meta.env.DEV) {
+  const baseUrl = SERVICE_CONFIG.NEW_BACKEND.baseURL;
+  const healthCheckUrl = baseUrl.includes('supabase.co') 
+    ? `${baseUrl}/health` 
+    : `${baseUrl.replace('/api', '')}/health`;
+    
   console.log('🔗 UnifiedApiService Config Debug:', {
     VITE_API_URL: import.meta.env.VITE_API_URL,
     VITE_APP_ENV: import.meta.env.VITE_APP_ENV,
     IS_DEV: import.meta.env.DEV,
     ENV_API_URL: ENV.API_URL,
-    FINAL_BASE_URL: SERVICE_CONFIG.NEW_BACKEND.baseURL,
-    HEALTH_CHECK_URL: `${SERVICE_CONFIG.NEW_BACKEND.baseURL.replace('/api', '')}/health`
+    FINAL_BASE_URL: baseUrl,
+    HEALTH_CHECK_URL: healthCheckUrl,
+    SUPABASE_ENABLED: getFeatureFlag('ENABLE_SUPABASE_FALLBACK', false)
   });
 }
 
@@ -157,12 +176,12 @@ class UnifiedApiService {
     const startTime = performance.now();
 
     try {
-      // In development, use immediate circuit breaker check
+      // In development, use improved circuit breaker check
       if (ENV.IS_DEVELOPMENT) {
         const savedState = this.loadCircuitBreakerState();
 
-        // If we have recent failures, skip health check entirely
-        if (savedState?.newBackend?.failures >= 2) {
+        // If we have many recent failures, skip health check entirely
+        if (savedState?.newBackend?.failures >= 5) { // Increased threshold from 2 to 5
           if (ENV.IS_DEVELOPMENT) {
             console.log('🟡 Development mode: Circuit breaker open, using Supabase fallback');
           }
@@ -215,7 +234,7 @@ class UnifiedApiService {
 
     // Check circuit breaker state from localStorage
     const savedState = this.loadCircuitBreakerState();
-    if (savedState?.newBackend?.failures >= 1) { // More aggressive in development
+    if (savedState?.newBackend?.failures >= 3) { // Less aggressive in development - increased from 1 to 3
       const now = Date.now();
       const lastFailure = savedState.newBackend.lastFailure;
 
@@ -460,9 +479,9 @@ class UnifiedApiService {
       // In development, check saved circuit breaker state
       if (ENV.IS_DEVELOPMENT) {
         const savedState = this.loadCircuitBreakerState();
-        if (savedState?.newBackend?.failures >= 1) {
+        if (savedState?.newBackend?.failures >= 3) { // Increased threshold from 1 to 3
           const timeSinceFailure = now - (savedState.newBackend.lastFailure || 0);
-          if (timeSinceFailure < 300000) { // 5 minutes
+          if (timeSinceFailure < 180000) { // Reduced from 5 minutes to 3 minutes
             return false;
           }
         }
@@ -721,14 +740,14 @@ class UnifiedApiService {
       breaker.lastFailure = now;
       breaker.consecutiveSuccesses = 0; // Reset success counter
 
-      // More aggressive circuit breaking for faster response
-      const maxFailures = ENV.IS_DEVELOPMENT ? 1 : 2; // Reduced from 3 to 2 in production
+      // More balanced circuit breaking for admin dashboard access
+      const maxFailures = ENV.IS_DEVELOPMENT ? 3 : 2; // Increased from 1 to 3 in development
       if (breaker.failures >= maxFailures) {
         breaker.isOpen = true;
-        breaker.backoffMultiplier = Math.min(breaker.backoffMultiplier * 1.5, 8); // Max 8x backoff
+        breaker.backoffMultiplier = Math.min(breaker.backoffMultiplier * 1.5, 4); // Reduced max backoff from 8x to 4x
 
-        // Reduced backoff times for faster recovery
-        const baseBackoff = ENV.IS_DEVELOPMENT ? 30000 : 60000; // Reduced from 60s/120s to 30s/60s
+        // Shorter backoff times for admin dashboard access
+        const baseBackoff = ENV.IS_DEVELOPMENT ? 15000 : 30000; // Reduced from 30s/60s to 15s/30s
         const backoffTime = baseBackoff * breaker.backoffMultiplier;
         breaker.openUntil = now + backoffTime;
 
@@ -1233,6 +1252,24 @@ class UnifiedApiService {
   }
 
   /**
+   * Reset circuit breaker for admin dashboard access
+   */
+  resetCircuitBreaker(service = 'newBackend') {
+    if (this.circuitBreaker[service]) {
+      this.circuitBreaker[service].failures = 0;
+      this.circuitBreaker[service].isOpen = false;
+      this.circuitBreaker[service].openUntil = null;
+      this.circuitBreaker[service].backoffMultiplier = 1;
+      this.circuitBreaker[service].consecutiveSuccesses = 0;
+      this.saveCircuitBreakerState();
+
+      if (ENV.IS_DEVELOPMENT) {
+        console.log(`🔄 Circuit breaker reset for ${service}`);
+      }
+    }
+  }
+
+  /**
    * Authentication methods
    * طرق المصادقة
    */
@@ -1384,11 +1421,14 @@ class UnifiedApiError extends Error {
 // Create singleton instance
 const unifiedApiService = new UnifiedApiService();
 
-// Cleanup on page unload
+// Cleanup on page unload and expose to window for admin access
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     unifiedApiService.destroy();
   });
+
+  // Expose to window for admin dashboard access
+  window.unifiedApiService = unifiedApiService;
 }
 
 export { UnifiedApiError };

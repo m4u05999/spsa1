@@ -6,7 +6,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider, useAuth } from '../../context/AuthContext.jsx';
+import { AuthProvider, useAuth } from '../../contexts/index.jsx.jsx';
 import { getFeatureFlag } from '../../config/featureFlags.js';
 
 // Mock dependencies

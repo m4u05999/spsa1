@@ -1,0 +1,23 @@
+{
+  "startTime": "2025-07-06T16:51:12.502Z",
+  "deletedFiles": [
+    {
+      "path": "src/services/contentService.js",
+      "size": 11457
+    },
+    {
+      "path": "src/services/enhancedContentService.js",
+      "size": 13023
+    },
+    {
+      "path": "src/services/contentApiService.js",
+      "size": 6903
+    },
+    {
+      "path": "src/services/categoriesApiService.js",
+      "size": 12257
+    }
+  ],
+  "failedFiles": [],
+  "totalSizeFreed": 43640
+}

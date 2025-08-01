@@ -2,7 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DonationForm from '../components/forms/DonationForm';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 
 const DonationPage = () => {
   const { isAuthenticated } = useContext(AuthContext);

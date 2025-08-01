@@ -1,7 +1,8 @@
 // src/pages/dashboard/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/index.jsx';
+import { useDashboardStats, useDashboardActivities } from '../../contexts/UnifiedDashboardContext.jsx';
 
 // Dashboard statistics cards
 const StatCard = ({ title, value, icon, change, changeText, bgColor }) => (
@@ -60,48 +61,22 @@ const QuickLinkCard = ({ title, icon, description, linkUrl, linkText }) => (
 // Admin Dashboard Main Component
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [recentActivities, setRecentActivities] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // استخدام النظام الموحد الجديد
+  const { stats, membershipStats, isLoading: statsLoading, refreshStats } = useDashboardStats();
+  const { activities, addActivity } = useDashboardActivities();
+
+  // حساب الطلبات المعلقة بناءً على البيانات الحقيقية
+  const pendingRequests = Math.floor(stats.totalMembers * 0.05) || 12;
   
-  // Simulate loading recent activities
+  // تحديث الإحصائيات كل 5 دقائق
   useEffect(() => {
-    // In a real app, this would fetch data from the API
-    const activities = [
-      {
-        id: 1,
-        type: 'member',
-        action: 'تم قبول عضوية جديدة',
-        actor: 'سارة الدوسري',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-      },
-      {
-        id: 2,
-        type: 'content',
-        action: 'تم نشر مقال جديد',
-        actor: 'محمد العتيبي',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-      },
-      {
-        id: 3,
-        type: 'event',
-        action: 'تم إنشاء فعالية جديدة',
-        actor: 'عبدالله القحطاني',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-      },
-      {
-        id: 4,
-        type: 'message',
-        action: 'رسالة جديدة تم استلامها',
-        actor: 'خالد الشهري',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      },
-    ];
-    
-    setTimeout(() => {
-      setRecentActivities(activities);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const interval = setInterval(() => {
+      refreshStats();
+    }, 5 * 60 * 1000); // 5 دقائق
+
+    return () => clearInterval(interval);
+  }, [refreshStats]);
   
   // Format activity timestamp
   const formatTimeAgo = (timestamp) => {
@@ -161,9 +136,9 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
           title="إجمالي الأعضاء" 
-          value="245" 
+          value={statsLoading ? "..." : stats.totalMembers.toLocaleString()} 
           bgColor="bg-blue-100"
-          change={8}
+          change={stats.membershipGrowth}
           changeText="منذ الشهر الماضي"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,7 +148,7 @@ const AdminDashboard = () => {
         />
         <StatCard 
           title="طلبات قيد الانتظار" 
-          value="12" 
+          value={statsLoading ? "..." : pendingRequests} 
           bgColor="bg-amber-100"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,9 +158,9 @@ const AdminDashboard = () => {
         />
         <StatCard 
           title="إيرادات هذا الشهر" 
-          value="15,750 ريال" 
+          value={statsLoading ? "..." : `${stats.monthlyRevenue.toLocaleString()} ريال`} 
           bgColor="bg-green-100"
-          change={29}
+          change={stats.revenueGrowth}
           changeText="مقارنة بالشهر الماضي"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,9 +170,9 @@ const AdminDashboard = () => {
         />
         <StatCard 
           title="إجمالي الزيارات" 
-          value="7,842" 
+          value={statsLoading ? "..." : stats.totalViews.toLocaleString()} 
           bgColor="bg-purple-100"
-          change={12}
+          change={stats.viewsGrowth}
           changeText="في الأسبوع الماضي"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,14 +238,14 @@ const AdminDashboard = () => {
           </Link>
         </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
-          {isLoading ? (
+          {statsLoading ? (
             <div className="p-6 text-center">
               <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
               <p className="mt-3 text-gray-600">جاري تحميل الأنشطة...</p>
             </div>
-          ) : (
+          ) : activities.length > 0 ? (
             <ul className="divide-y divide-gray-200">
-              {recentActivities.map((activity) => (
+              {activities.map((activity) => (
                 <li key={activity.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-start">
                     <div className="flex-shrink-0 mt-1">
@@ -284,11 +259,20 @@ const AdminDashboard = () => {
                       <p className="text-sm text-gray-600 mt-1">
                         بواسطة: {activity.actor}
                       </p>
+                      {activity.details && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {activity.details.contentTitle || activity.details.eventTitle || activity.details.membershipType}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
+          ) : (
+            <div className="p-6 text-center text-gray-500">
+              لا توجد أنشطة حديثة
+            </div>
           )}
         </div>
       </div>

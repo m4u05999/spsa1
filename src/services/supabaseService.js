@@ -3,10 +3,10 @@
  * خدمة Supabase - التكامل الحقيقي مع الواجهة الخلفية
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../config/supabase.js';
 import { ENV } from '../config/environment.js';
 
-// Supabase client instance
+// Use shared Supabase client instance
 let supabaseClient = null;
 
 /**
@@ -14,25 +14,9 @@ let supabaseClient = null;
  * تهيئة عميل Supabase
  */
 const initializeSupabase = () => {
-  if (!supabaseClient && ENV.SUPABASE.URL && ENV.SUPABASE.ANON_KEY) {
+  if (!supabaseClient) {
     try {
-      supabaseClient = createClient(
-        ENV.SUPABASE.URL,
-        ENV.SUPABASE.ANON_KEY,
-        {
-          auth: {
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionInUrl: true,
-            flowType: 'pkce'
-          },
-          global: {
-            headers: {
-              'X-Client-Info': 'spsa-frontend'
-            }
-          }
-        }
-      );
+      supabaseClient = supabase;
       
       if (ENV.IS_DEVELOPMENT) {
         console.log('Supabase client initialized successfully');

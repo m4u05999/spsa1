@@ -39,7 +39,7 @@ export const debugRegistrationFlow = async () => {
   
   try {
     // Check AuthContext
-    const authContextModule = await import('../context/AuthContext');
+    const authContextModule = await import('../contexts/index.jsx');
     console.log('   ✅ AuthContext imported successfully');
     
     // Check secureAuthService
@@ -152,7 +152,7 @@ export const testActualRegistration = async () => {
   
   try {
     // Import AuthContext
-    const { AuthContext } = await import('../context/AuthContext');
+    const { AuthContext } = await import('../contexts/index.jsx');
     console.log('   ✅ AuthContext imported');
     
     // Create test data

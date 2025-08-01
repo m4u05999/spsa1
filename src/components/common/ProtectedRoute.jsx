@@ -1,7 +1,7 @@
 // src/components/common/ProtectedRoute.jsx
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/index.jsx';
 
 // ProtectedRoute component to handle authentication and role-based access
 const ProtectedRoute = ({ requiredRole, requiredPermission }) => {

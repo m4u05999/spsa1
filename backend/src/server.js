@@ -31,6 +31,7 @@ import contentRoutes from './routes/content.js';
 import categoryRoutes from './routes/categories.js';
 import eventRoutes from './routes/events.js';
 import adminRoutes from './routes/admin.js';
+import twoFactorRoutes from './routes/twoFactor.js';
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -188,6 +189,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/2fa', twoFactorRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -201,6 +203,7 @@ if (process.env.NODE_ENV === 'development' && process.env.ENABLE_SWAGGER === 'tr
       message: 'API Documentation',
       endpoints: {
         auth: '/api/auth',
+        twoFactor: '/api/auth/2fa',
         users: '/api/users',
         content: '/api/content',
         categories: '/api/categories',

@@ -132,15 +132,17 @@ class DevelopmentPerformanceMonitor {
     const metrics = {
       // Navigation timing
       navigationStart: timing.navigationStart,
-      domainLookup: timing.domainLookupEnd - timing.domainLookupStart,
-      connect: timing.connectEnd - timing.connectStart,
-      request: timing.responseStart - timing.requestStart,
-      response: timing.responseEnd - timing.responseStart,
-      domProcessing: timing.domComplete - timing.domLoading,
+      domainLookup: Math.max(0, timing.domainLookupEnd - timing.domainLookupStart),
+      connect: Math.max(0, timing.connectEnd - timing.connectStart),
+      request: Math.max(0, timing.responseStart - timing.requestStart),
+      response: Math.max(0, timing.responseEnd - timing.responseStart),
+      domProcessing: Math.max(0, timing.domComplete - timing.domLoading),
       
-      // Load timing
-      domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
-      loadComplete: timing.loadEventEnd - timing.navigationStart,
+      // Load timing - only calculate if events have completed
+      domContentLoaded: timing.domContentLoadedEventEnd > 0 ? 
+        timing.domContentLoadedEventEnd - timing.navigationStart : 0,
+      loadComplete: timing.loadEventEnd > 0 ? 
+        timing.loadEventEnd - timing.navigationStart : 0,
       
       // Navigation type
       navigationType: navigation.type === 0 ? 'navigate' : 

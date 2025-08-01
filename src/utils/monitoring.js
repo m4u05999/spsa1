@@ -669,5 +669,17 @@ export const logDebug = (message, data = {}) => {
   }
 };
 
+export const logPerformance = (operation, duration, metadata = {}) => {
+  // Only log in development
+  if (ENV.IS_DEVELOPMENT) {
+    console.log(`⚡ [PERFORMANCE] ${operation}: ${duration}ms`, metadata);
+  }
+  
+  // Track performance data
+  if (monitoringService && monitoringService.trackPerformance) {
+    monitoringService.trackPerformance(operation, duration, metadata);
+  }
+};
+
 export { monitoringService };
 export default monitoringService;

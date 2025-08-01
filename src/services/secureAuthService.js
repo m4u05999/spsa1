@@ -104,7 +104,16 @@ class SecureAuthService {
         role: 'admin',
         permissions: ['users.manage', 'content.manage', 'events.manage', 'settings.manage'],
         avatar: '/assets/images/avatar-admin.png',
-        passwordHash: 'mock_hash_admin', // In real app, this would be properly hashed
+        passwordHash: 'mock_hash_admin',
+      },
+      'admin@spsa.com': {
+        id: '1',
+        name: 'مدير النظام',
+        email: 'admin@spsa.com',
+        role: 'admin',
+        permissions: ['users.manage', 'content.manage', 'events.manage', 'settings.manage'],
+        avatar: '/assets/images/avatar-admin.png',
+        passwordHash: 'mock_hash_admin',
       },
       'staff@sapsa.org': {
         id: '2',
@@ -135,10 +144,13 @@ class SecureAuthService {
     }
 
     // In a real app, verify password hash
-    console.log('🔑 Checking password:', credentials.password === 'Admin@123');
-    if (credentials.password !== 'Admin@123') {
-      console.log('❌ Password mismatch');
-      return { success: false, error: 'كلمة المرور غير صحيحة' };
+    const validPasswords = ['Admin@123', 'password123', '123456'];
+    const isValidPassword = validPasswords.includes(credentials.password);
+    console.log('🔑 Checking password:', credentials.password, 'Valid:', isValidPassword);
+    
+    if (!isValidPassword) {
+      console.log('❌ Password mismatch. Tried:', credentials.password);
+      return { success: false, error: 'كلمة المرور غير صحيحة. جرب: Admin@123 أو password123 أو 123456' };
     }
 
     // Remove sensitive data before returning

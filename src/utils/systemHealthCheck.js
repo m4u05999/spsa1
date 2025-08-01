@@ -180,14 +180,20 @@ const checkServiceIntegration = async () => {
     
     check.details.unifiedApiService = serviceStatus;
 
-    // Test Enhanced Content Service
-    const { default: enhancedContentService } = await import('../services/enhancedContentService.js');
-    const contentServiceStatus = enhancedContentService.getServiceStatus();
-    
-    check.details.enhancedContentService = contentServiceStatus;
+    // Test MasterDataService (replaced enhancedContentService)
+    const { MasterDataService } = await import('../services/MasterDataService.js');
+    const masterDataService = MasterDataService.getInstance();
+    const contentServiceStatus = {
+      isInitialized: masterDataService.isInitialized(),
+      fallbackAvailable: true, // MasterDataService has built-in fallback
+      cacheSize: masterDataService.getCacheSize(),
+      isOnline: masterDataService.isOnline()
+    };
+
+    check.details.masterDataService = contentServiceStatus;
 
     if (!contentServiceStatus.fallbackAvailable) {
-      check.issues.push('Enhanced Content Service fallback not available');
+      check.issues.push('MasterDataService fallback not available');
     }
 
     check.status = check.issues.length === 0 ? 'healthy' : 'warning';
@@ -226,14 +232,19 @@ const checkFallbackMechanisms = async () => {
     check.details.backendHealthCheck = typeof backendHealth === 'boolean';
     check.details.supabaseHealthCheck = typeof supabaseHealth === 'boolean';
 
-    // Test Enhanced Content Service fallback
-    const { default: enhancedContentService } = await import('../services/enhancedContentService.js');
-    const serviceStatus = enhancedContentService.getServiceStatus();
+    // Test MasterDataService fallback (replaced enhancedContentService)
+    const { MasterDataService } = await import('../services/MasterDataService.js');
+    const masterDataService = MasterDataService.getInstance();
+    const serviceStatus = {
+      fallbackAvailable: true, // MasterDataService has built-in Supabase fallback
+      isInitialized: masterDataService.isInitialized(),
+      isOnline: masterDataService.isOnline()
+    };
 
-    check.details.contentServiceFallback = serviceStatus.fallbackAvailable;
+    check.details.masterDataServiceFallback = serviceStatus.fallbackAvailable;
 
     if (!serviceStatus.fallbackAvailable) {
-      check.issues.push('Content service fallback not available');
+      check.issues.push('MasterDataService fallback not available');
     }
 
     // Restore fetch

@@ -4,7 +4,7 @@
  */
 
 import { dashboardStatsService } from '../services/dashboardStatsService';
-import { contentService } from '../services/contentService';
+import { MasterDataService } from '../services/MasterDataService';
 import { unifiedContentService } from '../services/unifiedContentService';
 
 /**
@@ -43,24 +43,25 @@ export const runSystemDiagnostics = async () => {
       console.error('❌ خدمة الإحصائيات: خطأ', error);
     }
 
-    // 2. فحص خدمة المحتوى
-    console.log('📝 فحص خدمة المحتوى...');
+    // 2. فحص MasterDataService
+    console.log('📝 فحص MasterDataService...');
     try {
-      const content = await contentService.getAll();
-      diagnostics.services.contentService = {
+      const masterDataService = MasterDataService.getInstance();
+      const content = await masterDataService.getContent();
+      diagnostics.services.masterDataService = {
         status: 'working',
         dataCount: content?.length || 0,
-        message: `خدمة المحتوى تعمل بشكل صحيح (${content?.length || 0} عنصر)`
+        message: `MasterDataService تعمل بشكل صحيح (${content?.length || 0} عنصر)`
       };
-      console.log(`✅ خدمة المحتوى: تعمل بشكل صحيح (${content?.length || 0} عنصر)`);
+      console.log(`✅ MasterDataService: تعمل بشكل صحيح (${content?.length || 0} عنصر)`);
     } catch (error) {
-      diagnostics.services.contentService = {
+      diagnostics.services.masterDataService = {
         status: 'error',
         error: error.message,
-        message: 'خطأ في خدمة المحتوى'
+        message: 'خطأ في MasterDataService'
       };
-      diagnostics.errors.push(`خدمة المحتوى: ${error.message}`);
-      console.error('❌ خدمة المحتوى: خطأ', error);
+      diagnostics.errors.push(`MasterDataService: ${error.message}`);
+      console.error('❌ MasterDataService: خطأ', error);
     }
 
     // 3. فحص الخدمة الموحدة للمحتوى

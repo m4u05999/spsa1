@@ -6,7 +6,7 @@
  */
 
 // ✅ استيراد خدمة التشفير
-import EncryptionService from './encryptionService.js';
+import { EncryptionService } from './encryptionService.js';
 
 // ✅ البيانات الحساسة التي تحتاج تشفير
 const SENSITIVE_KEYS = [

@@ -86,9 +86,9 @@ export const ENV = {
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),
   APP_URL: getEnvVar('VITE_APP_URL', 'http://localhost:5173'),
   API_URL: getEnvVar('VITE_API_URL',
-    // FIXED: Use Supabase URL instead of localhost to prevent connection errors
+    // Use localhost for development to prevent connection errors since Supabase is disabled
     getEnvVar('VITE_APP_ENV', 'development') === 'development'
-      ? getEnvVar('VITE_SUPABASE_URL', 'https://dufvobubfjicrkygwyll.supabase.co') + '/rest/v1'
+      ? 'http://localhost:3001/api'
       : 'https://api.political-science-assoc.com'
   ),
   

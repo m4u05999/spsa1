@@ -1,7 +1,25 @@
 // src/pages/dashboard/modules/SystemSettings.jsx
 import React, { useState, useEffect } from 'react';
+import { useMasterData } from '../../../hooks/useMasterData.js';
+import { useAuth } from '../../../contexts/index.jsx';
+import { checkPermission } from '../../../utils/permissions.js';
 
 const SystemSettings = () => {
+  // MasterDataService integration
+  const {
+    data: allContent,
+    loading: masterDataLoading,
+    error: masterDataError,
+    loadData,
+    createContent,
+    updateContent,
+    deleteContent
+  } = useMasterData({ type: 'system_settings' });
+
+  // Authentication and permissions
+  const { user } = useAuth();
+  const canManageSettings = checkPermission(user, 'settings.manage');
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
@@ -66,7 +84,39 @@ const SystemSettings = () => {
       maxLoginAttempts: 5,
     },
   });
-  
+
+  // Load settings from MasterDataService on component mount
+  useEffect(() => {
+    loadSystemSettings();
+  }, []);
+
+  /**
+   * Load system settings from MasterDataService
+   * تحميل إعدادات النظام من MasterDataService
+   */
+  const loadSystemSettings = async () => {
+    try {
+      console.log('🔧 جاري تحميل إعدادات النظام من MasterDataService...');
+      setIsLoading(true);
+
+      const response = await loadData({ limit: 1 });
+
+      if (response && response.length > 0) {
+        const systemSettings = response[0];
+        if (systemSettings.content && typeof systemSettings.content === 'object') {
+          setSettings(systemSettings.content);
+          console.log('✅ تم تحميل إعدادات النظام من MasterDataService بنجاح');
+        }
+      } else {
+        console.log('📝 لم يتم العثور على إعدادات محفوظة، استخدام الإعدادات الافتراضية');
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تحميل إعدادات النظام:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle form input changes
   const handleChange = (section, field, value) => {
     setSettings({
@@ -89,21 +139,48 @@ const SystemSettings = () => {
     });
   };
   
-  // Save settings
+  // Save settings to MasterDataService
   const handleSave = async () => {
     try {
+      console.log('💾 جاري حفظ إعدادات النظام...');
       setIsSaving(true);
-      
-      // In a real app, this would be an API call
-      // For now, simulate a network request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Success message or action would happen here
-      alert('تم حفظ الإعدادات بنجاح');
-      setIsSaving(false);
+
+      // Check if settings already exist
+      const existingSettings = await loadData({ limit: 1 });
+
+      const settingsData = {
+        title: 'إعدادات النظام',
+        content: settings,
+        contentType: 'system_settings',
+        status: 'published',
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          updatedBy: user?.email || 'system',
+          version: '1.0'
+        }
+      };
+
+      let result;
+      if (existingSettings && existingSettings.length > 0) {
+        // Update existing settings
+        result = await updateContent(existingSettings[0].id, settingsData);
+        console.log('🔄 تم تحديث إعدادات النظام');
+      } else {
+        // Create new settings
+        result = await createContent(settingsData);
+        console.log('✨ تم إنشاء إعدادات النظام الجديدة');
+      }
+
+      if (result) {
+        console.log('✅ تم حفظ إعدادات النظام بنجاح');
+        alert('تم حفظ الإعدادات بنجاح');
+      } else {
+        throw new Error('فشل في حفظ الإعدادات');
+      }
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('❌ خطأ في حفظ إعدادات النظام:', error);
       alert('حدث خطأ أثناء حفظ الإعدادات');
+    } finally {
       setIsSaving(false);
     }
   };
@@ -115,15 +192,36 @@ const SystemSettings = () => {
       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm cursor-pointer';
   };
   
+  // Permission check
+  if (!canManageSettings) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="text-center py-8">
+          <div className="text-red-500 text-6xl mb-4">🚫</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">غير مصرح لك</h2>
+          <p className="text-gray-600">ليس لديك صلاحية لإدارة إعدادات النظام</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">إعدادات النظام</h1>
-        
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">إعدادات النظام</h1>
+          {(isLoading || masterDataLoading) && (
+            <p className="text-sm text-blue-600 mt-1">🔄 جاري التحميل...</p>
+          )}
+          {masterDataError && (
+            <p className="text-sm text-red-600 mt-1">⚠️ خطأ في الاتصال بالخدمة</p>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || isLoading || masterDataLoading}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
@@ -670,6 +768,14 @@ const SystemSettings = () => {
         {activeTab === 'email' && <h3 className="text-lg font-medium text-gray-900">البريد الإلكتروني</h3>}
         {activeTab === 'notifications' && <h3 className="text-lg font-medium text-gray-900">الإشعارات</h3>}
         {activeTab === 'security' && <h3 className="text-lg font-medium text-gray-900">الأمان</h3>}
+      </div>
+
+      {/* Data Source Indicator */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>مصدر البيانات: MasterDataService</span>
+          <span>آخر تحديث: {new Date().toLocaleString('ar-SA')}</span>
+        </div>
       </div>
     </div>
   );

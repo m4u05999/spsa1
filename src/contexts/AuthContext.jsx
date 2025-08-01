@@ -1,6 +1,6 @@
-// src/context/AuthContext.jsx
+// src/contexts/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { secureAuthService } from '../services/secureAuthService.js';
 import { CSRFManager, validatePasswordStrength } from '../utils/security.js';
 import { ENV } from '../config/environment.js';
@@ -163,7 +163,7 @@ class TokenManager {
 }
 
 export const AuthProvider = ({ children }) => {
-  console.log('🚀 AuthProvider initializing...');
+  // console.log('🚀 AuthProvider initializing...'); // تم تعطيل السجل لتقليل الضوضاء
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -171,6 +171,7 @@ export const AuthProvider = ({ children }) => {
   const [sessionWarning, setSessionWarning] = useState(false);
   const [tokenManager] = useState(() => new TokenManager());
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Load user data securely on component mount
   useEffect(() => {
@@ -191,37 +192,38 @@ export const AuthProvider = ({ children }) => {
               requestType: 'AUTH'
             });
 
-            if (response && response.success && response.data?.user) {
+            if (response && response?.success && response.data?.user) {
               const userData = response.data.user;
               setUser(userData);
               updateUserContext(userData);
-              monitoringService.trackUserSession(userData.id, {
-                loginMethod: 'token_refresh',
-                userAgent: navigator.userAgent
-              });
             } else {
               tokenManager.clearTokens();
             }
           }
         } else {
-          // Fallback to secure auth service
-          const currentUser = await secureAuthService.getCurrentUser();
-          if (currentUser) {
-            setUser(currentUser);
-            secureAuthService.startSessionManagement();
+          // Fallback to secure auth service - simplified
+          try {
+            const currentUser = await secureAuthService.getCurrentUser();
+            if (currentUser) {
+              setUser(currentUser);
+              secureAuthService.startSessionManagement();
+            }
+          } catch (error) {
+            console.log('No user session found:', error);
+            // This is normal for users not logged in
           }
         }
       } catch (err) {
         console.error('Error loading user data:', err);
-        tokenManager.clearTokens();
-        await secureAuthService.logout();
+        // Don't block the app if auth fails
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
     initializeAuth();
-  }, [tokenManager]);
+  }, []);
 
   // Listen for session events
   useEffect(() => {
@@ -325,20 +327,33 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('token', 'authenticated');
         }
 
+        // Reset circuit breaker for admin users to ensure dashboard access
+        if (userData?.role === 'admin') {
+          try {
+            // Reset circuit breaker to ensure admin dashboard access
+            if (window.unifiedApiService && typeof window.unifiedApiService.resetCircuitBreaker === 'function') {
+              window.unifiedApiService.resetCircuitBreaker('newBackend');
+              console.log('🔄 Circuit breaker reset for admin access');
+            }
+          } catch (error) {
+            console.warn('⚠️ Could not reset circuit breaker:', error);
+          }
+        }
+
         // Navigate based on role with delay to ensure state update
         console.log('🚀 Navigating based on role:', userData?.role);
         setTimeout(() => {
           if (userData?.role === 'admin') {
             console.log('🎯 Navigating to admin dashboard');
             navigate('/dashboard/admin');
-          } else if (result.user?.role === 'staff') {
+          } else if (userData?.role === 'staff') {
             navigate('/dashboard/staff');
           } else {
             navigate('/dashboard/member');
           }
         }, 100); // Small delay to ensure state is updated
 
-        return { success: true, user: result.user };
+        return { success: true, user: userData };
       } else {
         throw new Error(result?.error || 'فشل في تسجيل الدخول');
       }
@@ -560,17 +575,8 @@ export const AuthProvider = ({ children }) => {
     return CSRFManager.getToken();
   }, []);
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-b-2 border-blue-600 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-700">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
+  // Don't block rendering with loading screen - let the context provide loading state
+  // This allows components to handle loading themselves
 
   // Context value
   const value = {

@@ -1,7 +1,7 @@
 // src/pages/Register.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/index.jsx';
 import { validateEmail, validatePassword, validatePhone } from '../utils/validators';
 import RegistrationSuccess from '../components/auth/RegistrationSuccess';
 

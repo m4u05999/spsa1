@@ -1,11 +1,14 @@
 // src/App.jsx
 import React, { useEffect } from 'react';
-import { RouterProvider } from 'react-router-dom';
-import { NotificationProvider } from './contexts/NotificationContext.jsx';
-import { ContentProvider } from './contexts/ContentContext.jsx';
-import AuthProvider from './context/AuthContext.jsx';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { UnifiedAppProvider, AuthProvider, DashboardProvider, PaymentProvider, ContentProvider } from './contexts/index.jsx';
+import { UnifiedDashboardProvider } from './contexts/UnifiedDashboardContext.jsx';
+import { SecurityProvider } from './components/security/SecurityProvider';
+// import NotificationSystem from './components/notifications/NotificationSystem';
+import SessionWarning from './components/security/SessionWarning';
 import { autoRunDiagnostics } from './utils/diagnostics';
-import router from './routes';
+import AppRoutes from './routes-new';
 
 const App = () => {
   // تشغيل التشخيص التلقائي في بيئة التطوير
@@ -14,7 +17,27 @@ const App = () => {
   }, []);
 
   return (
-    <RouterProvider router={router} />
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <SecurityProvider>
+            <UnifiedAppProvider>
+              <UnifiedDashboardProvider>
+                <DashboardProvider>
+                  <PaymentProvider>
+                    {/* <NotificationSystem /> */}
+                    <ContentProvider>
+                      <AppRoutes />
+                      <SessionWarning />
+                    </ContentProvider>
+                </PaymentProvider>
+              </DashboardProvider>
+            </UnifiedDashboardProvider>
+          </UnifiedAppProvider>
+          </SecurityProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 };
 

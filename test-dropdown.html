@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار القوائم المنسدلة - SPSA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-title {
+            color: #2563eb;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .test-button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #1d4ed8;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #1f2937;">اختبار وظائف القوائم المنسدلة - موقع SPSA</h1>
+        
+        <div class="test-section">
+            <div class="test-title">1. اختبار تحميل الموقع</div>
+            <div id="loading-test" class="test-result info">جاري اختبار تحميل الموقع...</div>
+            <button class="test-button" onclick="testSiteLoading()">إعادة اختبار التحميل</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">2. اختبار القوائم المنسدلة</div>
+            <div id="dropdown-test" class="test-result info">جاري اختبار القوائم المنسدلة...</div>
+            <button class="test-button" onclick="testDropdowns()">اختبار القوائم المنسدلة</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">3. اختبار التنقل</div>
+            <div id="navigation-test" class="test-result info">جاري اختبار التنقل...</div>
+            <button class="test-button" onclick="testNavigation()">اختبار التنقل</button>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">4. معاينة الموقع</div>
+            <iframe src="http://localhost:5174" id="site-preview"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // اختبار تحميل الموقع
+        async function testSiteLoading() {
+            const resultDiv = document.getElementById('loading-test');
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = 'جاري اختبار تحميل الموقع...';
+
+            try {
+                const response = await fetch('http://localhost:5174');
+                if (response.ok) {
+                    const html = await response.text();
+                    if (html.includes('SPSA') || html.includes('الجمعية السعودية')) {
+                        resultDiv.className = 'test-result success';
+                        resultDiv.textContent = '✅ تم تحميل الموقع بنجاح!';
+                    } else {
+                        resultDiv.className = 'test-result error';
+                        resultDiv.textContent = '❌ الموقع يعمل لكن المحتوى غير صحيح';
+                    }
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.textContent = `❌ خطأ في تحميل الموقع: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = `❌ خطأ في الاتصال: ${error.message}`;
+            }
+        }
+
+        // اختبار القوائم المنسدلة
+        function testDropdowns() {
+            const resultDiv = document.getElementById('dropdown-test');
+            const iframe = document.getElementById('site-preview');
+            
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = 'جاري اختبار القوائم المنسدلة...';
+
+            try {
+                // محاولة الوصول لمحتوى iframe
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (iframeDoc) {
+                    // البحث عن أزرار القوائم المنسدلة
+                    const dropdownButtons = iframeDoc.querySelectorAll('button[onclick*="toggleDropdown"]');
+                    const dropdownMenus = iframeDoc.querySelectorAll('[class*="dropdown"]');
+                    
+                    if (dropdownButtons.length > 0) {
+                        resultDiv.className = 'test-result success';
+                        resultDiv.textContent = `✅ تم العثور على ${dropdownButtons.length} قائمة منسدلة`;
+                    } else {
+                        resultDiv.className = 'test-result error';
+                        resultDiv.textContent = '❌ لم يتم العثور على قوائم منسدلة';
+                    }
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.textContent = '❌ لا يمكن الوصول لمحتوى الموقع (CORS)';
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = `❌ خطأ في اختبار القوائم: ${error.message}`;
+            }
+        }
+
+        // اختبار التنقل
+        function testNavigation() {
+            const resultDiv = document.getElementById('navigation-test');
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = 'جاري اختبار التنقل...';
+
+            // قائمة المسارات المتوقعة
+            const expectedRoutes = [
+                '/',
+                '/about',
+                '/news',
+                '/events',
+                '/contact',
+                '/publications',
+                '/library',
+                '/research',
+                '/programs',
+                '/membership'
+            ];
+
+            let successCount = 0;
+            let totalTests = expectedRoutes.length;
+
+            expectedRoutes.forEach(async (route, index) => {
+                try {
+                    const response = await fetch(`http://localhost:5174${route}`);
+                    if (response.ok) {
+                        successCount++;
+                    }
+                    
+                    // تحديث النتيجة عند انتهاء جميع الاختبارات
+                    if (index === totalTests - 1) {
+                        setTimeout(() => {
+                            if (successCount === totalTests) {
+                                resultDiv.className = 'test-result success';
+                                resultDiv.textContent = `✅ جميع المسارات تعمل بنجاح (${successCount}/${totalTests})`;
+                            } else {
+                                resultDiv.className = 'test-result error';
+                                resultDiv.textContent = `❌ بعض المسارات لا تعمل (${successCount}/${totalTests})`;
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    if (index === totalTests - 1) {
+                        setTimeout(() => {
+                            resultDiv.className = 'test-result error';
+                            resultDiv.textContent = `❌ خطأ في اختبار التنقل: ${error.message}`;
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
+        // تشغيل الاختبارات تلقائياً عند تحميل الصفحة
+        window.onload = function() {
+            setTimeout(testSiteLoading, 1000);
+            setTimeout(testDropdowns, 2000);
+            setTimeout(testNavigation, 3000);
+        };
+    </script>
+</body>
+</html>
