@@ -264,7 +264,8 @@ export const errorMonitor = {
       context,
       timestamp: new Date().toISOString(),
       url: typeof window !== 'undefined' ? window.location.href : '',
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : ''
+      // ❌ REMOVED: userAgent tracking without consent (PDPL violation)
+      browserInfo: typeof navigator !== 'undefined' ? 'browser' : 'server'
     };
 
     performanceMetrics.errors.push(errorMetric);

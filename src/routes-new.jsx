@@ -51,6 +51,11 @@ const InquiryManagement = lazy(() => import('./pages/dashboard/modules/InquiryMa
 const SystemSettings = lazy(() => import('./pages/dashboard/modules/SystemSettings'));
 const MigrationPage = lazy(() => import('./pages/admin/MigrationPage'));
 
+// Privacy System Pages
+const PrivacyPolicyPage = lazy(() => import('./pages/privacy/PrivacyPolicyPage'));
+const ConsentManager = lazy(() => import('./components/consent/ConsentManager'));
+const DataDeletionRequest = lazy(() => import('./components/privacy/DataDeletionRequest'));
+
 // Loading component
 import { PageLoader } from './components/common/OptimizedLoader';
 
@@ -115,6 +120,11 @@ const AppRoutes = () => {
         <Route path="committees/corporate" element={<Suspense fallback={<PageLoader />}><CommitteesPage /></Suspense>} />
         <Route path="committees/finance" element={<Suspense fallback={<PageLoader />}><CommitteesPage /></Suspense>} />
         <Route path="membership" element={<Suspense fallback={<PageLoader />}><MembershipPage /></Suspense>} />
+        
+        {/* Privacy System Routes */}
+        <Route path="privacy-policy" element={<Suspense fallback={<PageLoader />}><PrivacyPolicyPage /></Suspense>} />
+        <Route path="data-deletion" element={<Suspense fallback={<PageLoader />}><DataDeletionRequest /></Suspense>} />
+        <Route path="privacy-contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
       </Route>
 
       {/* Protected Member Dashboard Routes */}
@@ -124,6 +134,9 @@ const AppRoutes = () => {
         </ProtectedRoute>
       }>
         <Route index element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+        <Route path="privacy" element={<Suspense fallback={<PageLoader />}><ConsentManager /></Suspense>} />
+        <Route path="data-export" element={<Suspense fallback={<PageLoader />}><ConsentManager /></Suspense>} />
+        <Route path="data-deletion" element={<Suspense fallback={<PageLoader />}><DataDeletionRequest /></Suspense>} />
       </Route>
 
       {/* Protected Staff Dashboard Routes */}

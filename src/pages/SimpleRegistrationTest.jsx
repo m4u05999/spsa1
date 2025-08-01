@@ -29,7 +29,11 @@ const SimpleRegistrationTest = () => {
         confirmPassword: 'SimpleTest123!',
         phone: '0501234567',
         specialization: 'political-science',
-        agreeTerms: true
+        // ❌ REMOVED: agreeTerms (PDPL violation)
+        consents: {
+          personalDataProcessing: { granted: true, timestamp: new Date().toISOString() },
+          membershipManagement: { granted: true, timestamp: new Date().toISOString() }
+        }
       };
 
       console.log('📝 Test data:', testData);

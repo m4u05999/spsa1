@@ -90,7 +90,11 @@ const testRegistration = async () => {
       confirmPassword: 'TestPassword123!',
       phone: '0501234567',
       specialization: 'political-science',
-      agreeTerms: true
+      // ❌ REMOVED: agreeTerms - انتهاك قانون PDPL
+      consents: {
+        personalDataProcessing: { granted: true, timestamp: new Date().toISOString() },
+        membershipManagement: { granted: true, timestamp: new Date().toISOString() }
+      }
     };
     
     console.log('📝 Test user data:', testUserData);

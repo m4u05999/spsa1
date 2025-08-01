@@ -299,8 +299,8 @@ export const AuthProvider = ({ children }) => {
           // Track login
           monitoringService.trackUserSession(user.id, {
             loginMethod: 'password',
-            rememberMe,
-            userAgent: navigator.userAgent
+            rememberMe
+            // ❌ REMOVED: userAgent - انتهاك قانون PDPL بدون موافقة
           });
 
           result = { success: true, user };

@@ -64,7 +64,11 @@ export const debugRegistrationFlow = async () => {
     confirmPassword: 'TestPassword123!',
     phone: '0501234567',
     specialization: 'political-science',
-    agreeTerms: true
+    // ❌ REMOVED: agreeTerms - انتهاك قانون PDPL (لا يجب افتراض الموافقة)
+    consents: {
+      personalDataProcessing: { granted: true, timestamp: new Date().toISOString() },
+      membershipManagement: { granted: true, timestamp: new Date().toISOString() }
+    }
   };
   
   console.log('   Test data created:', testData);
@@ -163,7 +167,11 @@ export const testActualRegistration = async () => {
       confirmPassword: 'ActualTest123!',
       phone: '0501234567',
       specialization: 'political-science',
-      agreeTerms: true
+      // ❌ REMOVED: agreeTerms - انتهاك قانون PDPL (لا يجب افتراض الموافقة)
+    consents: {
+      personalDataProcessing: { granted: true, timestamp: new Date().toISOString() },
+      membershipManagement: { granted: true, timestamp: new Date().toISOString() }
+    }
     };
     
     console.log('   📝 Test data:', testData);

@@ -55,7 +55,11 @@ const RegistrationTest = () => {
         confirmPassword: 'TestPassword123!',
         phone: '0501234567',
         specialization: 'political-science',
-        agreeTerms: true
+        // ❌ REMOVED: agreeTerms (PDPL violation)
+        consents: {
+          personalDataProcessing: { granted: true, timestamp: new Date().toISOString() },
+          membershipManagement: { granted: true, timestamp: new Date().toISOString() }
+        }
       };
 
       addResult('Registration Data', 'info', 'بدء اختبار التسجيل...', testData);

@@ -179,8 +179,9 @@ class SecureAuthService {
       createdAt: now,
       expiresAt: now + (rememberMe ? this.rememberMeDuration : this.sessionTimeout),
       lastActivity: now,
-      userAgent: navigator.userAgent,
-      ipAddress: await this.getClientIP(),
+      // ❌ REMOVED: userAgent & IP tracking without consent
+      // userAgent: navigator.userAgent, - انتهاك قانون PDPL
+      // ipAddress: await this.getClientIP(), - انتهاك قانون PDPL
       user: {
         id: user.id,
         name: user.name,
@@ -412,10 +413,12 @@ class SecureAuthService {
         ctx.font = '14px Arial';
         ctx.fillText('Client fingerprint', 2, 2);
 
-        return btoa(navigator.userAgent + screen.width + screen.height + canvas.toDataURL()).slice(0, 32);
+        // ❌ REMOVED: navigator.userAgent tracking without consent
+        return btoa('browser_' + screen.width + screen.height + canvas.toDataURL()).slice(0, 32);
       } else {
         // Fallback for testing environment
-        return btoa(navigator.userAgent + Date.now()).slice(0, 32);
+        // ❌ REMOVED: navigator.userAgent tracking without consent
+        return btoa('fallback_' + Date.now()).slice(0, 32);
       }
     } catch (error) {
       // Fallback for testing environment or when canvas is not available
