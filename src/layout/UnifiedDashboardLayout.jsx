@@ -147,8 +147,8 @@ const UnifiedDashboardLayout = ({ requiredRole = null }) => {
         dashboardType={dashboardType}
       />
 
-      {/* محتوى رئيسي مع الشريط الجانبي */}
-      <div className="flex flex-1 relative">
+      {/* محتوى رئيسي مع الشريط الجانبي - مع padding للشريط العلوي */}
+      <div className="flex flex-1 relative pt-16">
         {/* طبقة تراكب للموبايل */}
         {isMobile && isSidebarOpen && (
           <div

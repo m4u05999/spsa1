@@ -49,6 +49,10 @@ const StaticPagesManagement = lazy(() => import('./pages/dashboard/modules/Stati
 const Statistics = lazy(() => import('./pages/dashboard/modules/Statistics'));
 const InquiryManagement = lazy(() => import('./pages/dashboard/modules/InquiryManagement'));
 const SystemSettings = lazy(() => import('./pages/dashboard/modules/SystemSettings'));
+const SystemSettingsAdmin = lazy(() => import('./pages/dashboard/modules/SystemSettingsAdmin'));
+const Analytics = lazy(() => import('./pages/dashboard/modules/Analytics'));
+const Notifications = lazy(() => import('./pages/dashboard/modules/Notifications'));
+const ProfilePage = lazy(() => import('./pages/dashboard/ProfilePage'));
 const MigrationPage = lazy(() => import('./pages/admin/MigrationPage'));
 
 // Privacy System Pages
@@ -138,6 +142,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       }>
         <Route index element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+        <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
         <Route path="privacy" element={<Suspense fallback={<PageLoader />}><ConsentManager /></Suspense>} />
         <Route path="data-export" element={<Suspense fallback={<PageLoader />}><ConsentManager /></Suspense>} />
         <Route path="data-deletion" element={<Suspense fallback={<PageLoader />}><DataDeletionRequest /></Suspense>} />
@@ -150,6 +155,7 @@ const AppRoutes = () => {
         </ProtectedRoute>
       }>
         <Route index element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+        <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
         <Route path="tasks" element={<Suspense fallback={<PageLoader />}><EventsManagement /></Suspense>} />
         <Route path="events" element={<Suspense fallback={<PageLoader />}><EventsManagement /></Suspense>} />
       </Route>
@@ -161,16 +167,21 @@ const AppRoutes = () => {
         </ProtectedRoute>
       }>
         <Route index element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
+        <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
         <Route path="users" element={<Suspense fallback={<PageLoader />}><UserManagement /></Suspense>} />
         <Route path="content" element={<Suspense fallback={<PageLoader />}><ContentManagementV2 /></Suspense>} />
         <Route path="events" element={<Suspense fallback={<PageLoader />}><EventsManagement /></Suspense>} />
         <Route path="media" element={<Suspense fallback={<PageLoader />}><MediaManagement /></Suspense>} />
         <Route path="banners" element={<Suspense fallback={<PageLoader />}><AdsManagement /></Suspense>} />
         <Route path="pages" element={<Suspense fallback={<PageLoader />}><StaticPagesManagement /></Suspense>} />
+        <Route path="static-pages" element={<Suspense fallback={<PageLoader />}><StaticPagesManagement /></Suspense>} />
         <Route path="statistics" element={<Suspense fallback={<PageLoader />}><Statistics /></Suspense>} />
+        <Route path="analytics" element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
         <Route path="inquiries" element={<Suspense fallback={<PageLoader />}><InquiryManagement /></Suspense>} />
+        <Route path="notifications" element={<Suspense fallback={<PageLoader />}><Notifications /></Suspense>} />
         <Route path="migration" element={<Suspense fallback={<PageLoader />}><MigrationPage /></Suspense>} />
         <Route path="settings" element={<Suspense fallback={<PageLoader />}><SystemSettings /></Suspense>} />
+        <Route path="system-settings" element={<Suspense fallback={<PageLoader />}><SystemSettingsAdmin /></Suspense>} />
       </Route>
 
       {/* Catch all route */}
