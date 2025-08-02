@@ -544,7 +544,13 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user has specific permission
   const hasPermission = useCallback((permission) => {
-    if (!user || !user.permissions) return false;
+    if (!user) return false;
+    
+    // Admin has all permissions
+    if (user.role === 'admin') return true;
+    
+    // Check specific permissions
+    if (!user.permissions) return false;
     return user.permissions.includes(permission);
   }, [user]);
 

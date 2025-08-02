@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/index.jsx';
-import DashboardSidebar from '../components/dashboard/DashboardSidebar';
+import SmartSidebar from '../components/dashboard/SmartSidebar.jsx';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -157,14 +157,25 @@ const UnifiedDashboardLayout = ({ requiredRole = null }) => {
           />
         )}
 
-        {/* الشريط الجانبي */}
-        <DashboardSidebar
+        {/* الشريط الجانبي المحسن */}
+        <SmartSidebar
           isOpen={isSidebarOpen}
-          onClose={closeSidebar}
-          isMobile={isMobile}
-          isCollapsed={isCollapsed}
-          isDarkMode={isDarkMode}
-          dashboardType={dashboardType}
+          onToggle={toggleSidebar}
+          userRole={user?.role || 'member'}
+          notifications={{
+            total: 0,
+            pendingUsers: 0,
+            pendingContent: 0,
+            upcomingEvents: 0,
+            unreadInquiries: 0
+          }}
+          onLogout={() => {
+            // Handle logout properly
+            if (window.confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+              localStorage.clear();
+              window.location.href = '/login';
+            }
+          }}
         />
 
         {/* المحتوى الرئيسي */}

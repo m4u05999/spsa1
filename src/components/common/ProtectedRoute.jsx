@@ -15,10 +15,14 @@ const ProtectedRoute = ({ requiredRole, requiredPermission }) => {
 
   // If a specific role is required but user doesn't have it
   if (requiredRole && !hasRole(requiredRole)) {
-    // Redirect to appropriate dashboard based on user role
+    // Admin should have access to everything
     if (user.role === 'admin') {
-      return <Navigate to="/dashboard/admin" replace />;
-    } else if (user.role === 'staff') {
+      // Allow admin to access all routes
+      return <Outlet />;
+    }
+    
+    // Redirect to appropriate dashboard based on user role
+    if (user.role === 'staff') {
       return <Navigate to="/dashboard/staff" replace />;
     } else {
       return <Navigate to="/dashboard/member" replace />;
@@ -27,10 +31,9 @@ const ProtectedRoute = ({ requiredRole, requiredPermission }) => {
 
   // If a specific permission is required but user doesn't have it
   if (requiredPermission && !hasPermission(requiredPermission)) {
+    // Admin already handled in hasPermission function
     // Redirect to appropriate dashboard based on user role
-    if (user.role === 'admin') {
-      return <Navigate to="/dashboard/admin" replace />;
-    } else if (user.role === 'staff') {
+    if (user.role === 'staff') {
       return <Navigate to="/dashboard/staff" replace />;
     } else {
       return <Navigate to="/dashboard/member" replace />;
