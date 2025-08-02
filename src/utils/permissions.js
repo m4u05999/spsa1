@@ -89,7 +89,12 @@ export const getRolePermissions = (role) => {
 
 // Check if a user has a specific permission
 export const checkPermission = (user, requiredPermission) => {
-  if (!user || !user.permissions) return false;
+  if (!user) return false;
+  
+  // Admin has all permissions
+  if (user.role === 'admin') return true;
+  
+  if (!user.permissions) return false;
   
   return user.permissions.some(permission => 
     isPermissionIncluded(permission, requiredPermission)
@@ -98,7 +103,12 @@ export const checkPermission = (user, requiredPermission) => {
 
 // Check if a user has any of the specified permissions
 export const hasAnyPermission = (user, permissions) => {
-  if (!user || !user.permissions) return false;
+  if (!user) return false;
+  
+  // Admin has all permissions
+  if (user.role === 'admin') return true;
+  
+  if (!user.permissions) return false;
   
   return permissions.some(permission => 
     user.permissions.some(userPerm => 
